@@ -31,12 +31,12 @@
             <meta-data android:name="android.view.im" android:resource="@xml/method" />
         </service>
 
-        <!--&lt;!&ndash; user settings. &ndash;&gt;-->
-        <!--<activity android:name=".SettingsActivity" android:label="@string/steno_keyboard_settings">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN"/>-->
-            <!--</intent-filter>-->
-        <!--</activity>-->
+        <!-- user settings. -->
+        <activity android:name=".SettingsActivity" android:label="@string/settings_title">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
 
     </application>
 

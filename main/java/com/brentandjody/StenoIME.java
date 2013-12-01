@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -20,24 +19,28 @@ import com.brentandjody.Translator.Stroke;
  */
 public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeCompleteListener {
 
-    private final StenoApplication App = ((StenoApplication) getApplication());
+    private StenoApplication App;
     private StenoMachine.TYPE mMachineType;
     private Dictionary mDictionary;
-    private TouchLayer mKeyboard;
+    private LinearLayout mKeyboard;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        App = ((StenoApplication) getApplication());
         mDictionary = App.getDictionary();
     }
 
     @Override
     public View onCreateInputView() {
+        mKeyboard = null;
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+            mKeyboard = new LinearLayout(this);
+            LayoutInflater layoutInflater = getLayoutInflater();
+            mKeyboard = (LinearLayout) layoutInflater.inflate(R.layout.keyboard, null);
             launchVirtualKeyboard();
-            return mKeyboard;
         }
-        return null;
+        return mKeyboard;
     }
 
     @Override
@@ -105,10 +108,18 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     private void launchVirtualKeyboard() {
-        LayoutInflater layoutInflater = getLayoutInflater();
-        mKeyboard = (TouchLayer) layoutInflater.inflate(R.layout.keyboard, null);
-        mKeyboard.setOnStrokeCompleteListener(this);
-        mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+        TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
+        keyboard.setOnStrokeCompleteListener(this);
+        keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+    }
+
+    private void removeVirtualKeyboard() {
+        if (mKeyboard != null) {
+            TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
+            keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+            mKeyboard.invalidate();
+            mKeyboard=null;
+        }
     }
 
 

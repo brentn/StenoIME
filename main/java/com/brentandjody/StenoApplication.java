@@ -10,12 +10,13 @@ import com.brentandjody.Translator.Dictionary;
  */
 public class StenoApplication extends Application {
 
-    private final Dictionary dictionary = new Dictionary(this);
+    private Dictionary dictionary;
     private StenoMachine.TYPE machineType = StenoMachine.TYPE.VIRTUAL;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        dictionary = new Dictionary(getApplicationContext());
     }
 
     @Override

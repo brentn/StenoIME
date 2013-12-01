@@ -5,13 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -21,6 +24,7 @@ import com.brentandjody.Keyboard.StenoMachine;
 import com.brentandjody.Keyboard.TouchLayer;
 import com.brentandjody.Translator.Dictionary;
 import com.brentandjody.Translator.Stroke;
+import com.brentandjody.Translator.Translator;
 
 import java.util.Set;
 
@@ -31,36 +35,46 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
+    private static final String MACHINE_TYPE = "current_machine_type";
+    private static final String TRANSLATOR_TYPE = "selected_translator_type";
 
     private StenoApplication App;
+    private SharedPreferences prefs;
     private StenoMachine.TYPE mMachineType;
+    private Translator.TYPE mTranslatorType;
     private Dictionary mDictionary;
     private LinearLayout mKeyboard;
     private PendingIntent mPermissionIntent;
+    private View overlay;
 
     @Override
     public void onCreate() {
         super.onCreate();
         App = ((StenoApplication) getApplication());
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = App.getDictionary();
+        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
     @Override
     public View onCreateInputView() {
-        mKeyboard = null;
-        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
-            mKeyboard = new LinearLayout(this);
-            LayoutInflater layoutInflater = getLayoutInflater();
-            mKeyboard = (LinearLayout) layoutInflater.inflate(R.layout.keyboard, null);
-            launchVirtualKeyboard();
+        mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
+        mTranslatorType = Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 0)];
+        mKeyboard = new LinearLayout(this);
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
+            mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
+             launchVirtualKeyboard();
+        } else {
+            removeVirtualKeyboard();
         }
         return mKeyboard;
     }
 
     @Override
     public View onCreateCandidatesView() {
-        return super.onCreateCandidatesView();
-        //TODO: STUB
+        View view = getLayoutInflater().inflate(R.layout.preview, null);
+        overlay = view.findViewById(R.id.preview_overlay);
+        return view;
     }
 
     @Override
@@ -75,13 +89,23 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
             setMachineType(StenoMachine.TYPE.KEYBOARD);
         }
+        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
+        }
     }
 
     @Override
     public void onInitializeInterface() {
         super.onInitializeInterface();
-        if (mMachineType==null) mMachineType = App.getMachineType();
         //TODO: STUB
+    }
+
+    @Override
+    public void onBindInput() {
+        super.onBindInput();
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(mUsbReceiver, filter);
     }
 
     @Override
@@ -93,12 +117,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     @Override
     public void onUnbindInput() {
         super.onUnbindInput();
+        unregisterReceiver(mUsbReceiver);
         //TODO: STUB
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        ((ViewGroup) mKeyboard.getParent()).removeAllViews();
+        mKeyboard=null;
         //TODO: STUB
     }
 
@@ -117,29 +144,24 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         if (t==null) t= StenoMachine.TYPE.VIRTUAL;
         if (mMachineType==t) return; //short circuit
         mMachineType = t;
-        App.setMachineType(t);
+        saveIntPreference(MACHINE_TYPE, mMachineType.ordinal());
         switch (t) {
             case VIRTUAL:
                 App.setInputDevice(null);
                 Toast.makeText(this, "Virtual Keyboard Selected", Toast.LENGTH_SHORT).show();
-                launchVirtualKeyboard();
+                if (mKeyboard!=null) launchVirtualKeyboard();
                 break;
             case KEYBOARD:
                 Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
-                removeVirtualKeyboard();
+                if (mKeyboard!=null) removeVirtualKeyboard();
                 registerMachine(new NKeyRolloverMachine());
                 break;
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 //TODO:
-                removeVirtualKeyboard();
+                if (mKeyboard!=null) removeVirtualKeyboard();
                 break;
         }
-        try {unregisterReceiver(mUsbReceiver);} catch(Exception e){}
-        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
     }
 
 
@@ -153,15 +175,19 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         keyboard.setOnStrokeCompleteListener(this);
         keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+        mKeyboard.invalidate();
     }
 
     private void removeVirtualKeyboard() {
-        if (mKeyboard != null) {
-            TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-            keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
-            mKeyboard.invalidate();
-            mKeyboard=null;
-        }
+        TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
+        keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+        mKeyboard.invalidate();
+     }
+
+    private void saveIntPreference(String name, int value) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(name, value);
+        editor.commit();
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {

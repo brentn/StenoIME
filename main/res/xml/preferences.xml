@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <CheckBoxPreference
+        android:title="default dictionary"
+        android:summary=""
+        android:key="pref_key_use_default_dictionary"
+        android:defaultValue="true" />
+
+    <PreferenceCategory
+        android:title="Personal Dictionary"
+        android:key="pref_cat_dictionaries">
+
+        <Preference
+            android:title="Add a new dictionary"
+            android:icon="@android:drawable/ic_menu_add"
+            android:key="pref_key_add_button"
+            android:order="99"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Layout"
+        android:key="pref_key_layout_settings">
+
+        <SeekBarPreference
+            android:title="Size of vowel keys"
+            android:key="pref_key_vowel_key_weight"
+            android:defaultValue="5"
+            android:max="10"/>
+
+        <SwitchPreference
+            android:title="Auto-send?"
+            android:key="pref_key_autosend"
+            android:defaultValue="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

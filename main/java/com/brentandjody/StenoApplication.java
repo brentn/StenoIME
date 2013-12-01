@@ -27,17 +27,11 @@ public class StenoApplication extends Application {
     }
 
     // Setters
-    public void setMachineType(StenoMachine.TYPE t) {
-        machineType = t;
-    }
     public void setInputDevice(StenoMachine sm) {inputDevice = sm;}
 
     // Getters
     public Dictionary getDictionary() {
         return dictionary;
-    }
-    public StenoMachine.TYPE getMachineType() {
-        return machineType;
     }
     public StenoMachine getInputDevice() {return inputDevice; }
 

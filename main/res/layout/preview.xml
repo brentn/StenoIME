@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/preview"
+        android:textColor="@android:color/holo_blue_light"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:clickable="false" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:clickable="false"
+        android:id="@+id/preview_overlay"
+        android:layout_marginTop="5dp"
+        android:gravity="right"
+        android:visibility="invisible">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_gravity="left"
+            android:layout_weight="1"
+            android:layout_marginLeft="50dp"
+            android:background="@android:color/holo_orange_light"
+            android:layout_marginRight="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Small Text"
+            android:clickable="false"
+            android:layout_alignParentEnd="true" />
+    </LinearLayout>
+
+</RelativeLayout>

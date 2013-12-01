@@ -14,31 +14,10 @@
         android:longClickable="false"
         android:focusable="false">
 
-        <ScrollView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/candidates_area"
-            android:background="@android:color/background_dark"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:paddingRight="10dp"
-            android:paddingLeft="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Medium Text"
-                android:id="@+id/textView"
-                android:background="@android:color/background_dark"
-                android:textColor="@android:color/holo_blue_light" />
-        </ScrollView>
-
         <com.brentandjody.Keyboard.TouchLayer
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_below="@id/candidates_area"
             android:id="@+id/keyboard"
             android:background="@android:color/darker_gray">
 

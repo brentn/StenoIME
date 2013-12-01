@@ -8,9 +8,16 @@ package com.brentandjody.Translator;
  */
 public class Definition {
 
+    public static enum CAPITALIZATION {NORMAL, UPPERCASE, LOWERCASE};
+
     private final Stroke[] strokes;
     private final String english;
-    private State formatting;
+
+    // state
+    private CAPITALIZATION capitalization = CAPITALIZATION.NORMAL;
+    private boolean attachedStart = false;
+    private boolean attachedEnd = false;
+    private boolean glue = false;
 
     @Override
     public String toString() {
@@ -20,9 +27,6 @@ public class Definition {
     public Definition(String outlineString, String translation) {
         strokes = Stroke.separate(outlineString);
         english = translation;
-        formatting = new State();
-        if (translation!=null)
-            formatting.addBackspaces(translation.length());
     }
 
     public Definition(Stroke[] outline, String translation) {
@@ -30,9 +34,6 @@ public class Definition {
         // translation: a translation for the outline, or null
         strokes = outline;
         english = translation;
-        formatting = new State();
-        if (translation!=null)
-            formatting.addBackspaces(translation.length());
     }
 
     public Stroke[] strokes() {
@@ -47,12 +48,30 @@ public class Definition {
         return Stroke.combine(strokes);
     }
 
-    public void setFormatting(State f) {
-        formatting = f;
+    public void setCapitalization (CAPITALIZATION c) {
+        capitalization = c;
+    }
+    public void attachStart() {
+        attachedStart =true;
+    }
+    public void attachEnd() {
+        attachedEnd =true;
+    }
+    public void addGlue() {
+        glue=true;
     }
 
-    public State getFormatting() {
-        return formatting;
+    public CAPITALIZATION getCapitalization() {
+        return capitalization;
+    }
+    public boolean isAttachedStart() {
+        return attachedStart;
+    }
+    public boolean isAttachedEnd() {
+        return attachedEnd;
+    }
+    public boolean hasGlue() {
+        return glue;
     }
 
 }

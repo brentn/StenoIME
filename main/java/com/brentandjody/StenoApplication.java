@@ -11,12 +11,14 @@ import com.brentandjody.Translator.Dictionary;
 public class StenoApplication extends Application {
 
     private Dictionary dictionary;
+    private StenoMachine inputDevice;
     private StenoMachine.TYPE machineType = StenoMachine.TYPE.VIRTUAL;
 
     @Override
     public void onCreate() {
         super.onCreate();
         dictionary = new Dictionary(getApplicationContext());
+        inputDevice=null;
     }
 
     @Override
@@ -28,14 +30,15 @@ public class StenoApplication extends Application {
     public void setMachineType(StenoMachine.TYPE t) {
         machineType = t;
     }
+    public void setInputDevice(StenoMachine sm) {inputDevice = sm;}
 
     // Getters
     public Dictionary getDictionary() {
         return dictionary;
     }
-
     public StenoMachine.TYPE getMachineType() {
         return machineType;
     }
+    public StenoMachine getInputDevice() {return inputDevice; }
 
 }

@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clickable="true"
+    android:baselineAligned="false"
+    android:gravity="bottom">
+
+    <RelativeLayout
+        android:layout_height="180dp"
+        android:layout_width="fill_parent"
+        android:clickable="false"
+        android:longClickable="false"
+        android:focusable="false">
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/candidates_area"
+            android:background="@android:color/background_dark"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Medium Text"
+                android:id="@+id/textView"
+                android:background="@android:color/background_dark"
+                android:textColor="@android:color/holo_blue_light" />
+        </ScrollView>
+
+        <com.brentandjody.Keyboard.TouchLayer
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/candidates_area"
+            android:id="@+id/keyboard"
+            android:background="@android:color/darker_gray">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:baselineAligned="false"
+                android:paddingTop="7dp"
+                android:id="@+id/keys">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight=".7"
+                    android:id="@+id/left_bank">
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:text="S"
+                        android:id="@+id/S"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:background="@drawable/key"
+                        android:layout_marginRight="2dp"
+                        android:layout_marginBottom="-5dp"
+                        android:hint="S-"
+                        android:textColor="@android:color/black"
+                        android:clickable="false"
+                        android:longClickable="false"
+                        android:layout_marginTop="-5dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/main_keys"
+                    android:layout_weight="11">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/top_bank"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="T"
+                            android:id="@+id/T"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="T-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="P"
+                            android:id="@+id/P"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="P-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="H"
+                            android:id="@+id/H"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:phoneNumber="true"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="H-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="5"
+                            android:id="@+id/special_keys">
+
+                            <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="fill_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="5"
+                                android:layout_marginBottom="8dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="#"
+                                    android:id="@+id/num"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/key"
+                                    android:layout_marginRight="2dp"
+                                    android:layout_marginLeft="2dp"
+                                    android:layout_marginTop="-5dp"
+                                    android:hint="#"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                                <FrameLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:layout_weight="1" >
+
+                                    <Button
+                                        style="?android:attr/buttonStyleSmall"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="..."
+                                        android:id="@+id/settings"
+                                        android:layout_gravity="center_horizontal|top" />
+                                </FrameLayout>
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="*"
+                                    android:id="@+id/star"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/key"
+                                    android:layout_marginRight="2dp"
+                                    android:layout_marginLeft="2dp"
+                                    android:layout_marginTop="-5dp"
+                                    android:hint="*"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="F"
+                            android:id="@+id/f"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="-F"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="P"
+                            android:id="@+id/p"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="-P"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="L"
+                            android:id="@+id/l"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="-L"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="T"
+                            android:id="@+id/t"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:phoneNumber="true"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginTop="-5dp"
+                            android:hint="-T"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="68dp"
+                        android:id="@+id/gutter"
+                        android:focusable="true"></FrameLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:id="@+id/bottom_bank"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="K"
+                            android:id="@+id/K"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="K-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="W"
+                            android:id="@+id/W"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="W-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="R"
+                            android:id="@+id/R"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="R-"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="5"
+                            android:id="@+id/thumbs">
+
+                            <FrameLayout
+                                android:layout_width="fill_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"></FrameLayout>
+
+                            <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="fill_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="5"
+                                android:id="@+id/vowel_bank" >
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="A"
+                                    android:id="@+id/A"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/vowel_key"
+                                    android:layout_marginLeft="3dp"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginBottom="-5dp"
+                                    android:hint="A-"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="O"
+                                    android:id="@+id/O"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/vowel_key"
+                                    android:layout_marginLeft="3dp"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginBottom="-5dp"
+                                    android:hint="O-"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="E"
+                                    android:id="@+id/e"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/vowel_key"
+                                    android:layout_marginLeft="3dp"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginBottom="-5dp"
+                                    android:hint="-E"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="fill_parent"
+                                    android:text="U"
+                                    android:id="@+id/u"
+                                    android:gravity="center_vertical|center_horizontal"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/vowel_key"
+                                    android:layout_marginLeft="3dp"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginBottom="-5dp"
+                                    android:hint="-U"
+                                    android:textColor="@android:color/black"
+                                    android:clickable="false"
+                                    android:longClickable="false" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="R"
+                            android:id="@+id/r"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="-R"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="B"
+                            android:id="@+id/b"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="-B"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="G"
+                            android:id="@+id/g"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="-G"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:text="S"
+                            android:id="@+id/s"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/key"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_marginBottom="-5dp"
+                            android:hint="-S"
+                            android:textColor="@android:color/black"
+                            android:clickable="false"
+                            android:longClickable="false" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/right_bank"
+                    android:layout_weight=".7">
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:text="D"
+                        android:id="@+id/d"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:layout_weight="1"
+                        android:background="@drawable/key"
+                        android:phoneNumber="true"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="-5dp"
+                        android:hint="-D"
+                        android:textColor="@android:color/black"
+                        android:clickable="false"
+                        android:longClickable="false"
+                        android:layout_marginBottom="2dp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:text="Z"
+                        android:id="@+id/z"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:layout_weight="1"
+                        android:background="@drawable/key"
+                        android:phoneNumber="true"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginBottom="-5dp"
+                        android:hint="-Z"
+                        android:textColor="@android:color/black"
+                        android:clickable="false"
+                        android:longClickable="false"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="@android:color/darker_gray"
+                android:clickable="true"
+                android:id="@+id/ovelay"
+                android:alpha=".8"
+                android:visibility="invisible">
+
+                <ProgressBar
+                    style="@android:style/Widget.ProgressBar.Large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/progressBar"
+                    android:layout_gravity="center"
+                    android:minWidth="250dp"
+                    android:clickable="false"
+                    android:layout_marginRight="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="@string/loading_dictionary"
+                    android:id="@+id/loading_text"
+                    android:textAlignment="center"
+                    android:layout_gravity="center"
+                    android:textColor="@android:color/black" />
+            </FrameLayout>
+        </com.brentandjody.Keyboard.TouchLayer>
+
+    </RelativeLayout>
+
+</LinearLayout>

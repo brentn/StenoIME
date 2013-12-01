@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">StenoIME</string>
+    <string name="app_title">Steno Keyboard</string>
+    <string name="loading_dictionary">Loading Dictionary...</string>
+</resources>

@@ -19,8 +19,6 @@ import java.util.Set;
  */
 public class Stroke {
 
-    public static final String SEND_STROKE = "send stroke";
-
     private static final Set<String> IMPLICIT_HYPHENS = new HashSet<String>() {{
         add("A-"); add("O-"); add("5-"); add("0-"); add("-E"); add("-U"); add("*");
     }};
@@ -28,7 +26,7 @@ public class Stroke {
         put("S-", "1-"); put("T-", "2-"); put("P-", "3-"); put("H-", "4-"); put("A-", "5-");
         put("O-", "0-"); put("-F", "-6"); put("-P", "-7"); put("-L", "-8"); put("-T", "-9");
     }};
-    private static final List<String> STENO_KEYS = new LinkedList<String>(Arrays.asList("#", "S-","T-","K-",
+    public static final List<String> STENO_KEYS = new LinkedList<String>(Arrays.asList("#", "S-","T-","K-",
             "P-","W-","H-","R-","A-","O-","*","-E","-U","-F","-R","-P","-B","-L","-G","-T","-S","-D","-Z"));
 
     public static String combine(Stroke[] strokes) {
@@ -189,6 +187,10 @@ public class Stroke {
             result.remove("#");
         }
         return result;
+    }
+
+    public Set<String> getKeys() {
+        return keys;
     }
 
     private String constructStroke(List<String> input) {

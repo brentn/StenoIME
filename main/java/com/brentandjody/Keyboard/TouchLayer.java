@@ -69,7 +69,7 @@ public class TouchLayer extends RelativeLayout {
         super.onFinishInflate();
         keys.clear();
         enumerate_keys(this);
-        LOADING_SPINNER = (FrameLayout) this.findViewById(R.id.ovelay);
+        LOADING_SPINNER = (FrameLayout) this.findViewById(R.id.overlay);
     }
 
     @Override

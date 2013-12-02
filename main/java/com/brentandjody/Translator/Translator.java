@@ -5,9 +5,12 @@ package com.brentandjody.Translator;
  */
 public abstract class Translator {
 
-    public static enum TYPE { STROKES, DICTIONARY }
+    public static enum TYPE { STROKES, SIMPLE }
 
-    public abstract String translate(Stroke stroke);
+    public abstract boolean usesDictionary();
+    public abstract void lock();
+    public abstract void unlock();
+    public abstract TranslationResult translate(Stroke stroke);
 
 
 }

@@ -509,7 +509,7 @@
                 android:layout_height="fill_parent"
                 android:background="@android:color/darker_gray"
                 android:clickable="true"
-                android:id="@+id/ovelay"
+                android:id="@+id/overlay"
                 android:alpha=".8"
                 android:visibility="invisible">
 

@@ -5,8 +5,26 @@ package com.brentandjody.Translator;
  */
 public class RawStrokeTranslator extends Translator {
 
+    private boolean locked=false;
+
     @Override
-    public String translate(Stroke stroke) {
+    public boolean usesDictionary() {
+        return false;
+    }
+
+    @Override
+    public void lock() {
+        locked=true;
+    }
+
+    @Override
+    public void unlock() {
+        locked=false;
+    }
+
+    @Override
+    public TranslationResult translate(Stroke stroke) {
+        if (locked) return null;
         StringBuilder sb = new StringBuilder();
 
         for (String s : Stroke.STENO_KEYS) {
@@ -17,6 +35,6 @@ public class RawStrokeTranslator extends Translator {
             }
         }
         sb.append("\n");
-        return sb.toString();
+        return new TranslationResult(0, sb.toString(), null);
     }
 }

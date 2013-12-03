@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
@@ -23,9 +24,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.brentandjody.Keyboard.NKeyRolloverMachine;
-import com.brentandjody.Keyboard.StenoMachine;
-import com.brentandjody.Keyboard.TouchLayer;
+import com.brentandjody.Input.NKeyRolloverMachine;
+import com.brentandjody.Input.StenoMachine;
+import com.brentandjody.Input.TXBoltMachine;
+import com.brentandjody.Input.TouchLayer;
 import com.brentandjody.Translator.Dictionary;
 import com.brentandjody.Translator.RawStrokeTranslator;
 import com.brentandjody.Translator.SimpleTranslator;
@@ -202,7 +204,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                 break;
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
-                //TODO:
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 break;
         }
@@ -340,8 +341,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                         if(device != null){
                             ((UsbManager) getSystemService(Context.USB_SERVICE)).requestPermission(device, mPermissionIntent);
                             //TODO: (also add stuff to known devices list)
-                            // setMachineType(StenoMachine.TYPE.TXBOLT);
-                            // registerMachine(new TXBoltMachine(device, null));
+                            setMachineType(StenoMachine.TYPE.TXBOLT);
+                            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                            UsbDeviceConnection connection = usbManager.openDevice(device);
+                            registerMachine(new TXBoltMachine(device, connection));
                         }
                     }
                     else {

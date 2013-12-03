@@ -14,7 +14,7 @@
         android:longClickable="false"
         android:focusable="false">
 
-        <com.brentandjody.Keyboard.TouchLayer
+        <com.brentandjody.Input.TouchLayer
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -504,7 +504,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-        </com.brentandjody.Keyboard.TouchLayer>
+        </com.brentandjody.Input.TouchLayer>
 
         <FrameLayout
             android:layout_width="fill_parent"

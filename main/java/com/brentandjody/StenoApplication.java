@@ -2,7 +2,7 @@ package com.brentandjody;
 
 import android.app.Application;
 
-import com.brentandjody.Keyboard.StenoMachine;
+import com.brentandjody.Input.StenoMachine;
 import com.brentandjody.Translator.Dictionary;
 
 /**

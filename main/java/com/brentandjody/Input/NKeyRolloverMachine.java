@@ -1,4 +1,4 @@
-package com.brentandjody.Keyboard;
+package com.brentandjody.Input;
 
 import android.util.Log;
 import android.view.KeyEvent;

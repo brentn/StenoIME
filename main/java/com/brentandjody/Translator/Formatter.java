@@ -20,7 +20,7 @@ public class Formatter {
     public String format (String input) {
         if (input==null) return "";
         if (!input.contains("/")) return input;
-        return input;
+        return input+" ";
     }
 
     public boolean hasQueue() { return !formatQ.isEmpty(); }

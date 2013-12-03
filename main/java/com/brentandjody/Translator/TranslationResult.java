@@ -2,6 +2,7 @@ package com.brentandjody.Translator;
 
 /**
  * Created by brent on 01/12/13.
+ * A class to hold the result of the translation process
  */
 public class TranslationResult {
 

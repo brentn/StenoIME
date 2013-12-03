@@ -1,12 +1,11 @@
 package com.brentandjody.Translator;
 
-import android.view.KeyEvent;
-
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by brent on 02/12/13.
+ * Handle Plover's custom formatting cues
  */
 public class Formatter {
 
@@ -20,13 +19,13 @@ public class Formatter {
     }
 
     public String format (String input) {
-        if (input==null) return "";
+        if (input==null || input.length()==0) return "";
         String output=input;
         String space=" ";
         boolean new_glue=false;
         CASE new_capitalization=null;
-        if (input.contains("{")) {
-            StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        if (hasQueue() || input.contains("{")) {
             for (String atom : breakApart(input)) {
                 if (atom.equals("{#Return}")) {
                     sb.append("\n"); space=""; atom="";
@@ -35,7 +34,7 @@ public class Formatter {
                     sb.append("\b"); space=""; atom="";
                 }
                 if (atom.equals("{#Tab}")) {
-                    sb.append(KeyEvent.KEYCODE_TAB); space=""; atom="";
+                    sb.append("\t"); space=""; atom="";
                 }
                 if (atom.contains("{^")) {
                     sb.append("\b"); atom = atom.replace("{^", "");
@@ -45,10 +44,10 @@ public class Formatter {
                 }
                 // new flags
                 if (atom.contains("{-|}")) {
-                    new_capitalization=CASE.Capital; atom="";
+                    new_capitalization=CASE.Capital; space=""; atom="";
                 }
                 if (atom.contains("{>}")) {
-                    new_capitalization=CASE.Lowercase; atom="";
+                    new_capitalization=CASE.Lowercase; space=""; atom="";
                 }
                 if (atom.contains("{&")) {
                     new_glue=true; atom = atom.replace("{&", "");
@@ -56,8 +55,8 @@ public class Formatter {
                 sb.append(atom.replace("{","").replace("}",""));
             }
             //process flags
-            if (capitalization==CASE.Capital && sb.length()>0) sb.replace(0,0,sb.substring(0,0).toUpperCase());
-            if (capitalization==CASE.Lowercase && sb.length()>0) sb.replace(0,0,sb.substring(0,0).toLowerCase());
+            if (capitalization==CASE.Capital && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toUpperCase());
+            if (capitalization==CASE.Lowercase && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toLowerCase());
             if (glue && new_glue) sb.reverse().append("\b").reverse();
             capitalization = new_capitalization;
             glue = new_glue;

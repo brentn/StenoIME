@@ -126,6 +126,7 @@ public class Dictionary {
         protected Long doInBackground(String... filenames) {
             loaded = 0;
             int update_interval = total_size/100;
+            if (update_interval == 0) update_interval=1;
             String line, stroke, translation;
             String[] fields;
             for (String filename : filenames) {

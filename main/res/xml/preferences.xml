@@ -5,9 +5,9 @@
 
     <ListPreference
         android:title="Type of Translator"
-        android:key="translator_type">
-
-    </ListPreference>
-
+        android:key="translator_type"
+        android:defaultValue="0"
+        android:entries="@array/translator_names"
+        android:entryValues="@array/translator_values" />
 
 </PreferenceScreen>

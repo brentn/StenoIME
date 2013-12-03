@@ -8,6 +8,7 @@ import java.util.Deque;
 
 /**
  * Created by brent on 01/12/13.
+ * Basic dictionary lookup, nothing fancy
  */
 public class SimpleTranslator extends Translator {
 
@@ -42,6 +43,7 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public TranslationResult translate(Stroke stroke) {
+        if (stroke==null) return new TranslationResult(0, "", "");
         int backspaces = 0;
         String text = "";
         String preview = "";

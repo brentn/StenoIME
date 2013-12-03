@@ -504,36 +504,18 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <FrameLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:background="@android:color/darker_gray"
-                android:clickable="true"
-                android:id="@+id/overlay"
-                android:alpha=".8"
-                android:visibility="invisible">
-
-                <ProgressBar
-                    style="@android:style/Widget.ProgressBar.Large"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/progressBar"
-                    android:layout_gravity="center"
-                    android:minWidth="250dp"
-                    android:clickable="false"
-                    android:layout_marginRight="14dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/loading_dictionary"
-                    android:id="@+id/loading_text"
-                    android:textAlignment="center"
-                    android:layout_gravity="center"
-                    android:textColor="@android:color/black" />
-            </FrameLayout>
         </com.brentandjody.Keyboard.TouchLayer>
+
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@android:color/darker_gray"
+            android:clickable="true"
+            android:id="@+id/overlay"
+            android:alpha=".8"
+            android:visibility="visible">
+
+        </FrameLayout>
 
     </RelativeLayout>
 

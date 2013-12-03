@@ -90,7 +90,7 @@ public class SimpleTranslator extends Translator {
                         strokeQ.clear();
                     }
                 }
-                preview = strokesInQueue() + "  --  (" + mDictionary.forceLookup(strokesInQueue()) + ")";
+                preview = mDictionary.forceLookup(strokesInQueue());
                 text = mFormatter.format(text);
                 while (text.length()>0 && text.charAt(0)=='\b') {
                     backspaces++;

@@ -4,27 +4,10 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
 
     <ListPreference
-        android:title="Default Input Device"
-        android:key="input_device">
-    </ListPreference>
-
-    <ListPreference
         android:title="Type of Translator"
         android:key="translator_type">
 
     </ListPreference>
-
-    <PreferenceCategory
-        android:title="Personal Dictionary"
-        android:key="pref_cat_dictionaries">
-
-        <Preference
-            android:title="Add a new dictionary"
-            android:icon="@android:drawable/ic_menu_add"
-            android:key="pref_key_add_button"
-            android:order="99"/>
-
-    </PreferenceCategory>
 
 
 </PreferenceScreen>

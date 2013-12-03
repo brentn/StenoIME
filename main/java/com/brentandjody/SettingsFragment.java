@@ -1,18 +1,16 @@
 package com.brentandjody;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
+
+import com.brentandjody.Translator.Translator;
+
+import java.util.Arrays;
 
 public class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
@@ -27,13 +25,8 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        dictionary_count = prefs.getInt("pref_key_dictionary_count", 0);
-//        dictionaries = (PreferenceCategory) findPreference("pref_cat_dictionaries");
-//        if (BuildConfig.DEBUG) Log.d("Dictionary", Integer.toString(dictionary_count));
-//        if (dictionary_count > 0) {
-//            listPersonalDictionaries();
-//        }
-//        findPreference("pref_key_add_button").setOnPreferenceClickListener(this);
+        ListPreference translator_pref = (ListPreference) findPreference("translator_type");
+        translator_pref.setEntries(getNames(Translator.TYPE.class));
     }
 
     @Override
@@ -44,6 +37,10 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         }
         return false;
     }
+
+    private static String[] getNames(Class<? extends Enum<?>> e) {
+    return Arrays.toString(e.getEnumConstants()).replaceAll("\\[|]", "").split(", ");
+}
 //
 //    private void  selectDictionary() {
 //        // browse for a dictionary

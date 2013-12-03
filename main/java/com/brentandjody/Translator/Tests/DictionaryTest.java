@@ -1,6 +1,7 @@
 package com.brentandjody.Translator.Tests;
 
 import android.test.AndroidTestCase;
+import android.widget.ProgressBar;
 
 import com.brentandjody.Translator.Dictionary;
 import com.brentandjody.Translator.Stroke;
@@ -20,7 +21,7 @@ public class DictionaryTest extends AndroidTestCase {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         assertFalse(dictionary.isLoading());
-        dictionary.load("dict.json");
+        dictionary.load("dict.json", new ProgressBar(getContext()), 0);
         assertTrue(dictionary.isLoading());
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -36,14 +37,14 @@ public class DictionaryTest extends AndroidTestCase {
         Dictionary dictionary = new Dictionary(getContext());
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
-        dictionary.load("booga.json");
+        dictionary.load("booga.json",new ProgressBar(getContext()), 0);
         assertEquals("Dictionary File: booga.json could not be found", errContent.toString().trim());
     }
 
     public void testIllegalFileType() throws Exception{
         Dictionary dictionary = new Dictionary(getContext());
         try {
-            dictionary.load("test.rtf");
+            dictionary.load("test.rtf", new ProgressBar(getContext()), 0);
             Assert.fail("Illegal file type");
         } catch (Exception e) {
         }
@@ -53,7 +54,7 @@ public class DictionaryTest extends AndroidTestCase {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         assertEquals(0, dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load("test.json", new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -72,7 +73,7 @@ public class DictionaryTest extends AndroidTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch1 = new CountDownLatch(1);
         assertEquals(0,dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load("test.json", new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -83,7 +84,7 @@ public class DictionaryTest extends AndroidTestCase {
         final int size = dictionary.size();
         assertTrue(size > 0);
         assertEquals("adjudicator", dictionary.lookup("AD/SKWRAOUD/KAEUT/TOR"));
-        dictionary.load(("test2.json"));
+        dictionary.load(("test2.json"), new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -100,7 +101,7 @@ public class DictionaryTest extends AndroidTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch1 = new CountDownLatch(1);
         assertEquals(0,dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load("test.json", new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -110,7 +111,7 @@ public class DictionaryTest extends AndroidTestCase {
         latch.await();
         int size = dictionary.size();
         assertTrue(size > 0);
-        dictionary.load(("test3.json"));
+        dictionary.load(("test3.json"), new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -124,7 +125,7 @@ public class DictionaryTest extends AndroidTestCase {
     public void testLookupAndForceLookup() throws Exception {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json");
+        dictionary.load("test.json", new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -143,7 +144,7 @@ public class DictionaryTest extends AndroidTestCase {
     public void testLongestValidStroke() throws Exception {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json");
+        dictionary.load("test.json", new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {

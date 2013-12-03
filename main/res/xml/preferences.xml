@@ -3,11 +3,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <CheckBoxPreference
-        android:title="default dictionary"
-        android:summary=""
-        android:key="pref_key_use_default_dictionary"
-        android:defaultValue="true" />
+    <ListPreference
+        android:title="Default Input Device"
+        android:key="input_device">
+    </ListPreference>
+
+    <ListPreference
+        android:title="Type of Translator"
+        android:key="translator_type">
+
+    </ListPreference>
 
     <PreferenceCategory
         android:title="Personal Dictionary"
@@ -21,21 +26,5 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:title="Layout"
-        android:key="pref_key_layout_settings">
-
-        <SeekBarPreference
-            android:title="Size of vowel keys"
-            android:key="pref_key_vowel_key_weight"
-            android:defaultValue="5"
-            android:max="10"/>
-
-        <SwitchPreference
-            android:title="Auto-send?"
-            android:key="pref_key_autosend"
-            android:defaultValue="false" />
-
-    </PreferenceCategory>
 
 </PreferenceScreen>

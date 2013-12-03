@@ -169,7 +169,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     public void onDictionaryLoaded() {
         mTranslator.unlock();
         unlockKeyboard();
-;
     }
 
     // Private methods
@@ -179,7 +178,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         if (inputDevice instanceof NKeyRolloverMachine) {
             ((NKeyRolloverMachine) inputDevice).handleKeys(event);
         }
-        return true;
+        return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
     }
 
     private void setMachineType(StenoMachine.TYPE t) {
@@ -238,7 +237,16 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         // deal with backspaces
         connection.beginBatchEdit();
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
-            //TODO:
+            //TODO: make this better
+            try {
+                String t = connection.getTextBeforeCursor(2, 0).toString();
+                while (! (t.length()==0 || t.equals(" "))) {
+                    connection.deleteSurroundingText(1, 0);
+                    t = connection.getTextBeforeCursor(1, 0).toString();
+                }
+            } finally {
+                connection.commitText("", 1);
+            }
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
         }

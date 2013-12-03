@@ -2,9 +2,8 @@ package com.brentandjody.Translator;
 
 import android.util.Log;
 
-import com.brentandjody.StenoApplication;
-
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 
 /**
@@ -91,8 +90,12 @@ public class SimpleTranslator extends Translator {
                         strokeQ.clear();
                     }
                 }
-                preview = mDictionary.forceLookup(strokesInQueue());
+                preview = strokesInQueue() + "  --  (" + mDictionary.forceLookup(strokesInQueue()) + ")";
                 text = mFormatter.format(text);
+                while (text.length()>0 && text.charAt(0)=='\b') {
+                    backspaces++;
+                    text=text.substring(1);
+                }
             }
         }
         Log.d(TAG, "text:"+text+" preview:"+preview);
@@ -108,13 +111,11 @@ public class SimpleTranslator extends Translator {
         for (String s : strokeQ) {
             sb.append(s).append("/");
         }
-        return sb.substring(0, sb.lastIndexOf("/")-1);
+        return sb.substring(0, sb.lastIndexOf("/"));
     }
 
     private void addToQueue(String input) {
-        for (String s : input.split("/")) {
-            strokeQ.add(s);
-        }
+        Collections.addAll(strokeQ, input.split("/"));
     }
 }
 

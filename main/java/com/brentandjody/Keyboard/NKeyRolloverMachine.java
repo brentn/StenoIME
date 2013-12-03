@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class NKeyRolloverMachine implements StenoMachine {
 
+    private static final String TAG = "StenoIME";
+
     private static final HashMap<Integer,String> STENO_KEYS = new LinkedHashMap<Integer, String>() {{
         put(KeyEvent.KEYCODE_1, "#");
         put(KeyEvent.KEYCODE_2, "#");
@@ -74,12 +76,12 @@ public class NKeyRolloverMachine implements StenoMachine {
                 total_keys--;
                 stroke.add(STENO_KEYS.get(event.getKeyCode()));
                 if (total_keys == 0) {
-                    Log.d("StenoKeyboard", "Stroke: " + stroke.toString());
+                    Log.d(TAG, "Stroke: " + stroke.toString());
                     onStrokeListener.onStroke(stroke);
                     stroke.clear();
                 }
                 if (total_keys < 0) {
-                    Log.e("StenoKeyboard", "totalKeys is less than 0: "+total_keys);
+                    Log.e(TAG, "totalKeys is less than 0: "+total_keys);
                 }
             }
         }

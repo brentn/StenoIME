@@ -1,5 +1,7 @@
 package com.brentandjody.Translator;
 
+import android.util.Log;
+
 import com.brentandjody.StenoApplication;
 
 import java.util.ArrayDeque;
@@ -10,11 +12,14 @@ import java.util.Deque;
  */
 public class SimpleTranslator extends Translator {
 
+    private static final String TAG = "StenoIME";
     private boolean locked = false;
     private Dictionary mDictionary;
+    private Formatter mFormatter;
     private Deque<String> strokeQ = new ArrayDeque<String>();
 
     public SimpleTranslator() {
+        mFormatter = new Formatter();
     }
 
     public void setDictionary(Dictionary dictionary) {
@@ -41,31 +46,56 @@ public class SimpleTranslator extends Translator {
         int backspaces = 0;
         String text = "";
         String preview = "";
-        String result;
-        String full_stroke;
+        String lookupResult;
+        String partial_stroke;
         if (!locked) {
-            if (strokeQ.isEmpty()) {
-                full_stroke = stroke.rtfcre();
-            } else {
-                full_stroke = strokesInQueue() + "/" + stroke.rtfcre();
-            }
-            result = mDictionary.lookup(full_stroke);
-            if (found(result)) {
-                if (ambiguous(result)) {
-                    strokeQ.add(stroke.rtfcre());
-                    preview = mDictionary.forceLookup(strokesInQueue());
+            if (stroke.rtfcre().equals("*")) { //undo
+                if (mFormatter.hasQueue()) {
+                    mFormatter.removeItemFromQueue();
                 } else {
-                    text=result+" ";
-                    preview = "";
-                    strokeQ.clear();
+                    if (!strokeQ.isEmpty()) {
+                        strokeQ.removeLast();
+                    } else {
+                        backspaces=-1; // special code for "remove an entire word"
+                    }
                 }
-            } else { // not found
-                text = mDictionary.lookup(strokesInQueue());
-                strokeQ.clear();
-                strokeQ.add(stroke.rtfcre());
-                preview = mDictionary.forceLookup(stroke.rtfcre());
+            } else {
+                if (strokeQ.isEmpty())
+                    lookupResult = mDictionary.lookup(stroke.rtfcre());
+                else
+                    lookupResult = mDictionary.lookup(strokesInQueue()+"/"+stroke.rtfcre());
+                if (found(lookupResult)) {
+                    if (ambiguous(lookupResult)) {
+                        text = "";
+                        strokeQ.add(stroke.rtfcre());
+                    } else {
+                        text = lookupResult;
+                        strokeQ.clear();
+                    }
+                } else { // (not found)
+                    partial_stroke = stroke.rtfcre();
+                    lookupResult = mDictionary.lookup(partial_stroke);
+                    while (!(found(lookupResult) || strokeQ.isEmpty())) {
+                        partial_stroke = strokeQ.removeLast()+"/"+partial_stroke;
+                        lookupResult = mDictionary.lookup(partial_stroke);
+                    }
+                    // at this point, either a lookup has been found, or the queue is empty
+                    if (found(lookupResult)) {
+                        text = mDictionary.forceLookup(strokesInQueue());
+                        strokeQ.clear();
+                        addToQueue(partial_stroke);
+                    } else {
+                        addToQueue(partial_stroke);
+                        text=strokeQ.removeLast();
+                        text=mDictionary.forceLookup(strokesInQueue())+" "+text;
+                        strokeQ.clear();
+                    }
+                }
+                preview = mDictionary.forceLookup(strokesInQueue());
+                text = mFormatter.format(text);
             }
         }
+        Log.d(TAG, "text:"+text+" preview:"+preview);
         return new TranslationResult(backspaces, text, preview);
     }
 
@@ -80,4 +110,11 @@ public class SimpleTranslator extends Translator {
         }
         return sb.substring(0, sb.lastIndexOf("/")-1);
     }
+
+    private void addToQueue(String input) {
+        for (String s : input.split("/")) {
+            strokeQ.add(s);
+        }
+    }
 }
+

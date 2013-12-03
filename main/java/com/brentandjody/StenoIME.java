@@ -47,6 +47,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private StenoApplication App;
     private SharedPreferences prefs;
     private StenoMachine.TYPE mMachineType;
+    private Translator.TYPE mTranslatorType;
     private Dictionary mDictionary;
     private LinearLayout mKeyboard;
     private Translator mTranslator;
@@ -60,25 +61,25 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         App = ((StenoApplication) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
+        mTranslatorType = Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 1)];
         mDictionary = App.getDictionary();
-        initializeTranslator(Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 1)]);
-        if (mTranslator.usesDictionary()) {
-            mTranslator.lock();
-            mDictionary.setOnDictionaryLoadedListener(this);
-            loadDictionary();
-        }
-        mTranslator.setDictionary(mDictionary);
     }
 
     @Override
     public View onCreateInputView() {
-        mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
         mKeyboard = new LinearLayout(this);
+        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
         if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
-            mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
              launchVirtualKeyboard();
         } else {
             removeVirtualKeyboard();
+        }
+        initializeTranslator(mTranslatorType);
+        if (mTranslator.usesDictionary()) {
+            mTranslator.lock();
+            mDictionary.setOnDictionaryLoadedListener(this);
+            loadDictionary();
         }
         return mKeyboard;
     }
@@ -215,7 +216,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private void initializeTranslator(Translator.TYPE t) {
         switch (t) {
             case STROKES: mTranslator = new RawStrokeTranslator(); break;
-            case SIMPLE: mTranslator = new SimpleTranslator(); break;
+            case SIMPLE:
+                mTranslator = new SimpleTranslator();
+                ((SimpleTranslator) mTranslator).setDictionary(mDictionary);
+                break;
         }
     }
 
@@ -261,7 +265,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void removeVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-        keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+        if (keyboard != null)
+            keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
         mKeyboard.invalidate();
         mKeyboard.setVisibility(View.GONE);
      }

@@ -53,7 +53,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
     private TextView preview;
-    private View overlay;
 
     @Override
     public void onCreate() {
@@ -88,7 +87,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     public View onCreateCandidatesView() {
         View view = getLayoutInflater().inflate(R.layout.preview, null);
         preview = (TextView) view.findViewById(R.id.preview);
-        overlay = view.findViewById(R.id.preview_overlay);
         return view;
     }
 
@@ -122,7 +120,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     @Override
     public void onBindInput() {
         super.onBindInput();
-        setCandidatesViewShown(true);
     }
 
     @Override
@@ -134,7 +131,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     @Override
     public void onUnbindInput() {
         super.onUnbindInput();
-        setCandidatesViewShown(false);
         //TODO: STUB
     }
 
@@ -172,12 +168,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     @Override
     public void onDictionaryLoaded() {
         mTranslator.unlock();
-        View overlay;
-        if (mMachineType == StenoMachine.TYPE.VIRTUAL)
-            overlay = mKeyboard.findViewById(R.id.overlay);
-        else
-            overlay = mKeyboard.findViewById(R.id.preview_overlay);
-        if (overlay != null) overlay.setVisibility(View.GONE);
+        unlockKeyboard();
+;
     }
 
     // Private methods
@@ -234,11 +226,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void loadDictionary() {
         //TODO:get rid of default dictionary
+        lockKeyboard();
         mDictionary.load("dict.json");
     }
 
     private void sendText(TranslationResult tr) {
         preview.setText(tr.getPreview());
+        setCandidatesViewShown(true);
         InputConnection connection = getCurrentInputConnection();
         if (connection == null) return; //short circuit
         // deal with backspaces
@@ -270,6 +264,25 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         mKeyboard.invalidate();
         mKeyboard.setVisibility(View.GONE);
      }
+
+    private void lockKeyboard() {
+        View overlay;
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL)
+            overlay = mKeyboard.findViewById(R.id.overlay);
+        else
+            overlay = mKeyboard.findViewById(R.id.preview_overlay);
+        if (overlay != null)
+            overlay.setVisibility(View.VISIBLE);
+    }
+
+    private void unlockKeyboard() {
+        View overlay;
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL)
+            overlay = mKeyboard.findViewById(R.id.overlay);
+        else
+            overlay = mKeyboard.findViewById(R.id.preview_overlay);
+        if (overlay != null) overlay.setVisibility(View.GONE);
+    }
 
     private void saveIntPreference(String name, int value) {
         SharedPreferences.Editor editor = prefs.edit();

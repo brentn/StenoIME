@@ -206,9 +206,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                usbManager.requestPermission(App.getUsbDevice(), mPermissionIntent);
                 UsbDeviceConnection connection = usbManager.openDevice(App.getUsbDevice());
                 registerMachine(new TXBoltMachine(App.getUsbDevice(), connection));
-
                 break;
         }
     }
@@ -334,6 +334,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 Log.d(TAG, "mUSBReceiver: received detached event");
+                App.setUsbDevice(null);
                 setMachineType(StenoMachine.TYPE.VIRTUAL);
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
@@ -344,6 +345,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    App.setUsbDevice(device);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if(device != null){
                             ((UsbManager) getSystemService(Context.USB_SERVICE)).requestPermission(device, mPermissionIntent);

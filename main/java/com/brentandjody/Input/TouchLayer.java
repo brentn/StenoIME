@@ -1,4 +1,4 @@
-package com.brentandjody.Keyboard;
+package com.brentandjody.Input;
 
 import android.content.Context;
 import android.graphics.Canvas;

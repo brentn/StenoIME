@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
@@ -16,14 +17,17 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.brentandjody.Keyboard.NKeyRolloverMachine;
-import com.brentandjody.Keyboard.StenoMachine;
-import com.brentandjody.Keyboard.TouchLayer;
+import com.brentandjody.Input.NKeyRolloverMachine;
+import com.brentandjody.Input.StenoMachine;
+import com.brentandjody.Input.TXBoltMachine;
+import com.brentandjody.Input.TouchLayer;
 import com.brentandjody.Translator.Dictionary;
 import com.brentandjody.Translator.RawStrokeTranslator;
 import com.brentandjody.Translator.SimpleTranslator;
@@ -32,6 +36,7 @@ import com.brentandjody.Translator.TranslationResult;
 import com.brentandjody.Translator.Translator;
 
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Created by brent on 30/11/13.
@@ -43,6 +48,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
     private static final String MACHINE_TYPE = "current_machine_type";
     private static final String TRANSLATOR_TYPE = "selected_translator_type";
+    public static final String DICTIONARY_SIZE = "dictionary_size";
 
     private StenoApplication App;
     private SharedPreferences prefs;
@@ -53,7 +59,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
     private TextView preview;
-    private View overlay;
+    private Stack<Integer> history = new Stack<Integer>();
 
     @Override
     public void onCreate() {
@@ -62,7 +68,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
         mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
-        mTranslatorType = Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 1)];
+        mTranslatorType = Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 1)];//TODO:change default ot 0
         mDictionary = App.getDictionary();
     }
 
@@ -88,7 +94,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     public View onCreateCandidatesView() {
         View view = getLayoutInflater().inflate(R.layout.preview, null);
         preview = (TextView) view.findViewById(R.id.preview);
-        overlay = view.findViewById(R.id.preview_overlay);
+        setCandidatesViewShown(true);
         return view;
     }
 
@@ -115,27 +121,23 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        registerReceiver(mUsbReceiver, filter);
+        registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
 
     }
 
     @Override
-    public void onBindInput() {
-        super.onBindInput();
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+        if (preview!=null) preview.setText("");
         setCandidatesViewShown(true);
+        history.clear();
     }
 
     @Override
     public void onFinishInput() {
         super.onFinishInput();
-        //TODO: STUB
-    }
-
-    @Override
-    public void onUnbindInput() {
-        super.onUnbindInput();
         setCandidatesViewShown(false);
-        //TODO: STUB
+        history.clear();
     }
 
     @Override
@@ -172,12 +174,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     @Override
     public void onDictionaryLoaded() {
         mTranslator.unlock();
-        View overlay;
-        if (mMachineType == StenoMachine.TYPE.VIRTUAL)
-            overlay = mKeyboard.findViewById(R.id.overlay);
-        else
-            overlay = mKeyboard.findViewById(R.id.preview_overlay);
-        if (overlay != null) overlay.setVisibility(View.GONE);
+        unlockKeyboard();
     }
 
     // Private methods
@@ -187,7 +184,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         if (inputDevice instanceof NKeyRolloverMachine) {
             ((NKeyRolloverMachine) inputDevice).handleKeys(event);
         }
-        return true;
+        return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
     }
 
     private void setMachineType(StenoMachine.TYPE t) {
@@ -207,7 +204,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                 break;
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
-                //TODO:
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 break;
         }
@@ -215,8 +211,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void initializeTranslator(Translator.TYPE t) {
         switch (t) {
-            case STROKES: mTranslator = new RawStrokeTranslator(); break;
-            case SIMPLE:
+            case RawStrokes: mTranslator = new RawStrokeTranslator(); break;
+            case SimpleDictionary:
                 mTranslator = new SimpleTranslator();
                 ((SimpleTranslator) mTranslator).setDictionary(mDictionary);
                 break;
@@ -224,7 +220,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     private void processStroke(Stroke stroke) {
-        sendText(mTranslator.translate(stroke));
+        TranslationResult translation = mTranslator.translate(stroke);
+        sendText(translation);
+        int undo_size = 0;
+        if (translation.getBackspaces()>=0) undo_size = translation.getText().length()-translation.getBackspaces();
+        if (undo_size > 0)
+            history.push(undo_size);
+        //TODO: purge history if cursor is moved
     }
 
     private void registerMachine(StenoMachine machine) {
@@ -234,7 +236,16 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void loadDictionary() {
         //TODO:get rid of default dictionary
-        mDictionary.load("dict.json");
+        mDictionary=App.getDictionary();
+        if (mDictionary.size() == 0 ) {
+            lockKeyboard();
+            ProgressBar progressBar = (ProgressBar) ((ViewGroup) preview.getParent()).findViewById(R.id.progressBar);
+            progressBar.setProgress(0);
+            int size = prefs.getInt(DICTIONARY_SIZE, 100000);
+            mDictionary.load("dict.json", progressBar, size);
+        } else {
+            unlockKeyboard();
+        }
     }
 
     private void sendText(TranslationResult tr) {
@@ -244,7 +255,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         // deal with backspaces
         connection.beginBatchEdit();
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
-            //TODO:
+            if (history.isEmpty()) {
+                smartDelete(connection);
+            } else {
+                connection.deleteSurroundingText(history.pop(), 0);
+            }
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
         }
@@ -252,24 +267,54 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         connection.endBatchEdit();
     }
 
+    private void smartDelete(InputConnection connection) {
+        try {
+            String t = connection.getTextBeforeCursor(2, 0).toString();
+            while (! (t.length()==0 || t.equals(" "))) {
+                connection.deleteSurroundingText(1, 0);
+                t = connection.getTextBeforeCursor(1, 0).toString();
+            }
+        } finally {
+            connection.commitText("", 1);
+        }
+    }
+
 
     private void launchVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         keyboard.setOnStrokeCompleteListener(this);
         keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+        keyboard.setVisibility(View.VISIBLE);
         if (mDictionary.isLoading())
             mKeyboard.findViewById(R.id.overlay).setVisibility(View.VISIBLE);
-        mKeyboard.setVisibility(View.VISIBLE);
         mKeyboard.invalidate();
     }
 
     private void removeVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-        if (keyboard != null)
+        if (keyboard != null) {
             keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+            keyboard.setVisibility(View.GONE);
+        }
         mKeyboard.invalidate();
-        mKeyboard.setVisibility(View.GONE);
      }
+
+    private void lockKeyboard() {
+        View overlay;
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL)
+            overlay = mKeyboard.findViewById(R.id.overlay);
+        else
+            overlay = ((ViewGroup) preview.getParent()).findViewById(R.id.preview_overlay);
+        if (overlay != null)
+            overlay.setVisibility(View.VISIBLE);
+    }
+
+    private void unlockKeyboard() {
+        View overlay = mKeyboard.findViewById(R.id.overlay);
+        if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
+        overlay = ((ViewGroup) preview.getParent()).findViewById(R.id.preview_overlay);
+        if (overlay != null) overlay.setVisibility(View.INVISIBLE);
+    }
 
     private void saveIntPreference(String name, int value) {
         SharedPreferences.Editor editor = prefs.edit();
@@ -296,8 +341,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                         if(device != null){
                             ((UsbManager) getSystemService(Context.USB_SERVICE)).requestPermission(device, mPermissionIntent);
                             //TODO: (also add stuff to known devices list)
-                            // setMachineType(StenoMachine.TYPE.TXBOLT);
-                            // registerMachine(new TXBoltMachine(device, null));
+                            setMachineType(StenoMachine.TYPE.TXBOLT);
+                            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                            UsbDeviceConnection connection = usbManager.openDevice(device);
+                            registerMachine(new TXBoltMachine(device, connection));
                         }
                     }
                     else {

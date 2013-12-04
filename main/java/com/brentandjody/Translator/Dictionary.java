@@ -1,9 +1,14 @@
 package com.brentandjody.Translator;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.ProgressBar;
+
+import com.brentandjody.StenoIME;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,9 +29,11 @@ public class Dictionary {
     private TST<String> dictionary;
     private final Context context;
     private boolean loading = false;
+    private SharedPreferences prefs;
 
     public Dictionary(Context c) {
         context = c;
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         dictionary = new TST<String>();
     }
 
@@ -43,7 +50,7 @@ public class Dictionary {
     }
 
 
-    public void load(String filename) {
+    public void load(String filename, ProgressBar progressBar, int size) {
         String extension = filename.substring(filename.lastIndexOf("."));
         if (Arrays.asList(DICTIONARY_TYPES).contains(extension)) {
             try {
@@ -57,7 +64,7 @@ public class Dictionary {
         }
         loading = true;
 
-        new JsonLoader().execute(filename);
+        new JsonLoader(progressBar, size).execute(filename);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -107,8 +114,19 @@ public class Dictionary {
     }
 
     private class JsonLoader extends AsyncTask<String, Integer, Long> {
+        private int loaded;
+        private int total_size;
+        private ProgressBar progressBar;
+
+        public JsonLoader(ProgressBar progress, int size) {
+            progressBar = progress;
+            total_size = size;
+        }
+
         protected Long doInBackground(String... filenames) {
-            int count = filenames.length;
+            loaded = 0;
+            int update_interval = total_size/100;
+            if (update_interval == 0) update_interval=1;
             String line, stroke, translation;
             String[] fields;
             for (String filename : filenames) {
@@ -125,6 +143,10 @@ public class Dictionary {
                             stroke = fields[1];
                             translation = fields[3];
                             dictionary.put(stroke, translation);
+                            loaded++;
+                            if (loaded%update_interval==0) {
+                                onProgressUpdate(loaded);
+                            }
                         }
                     }
                     lines.close();
@@ -134,14 +156,41 @@ public class Dictionary {
                     System.err.println("Dictionary File: " + filename + " could not be found");
                 }
             }
-            return (long) count;
+            return (long) loaded;
         }
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setMax(total_size);
+            progressBar.setProgress(0);
+        }
+
+        @Override
         protected void onPostExecute(Long result) {
+            super.onPostExecute(result);
+            int size = safeLongToInt(result);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt(StenoIME.DICTIONARY_SIZE, size);
+            editor.commit();
             loading = false;
             if (onDictionaryLoadedListener != null)
                 onDictionaryLoadedListener.onDictionaryLoaded();
         }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            progressBar.setProgress(values[0]);
+        }
+
     }
 
+    private static int safeLongToInt(long l) {
+        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException
+                    (l + " cannot be cast to int without changing its value.");
+        }
+        return (int) l;
+    }
 }

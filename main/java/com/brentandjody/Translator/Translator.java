@@ -5,7 +5,7 @@ package com.brentandjody.Translator;
  */
 public abstract class Translator {
 
-    public static enum TYPE { STROKES, SIMPLE }
+    public static enum TYPE {RawStrokes, SimpleDictionary}
 
     public abstract boolean usesDictionary();
     public abstract void lock();

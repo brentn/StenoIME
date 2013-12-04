@@ -205,6 +205,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
+                UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                UsbDeviceConnection connection = usbManager.openDevice(App.getUsbDevice());
+                registerMachine(new TXBoltMachine(App.getUsbDevice(), connection));
+
                 break;
         }
     }
@@ -230,8 +234,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     private void registerMachine(StenoMachine machine) {
+        if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the last device
         App.setInputDevice(machine);
         App.getInputDevice().setOnStrokeListener(this);
+        App.getInputDevice().start();
     }
 
     private void loadDictionary() {
@@ -332,6 +338,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 Log.d(TAG, "mUSBReceiver: received attach event");
+                App.setUsbDevice((UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
                 setMachineType(StenoMachine.TYPE.TXBOLT);
             }
             if (ACTION_USB_PERMISSION.equals(action)) {
@@ -342,9 +349,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                             ((UsbManager) getSystemService(Context.USB_SERVICE)).requestPermission(device, mPermissionIntent);
                             //TODO: (also add stuff to known devices list)
                             setMachineType(StenoMachine.TYPE.TXBOLT);
-                            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-                            UsbDeviceConnection connection = usbManager.openDevice(device);
-                            registerMachine(new TXBoltMachine(device, connection));
+
                         }
                     }
                     else {

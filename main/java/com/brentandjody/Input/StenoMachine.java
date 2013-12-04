@@ -17,5 +17,7 @@ public interface StenoMachine {
         public void onStateChange(String state);
     }
 
+    public abstract void start();
+    public abstract void stop();
     public abstract void setOnStrokeListener(OnStrokeListener listener);
 }

@@ -88,6 +88,16 @@ public class NKeyRolloverMachine implements StenoMachine {
     }
 
     @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
     public void setOnStrokeListener(OnStrokeListener listener) {
         onStrokeListener = listener;
     }

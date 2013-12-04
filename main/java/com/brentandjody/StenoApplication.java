@@ -1,6 +1,7 @@
 package com.brentandjody;
 
 import android.app.Application;
+import android.hardware.usb.UsbDevice;
 
 import com.brentandjody.Input.StenoMachine;
 import com.brentandjody.Translator.Dictionary;
@@ -12,6 +13,7 @@ public class StenoApplication extends Application {
 
     private Dictionary dictionary;
     private StenoMachine inputDevice;
+    private UsbDevice usbDevice;
     private StenoMachine.TYPE machineType = StenoMachine.TYPE.VIRTUAL;
 
     @Override
@@ -28,11 +30,13 @@ public class StenoApplication extends Application {
 
     // Setters
     public void setInputDevice(StenoMachine sm) {inputDevice = sm;}
+    public void setUsbDevice(UsbDevice ud) { usbDevice = ud; }
 
     // Getters
     public Dictionary getDictionary() {
         return dictionary;
     }
     public StenoMachine getInputDevice() {return inputDevice; }
+    public UsbDevice getUsbDevice() { return usbDevice; }
 
 }

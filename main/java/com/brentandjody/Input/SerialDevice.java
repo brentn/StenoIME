@@ -75,7 +75,7 @@ public abstract class SerialDevice {
     }
 
     public void disconnect() throws IOException {
-        mConnection.close();
+        if (mConnection!=null) mConnection.close();
         mState=STATE.DISCONNECTED;
     }
 

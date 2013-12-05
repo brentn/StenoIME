@@ -9,11 +9,13 @@ public class TranslationResult {
     private final int mBackspaces;
     private final String mText;
     private final String mPreview;
+    private final String mExtra;
 
-    public TranslationResult(int backspaces, String text, String preview) {
+    public TranslationResult(int backspaces, String text, String preview, String extra) {
         mBackspaces = backspaces;
         mText = text;
         mPreview = preview;
+        mExtra = extra;
     }
 
     public int getBackspaces() {
@@ -25,5 +27,6 @@ public class TranslationResult {
     public String getPreview() {
         return mPreview;
     }
+    public String getExtra() { return mExtra; }
 
 }

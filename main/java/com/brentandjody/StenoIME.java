@@ -59,6 +59,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
     private TextView preview;
+    private TextView debug;
+    private LinearLayout preview_overlay;
     private Stack<Integer> history = new Stack<Integer>();
 
     @Override
@@ -94,6 +96,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     public View onCreateCandidatesView() {
         View view = getLayoutInflater().inflate(R.layout.preview, null);
         preview = (TextView) view.findViewById(R.id.preview);
+        debug = (TextView) view.findViewById(R.id.debug);
+        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
         setCandidatesViewShown(true);
         return view;
     }
@@ -126,9 +130,16 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
+    public void onWindowShown() {
+        super.onWindowShown();
+        setCandidatesViewShown(true);
+    }
+
+     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
         if (preview!=null) preview.setText("");
+        if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
         history.clear();
     }
@@ -138,6 +149,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         super.onFinishInput();
         setCandidatesViewShown(false);
         history.clear();
+    }
+
+    @Override
+    public void onWindowHidden() {
+        super.onWindowHidden();
+        setCandidatesViewShown(false);
     }
 
     @Override
@@ -245,7 +262,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         mDictionary=App.getDictionary();
         if (mDictionary.size() == 0 ) {
             lockKeyboard();
-            ProgressBar progressBar = (ProgressBar) ((ViewGroup) preview.getParent()).findViewById(R.id.progressBar);
+            ProgressBar progressBar = (ProgressBar) preview_overlay.findViewById(R.id.progressBar);
             progressBar.setProgress(0);
             int size = prefs.getInt(DICTIONARY_SIZE, 100000);
             mDictionary.load("dict.json", progressBar, size);
@@ -256,6 +273,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void sendText(TranslationResult tr) {
         preview.setText(tr.getPreview());
+        debug.setText("(strokes in queue:"+tr.getExtra()+")");
         InputConnection connection = getCurrentInputConnection();
         if (connection == null) return; //short circuit
         // deal with backspaces
@@ -309,17 +327,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         View overlay;
         if (mMachineType == StenoMachine.TYPE.VIRTUAL)
             overlay = mKeyboard.findViewById(R.id.overlay);
-        else
-            overlay = ((ViewGroup) preview.getParent()).findViewById(R.id.preview_overlay);
-        if (overlay != null)
-            overlay.setVisibility(View.VISIBLE);
+        if (preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
     }
 
     private void unlockKeyboard() {
         View overlay = mKeyboard.findViewById(R.id.overlay);
         if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
-        overlay = ((ViewGroup) preview.getParent()).findViewById(R.id.preview_overlay);
-        if (overlay != null) overlay.setVisibility(View.INVISIBLE);
+        if (preview_overlay != null) preview_overlay.setVisibility(View.INVISIBLE);
     }
 
     private void saveIntPreference(String name, int value) {

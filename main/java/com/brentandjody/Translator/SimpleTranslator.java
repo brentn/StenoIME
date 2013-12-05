@@ -43,7 +43,7 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public TranslationResult translate(Stroke stroke) {
-        if (stroke==null) return new TranslationResult(0, "", "");
+        if (stroke==null) return new TranslationResult(0, "", "", "");
         int backspaces = 0;
         String text = "";
         String preview = "";
@@ -101,7 +101,7 @@ public class SimpleTranslator extends Translator {
             }
         }
         Log.d(TAG, "text:"+text+" preview:"+preview);
-        return new TranslationResult(backspaces, text, preview);
+        return new TranslationResult(backspaces, text, preview, Integer.toString(strokeQ.size()));
     }
 
     private boolean found(String s) {return (s != null); }

@@ -26,7 +26,7 @@ public class RawStrokeTranslator extends Translator {
     @Override
     public TranslationResult translate(Stroke stroke) {
         if (locked) return null;
-        if (stroke==null || stroke.rtfcre().equals("")) return new TranslationResult(0, "", "");
+        if (stroke==null || stroke.rtfcre().equals("")) return new TranslationResult(0, "", "", "");
         StringBuilder sb = new StringBuilder();
 
         for (String s : Stroke.STENO_KEYS) {
@@ -37,6 +37,6 @@ public class RawStrokeTranslator extends Translator {
             }
         }
         sb.append("\n");
-        return new TranslationResult(0, sb.toString(), null);
+        return new TranslationResult(0, sb.toString(), null, null);
     }
 }

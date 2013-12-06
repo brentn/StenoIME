@@ -104,6 +104,13 @@ public class SimpleTranslator extends Translator {
         return new TranslationResult(backspaces, text, preview, Integer.toString(strokeQ.size()));
     }
 
+    @Override
+    public TranslationResult submitQueue() {
+        String queue = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+        strokeQ.clear();
+        return new TranslationResult(0, queue, "", "");
+    }
+
     private boolean found(String s) {return (s != null); }
     private boolean ambiguous(String s) { return s.equals("");}
 

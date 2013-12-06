@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -98,14 +99,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         preview = (TextView) view.findViewById(R.id.preview);
         debug = (TextView) view.findViewById(R.id.debug);
         preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendText(mTranslator.submitQueue());
+            }
+        });
         setCandidatesViewShown(true);
         return view;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
-        //TODO: STUB
     }
 
     @Override
@@ -130,7 +131,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
-    public void onWindowShown() {
+    public void onBindInput() {
         super.onWindowShown();
         setCandidatesViewShown(true);
     }
@@ -145,6 +146,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
+    public void onUpdateCursor(Rect newCursor) {
+        super.onUpdateCursor(newCursor);
+        history.clear();
+    }
+
+    @Override
     public void onFinishInput() {
         super.onFinishInput();
         setCandidatesViewShown(false);
@@ -152,7 +159,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
-    public void onWindowHidden() {
+    public void onUnbindInput() {
         super.onWindowHidden();
         setCandidatesViewShown(false);
     }
@@ -161,6 +168,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     public void onDestroy() {
         super.onDestroy();
         ((ViewGroup) mKeyboard.getParent()).removeAllViews();
+        setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
         //TODO: STUB

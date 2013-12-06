@@ -24,6 +24,11 @@ public class RawStrokeTranslator extends Translator {
     }
 
     @Override
+    public TranslationResult submitQueue() {
+        return new TranslationResult(0, "", "", "");
+    }
+
+    @Override
     public TranslationResult translate(Stroke stroke) {
         if (locked) return null;
         if (stroke==null || stroke.rtfcre().equals("")) return new TranslationResult(0, "", "", "");

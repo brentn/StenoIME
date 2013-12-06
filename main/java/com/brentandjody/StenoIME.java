@@ -42,7 +42,7 @@ import java.util.Stack;
 /**
  * Created by brent on 30/11/13.
  */
-public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeCompleteListener,
+public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeListener,
         StenoMachine.OnStrokeListener, Dictionary.OnDictionaryLoadedListener {
 
     private static final String TAG = "StenoIME";
@@ -102,17 +102,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            setMachineType(StenoMachine.TYPE.KEYBOARD);
-        }
-        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-            setMachineType(StenoMachine.TYPE.VIRTUAL);
-        }
-    }
-
-    @Override
     public void onInitializeInterface() {
         super.onInitializeInterface();
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
@@ -166,10 +155,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     // Implemented Interfaces
-    @Override
-    public void onStrokeComplete(Stroke stroke) {
-        processStroke(stroke);
-    }
 
     @Override
     public void onStroke(Set<String> keys) {
@@ -271,7 +256,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void launchVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-        keyboard.setOnStrokeCompleteListener(this);
+        keyboard.setOnStrokeListener(this);
         keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
         if (mDictionary.isLoading())
@@ -306,13 +291,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     // *** Stuff to change Input Device ***
 
-    private void registerMachine(StenoMachine machine) {
-        if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the prior device
-        App.setInputDevice(machine);
-        App.getInputDevice().setOnStrokeListener(this);
-        App.getInputDevice().start();
-    }
-
     private void setMachineType(StenoMachine.TYPE t) {
         if (t==null) t= StenoMachine.TYPE.VIRTUAL;
         if (mMachineType==t) return; //short circuit
@@ -334,6 +312,24 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                 UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
                 usbManager.requestPermission(App.getUsbDevice(), mPermissionIntent);
                 break;
+        }
+    }
+
+    private void registerMachine(StenoMachine machine) {
+        if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the prior device
+        App.setInputDevice(machine);
+        App.getInputDevice().setOnStrokeListener(this);
+        App.getInputDevice().start();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+            setMachineType(StenoMachine.TYPE.KEYBOARD);
+        }
+        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
         }
     }
 

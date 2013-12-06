@@ -13,13 +13,13 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.brentandjody.Translator.Stroke;
 import com.brentandjody.R;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by brentn on 21/11/13.
@@ -51,12 +51,12 @@ public class TouchLayer extends RelativeLayout {
         initialize();
     }
 
-    private OnStrokeCompleteListener onStrokeCompleteListener;
-    public interface OnStrokeCompleteListener {
-        public void onStrokeComplete(Stroke stroke);
+    private OnStrokeListener onStrokeListener;
+    public interface OnStrokeListener {
+        public void onStroke(Set<String> stroke);
     }
-    public void setOnStrokeCompleteListener(OnStrokeCompleteListener listener) {
-        onStrokeCompleteListener = listener;
+    public void setOnStrokeListener(OnStrokeListener listener) {
+        onStrokeListener = listener;
     }
 
     @Override
@@ -120,7 +120,7 @@ public class TouchLayer extends RelativeLayout {
                     paths[0].reset();
                     invalidate();
                     if (anyKeysSelected()) {
-                        onStrokeCompleteListener.onStrokeComplete(getStroke());
+                        onStrokeListener.onStroke(getStroke());
                     }
                 }
                 for (int n=0; n<NUMBER_OF_FINGERS; n++) {
@@ -145,7 +145,7 @@ public class TouchLayer extends RelativeLayout {
         invalidate();
     }
 
-    private Stroke getStroke() {
+    private Set<String> getStroke() {
         // Reads stroke from keyboard, and resets the keys
         List<String> selected_keys = new LinkedList<String>();
         String name;
@@ -158,7 +158,7 @@ public class TouchLayer extends RelativeLayout {
                 key.setSelected(false);
             }
         }
-        return new Stroke(new LinkedHashSet<String>(selected_keys));
+        return new LinkedHashSet<String>(selected_keys);
     }
 
     public boolean anyKeysSelected() {
@@ -270,7 +270,7 @@ public class TouchLayer extends RelativeLayout {
                         keyView.setSelected(true);
             }
         }
-        onStrokeCompleteListener.onStrokeComplete(getStroke());
+        onStrokeListener.onStroke(getStroke());
     }
 
 }

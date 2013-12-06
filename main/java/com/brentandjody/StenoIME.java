@@ -76,6 +76,26 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+            setMachineType(StenoMachine.TYPE.KEYBOARD);
+        }
+        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
+        }
+    }
+
+    @Override
+    public void onInitializeInterface() {
+        super.onInitializeInterface();
+        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
+    }
+
+    @Override
     public View onCreateInputView() {
         mKeyboard = new LinearLayout(this);
         mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
@@ -83,12 +103,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
              launchVirtualKeyboard();
         } else {
             removeVirtualKeyboard();
-        }
-        initializeTranslator(mTranslatorType);
-        if (mTranslator.usesDictionary()) {
-            mTranslator.lock();
-            mDictionary.setOnDictionaryLoadedListener(this);
-            loadDictionary();
         }
         return mKeyboard;
     }
@@ -110,39 +124,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            setMachineType(StenoMachine.TYPE.KEYBOARD);
-        }
-        if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
-            setMachineType(StenoMachine.TYPE.VIRTUAL);
-        }
-    }
-
-    @Override
-    public void onInitializeInterface() {
-        super.onInitializeInterface();
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
-
-    }
-
-    @Override
-    public void onBindInput() {
-        super.onWindowShown();
-        setCandidatesViewShown(true);
-    }
-
-     @Override
-    public void onStartInput(EditorInfo attribute, boolean restarting) {
-        super.onStartInput(attribute, restarting);
+    public void onStartInputView(EditorInfo info, boolean restarting) {
+        super.onStartInputView(info, restarting);
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
-        setCandidatesViewShown(true);
         history.clear();
+        initializeTranslator(mTranslatorType);
+        if (mTranslator.usesDictionary()) {
+            mDictionary.setOnDictionaryLoadedListener(this);
+            loadDictionary();
+        }
+        setCandidatesViewShown(true);
     }
 
     @Override
@@ -152,26 +144,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
-    public void onFinishInput() {
-        super.onFinishInput();
-        setCandidatesViewShown(false);
-        history.clear();
-    }
-
-    @Override
-    public void onUnbindInput() {
-        super.onWindowHidden();
-        setCandidatesViewShown(false);
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         ((ViewGroup) mKeyboard.getParent()).removeAllViews();
         setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
-        //TODO: STUB
     }
 
     @Override
@@ -198,7 +176,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     @Override
     public void onDictionaryLoaded() {
-        mTranslator.unlock();
         unlockKeyboard();
     }
 
@@ -270,7 +247,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         mDictionary=App.getDictionary();
         if (mDictionary.size() == 0 ) {
             lockKeyboard();
-            ProgressBar progressBar = (ProgressBar) preview_overlay.findViewById(R.id.progressBar);
+            ProgressBar progressBar;
+            if (preview_overlay==null) progressBar = new ProgressBar(getApplicationContext());
+            else progressBar = (ProgressBar) preview_overlay.findViewById(R.id.progressBar);
             progressBar.setProgress(0);
             int size = prefs.getInt(DICTIONARY_SIZE, 100000);
             mDictionary.load("dict.json", progressBar, size);
@@ -281,7 +260,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     private void sendText(TranslationResult tr) {
         preview.setText(tr.getPreview());
-        debug.setText("(strokes in queue:"+tr.getExtra()+")");
+        debug.setText(tr.getExtra());
         InputConnection connection = getCurrentInputConnection();
         if (connection == null) return; //short circuit
         // deal with backspaces
@@ -336,12 +315,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         if (mMachineType == StenoMachine.TYPE.VIRTUAL)
             overlay = mKeyboard.findViewById(R.id.overlay);
         if (preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
+        mTranslator.lock();
     }
 
     private void unlockKeyboard() {
         View overlay = mKeyboard.findViewById(R.id.overlay);
         if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
         if (preview_overlay != null) preview_overlay.setVisibility(View.INVISIBLE);
+        mTranslator.unlock();
     }
 
     private void saveIntPreference(String name, int value) {

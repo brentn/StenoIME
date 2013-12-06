@@ -44,6 +44,7 @@ public class SimpleTranslator extends Translator {
     @Override
     public TranslationResult translate(Stroke stroke) {
         if (stroke==null) return new TranslationResult(0, "", "", "");
+        if (mDictionary.size()<10) return new TranslationResult(0, "", "Dictionary Not Loaded", "");
         int backspaces = 0;
         String text = "";
         String preview = "";
@@ -101,7 +102,7 @@ public class SimpleTranslator extends Translator {
             }
         }
         Log.d(TAG, "text:"+text+" preview:"+preview);
-        return new TranslationResult(backspaces, text, preview, Integer.toString(strokeQ.size()));
+        return new TranslationResult(backspaces, text, preview, "("+Integer.toString(strokeQ.size())+")");
     }
 
     @Override

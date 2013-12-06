@@ -76,6 +76,32 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
+    public View onCreateInputView() {
+        mKeyboard = new LinearLayout(this);
+        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
+             launchVirtualKeyboard();
+        } else {
+            removeVirtualKeyboard();
+        }
+        initializeTranslator(mTranslatorType);
+        if (mTranslator.usesDictionary()) {
+            mTranslator.lock();
+            mDictionary.setOnDictionaryLoadedListener(this);
+            loadDictionary();
+        }
+        return mKeyboard;
+    }
+
+    @Override
+    public View onCreateCandidatesView() {
+        View view = getLayoutInflater().inflate(R.layout.preview, null);
+        preview = (TextView) view.findViewById(R.id.preview);
+        setCandidatesViewShown(true);
+        return view;
+    }
+
+    @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
@@ -95,33 +121,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
     }
 
-    @Override
-    public View onCreateInputView() {
-        mKeyboard = new LinearLayout(this);
-        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
-        if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
-             launchVirtualKeyboard();
-        } else {
-            removeVirtualKeyboard();
-        }
-        return mKeyboard;
-    }
-
-    @Override
-    public View onCreateCandidatesView() {
-        View view = getLayoutInflater().inflate(R.layout.preview, null);
-        preview = (TextView) view.findViewById(R.id.preview);
-        debug = (TextView) view.findViewById(R.id.debug);
-        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendText(mTranslator.submitQueue());
-            }
-        });
-        setCandidatesViewShown(true);
-        return view;
-    }
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
@@ -153,10 +152,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
     @Override
+    public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
+    }
+
+    @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return dispatchKeyEvent(event);
     }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         return dispatchKeyEvent(event);
@@ -181,40 +184,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
 
     // Private methods
 
-    private boolean dispatchKeyEvent(KeyEvent event) {
-        StenoMachine inputDevice = App.getInputDevice();
-        if (inputDevice instanceof NKeyRolloverMachine) {
-            ((NKeyRolloverMachine) inputDevice).handleKeys(event);
-        }
-        return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
-    }
-
-    private void setMachineType(StenoMachine.TYPE t) {
-        if (t==null) t= StenoMachine.TYPE.VIRTUAL;
-        if (mMachineType==t) return; //short circuit
-        mMachineType = t;
-        saveIntPreference(MACHINE_TYPE, mMachineType.ordinal());
-        switch (mMachineType) {
-            case VIRTUAL:
-                App.setInputDevice(null);
-                if (mKeyboard!=null) launchVirtualKeyboard();
-                break;
-            case KEYBOARD:
-                Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
-                if (mKeyboard!=null) removeVirtualKeyboard();
-                registerMachine(new NKeyRolloverMachine());
-                break;
-            case TXBOLT:
-                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
-                if (mKeyboard!=null) removeVirtualKeyboard();
-                UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-                usbManager.requestPermission(App.getUsbDevice(), mPermissionIntent);
-                UsbDeviceConnection connection = usbManager.openDevice(App.getUsbDevice());
-                registerMachine(new TXBoltMachine(App.getUsbDevice(), connection));
-                break;
-        }
-    }
-
     private void initializeTranslator(Translator.TYPE t) {
         switch (t) {
             case RawStrokes: mTranslator = new RawStrokeTranslator(); break;
@@ -230,16 +199,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         sendText(translation);
         int undo_size = 0;
         if (translation.getBackspaces()>=0) undo_size = translation.getText().length()-translation.getBackspaces();
-        if (undo_size > 0)
-            history.push(undo_size);
-        //TODO: purge history if cursor is moved
-    }
-
-    private void registerMachine(StenoMachine machine) {
-        if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the last device
-        App.setInputDevice(machine);
-        App.getInputDevice().setOnStrokeListener(this);
-        App.getInputDevice().start();
+        if (undo_size > 0) history.push(undo_size);
     }
 
     private void loadDictionary() {
@@ -291,6 +251,24 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
     }
 
 
+    private void saveIntPreference(String name, int value) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(name, value);
+        editor.commit();
+    }
+
+    // *** NKeyRollover Keyboard ***
+
+    private boolean dispatchKeyEvent(KeyEvent event) {
+        StenoMachine inputDevice = App.getInputDevice();
+        if (inputDevice instanceof NKeyRolloverMachine) {
+            ((NKeyRolloverMachine) inputDevice).handleKeys(event);
+        }
+        return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
+    }
+
+    // *** Virtual Keyboard ***
+
     private void launchVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         keyboard.setOnStrokeCompleteListener(this);
@@ -308,7 +286,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
             keyboard.setVisibility(View.GONE);
         }
         mKeyboard.invalidate();
-     }
+    }
 
     private void lockKeyboard() {
         View overlay;
@@ -325,10 +303,38 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
         mTranslator.unlock();
     }
 
-    private void saveIntPreference(String name, int value) {
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(name, value);
-        editor.commit();
+
+    // *** Stuff to change Input Device ***
+
+    private void registerMachine(StenoMachine machine) {
+        if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the prior device
+        App.setInputDevice(machine);
+        App.getInputDevice().setOnStrokeListener(this);
+        App.getInputDevice().start();
+    }
+
+    private void setMachineType(StenoMachine.TYPE t) {
+        if (t==null) t= StenoMachine.TYPE.VIRTUAL;
+        if (mMachineType==t) return; //short circuit
+        mMachineType = t;
+        saveIntPreference(MACHINE_TYPE, mMachineType.ordinal());
+        switch (mMachineType) {
+            case VIRTUAL:
+                App.setInputDevice(null);
+                if (mKeyboard!=null) launchVirtualKeyboard();
+                break;
+            case KEYBOARD:
+                Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
+                if (mKeyboard!=null) removeVirtualKeyboard();
+                registerMachine(new NKeyRolloverMachine());
+                break;
+            case TXBOLT:
+                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
+                if (mKeyboard!=null) removeVirtualKeyboard();
+                UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                usbManager.requestPermission(App.getUsbDevice(), mPermissionIntent);
+                break;
+        }
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -351,9 +357,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeC
                     App.setUsbDevice(device);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if(device != null){
-                            ((UsbManager) getSystemService(Context.USB_SERVICE)).requestPermission(device, mPermissionIntent);
                             //TODO: (also add stuff to known devices list)
                             setMachineType(StenoMachine.TYPE.TXBOLT);
+                            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                            UsbDeviceConnection connection = usbManager.openDevice(device);
+                            registerMachine(new TXBoltMachine(App.getUsbDevice(), connection));
 
                         }
                     }

@@ -97,6 +97,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public View onCreateCandidatesView() {
         View view = getLayoutInflater().inflate(R.layout.preview, null);
         preview = (TextView) view.findViewById(R.id.preview);
+        debug = (TextView) view.findViewById(R.id.debug);
+        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
         setCandidatesViewShown(true);
         return view;
     }

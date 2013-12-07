@@ -41,6 +41,7 @@ import java.util.Stack;
 
 /**
  * Created by brent on 30/11/13.
+ * Replacement Keyboard
  */
 public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeListener,
         StenoMachine.OnStrokeListener, Dictionary.OnDictionaryLoadedListener {
@@ -311,8 +312,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
-                UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-                usbManager.requestPermission(App.getUsbDevice(), mPermissionIntent);
+                ((UsbManager)getSystemService(Context.USB_SERVICE))
+                        .requestPermission(App.getUsbDevice(), mPermissionIntent);
                 break;
         }
     }
@@ -320,8 +321,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void registerMachine(StenoMachine machine) {
         if (App.getInputDevice()!=null) App.getInputDevice().stop(); //stop the prior device
         App.setInputDevice(machine);
-        App.getInputDevice().setOnStrokeListener(this);
-        App.getInputDevice().start();
+        machine.setOnStrokeListener(this);
+        machine.start();
     }
 
     @Override
@@ -348,7 +349,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 Log.d(TAG, "mUSBReceiver: received attach event");
                 App.setUsbDevice((UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE));
                 setMachineType(StenoMachine.TYPE.TXBOLT);
-            }
+             }
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -356,11 +357,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if(device != null){
                             //TODO: (also add stuff to known devices list)
-                            setMachineType(StenoMachine.TYPE.TXBOLT);
                             UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
                             UsbDeviceConnection connection = usbManager.openDevice(device);
-                            registerMachine(new TXBoltMachine(App.getUsbDevice(), connection));
-
+                            registerMachine(new TXBoltMachine(device, connection));
                         }
                     }
                     else {

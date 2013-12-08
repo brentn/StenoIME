@@ -69,21 +69,21 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // endings (with & without queue
         checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
         checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
-        checkResults(translator.translate(new Stroke("-G")), 0, "\bing ", "");
+        checkResults(translator.translate(new Stroke("-G")), 1, "ing ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
-        checkResults(translator.translate(new Stroke("-D")), 0, "\bed ", "");
+        checkResults(translator.translate(new Stroke("-D")), 1, "ed ", "");
         // undo (with & without queue)
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "");
+        checkResults(translator.translate(new Stroke("*")), -1, "", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("*")), 2, "", "");
-        checkResults(translator.translate(new Stroke("*")), 5, "", "");
+        checkResults(translator.translate(new Stroke("*")), -1, "", "");
+        checkResults(translator.translate(new Stroke("*")), -1, "", "");
     }
 
     public void testSpecialCases() throws Exception {
@@ -103,7 +103,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // special cases
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I");
         checkResults(translator.translate(new Stroke("APL")), 0, "I am ", "");
-        checkResults(translator.translate(new Stroke("EU/APL")), 0, "I am ", "");
+        //checkResults(translator.translate(new Stroke("EU/APL")), 0, "I ", "am");
     }
 
     private void checkResults(TranslationResult result, int bs, String text, String preview) {

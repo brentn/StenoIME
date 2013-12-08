@@ -3,6 +3,7 @@ package com.brentandjody.Translator;
 import android.util.Log;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Stack;
@@ -107,11 +108,11 @@ public class SimpleTranslator extends Translator {
                             // lookup remaining strokes in queue
                             lookupResult = mDictionary.lookup(strokesInQueue());
                             if (! found(lookupResult)) {
-                                text += mFormatter.format(strokesInQueue());
+                                text = remove_backspaces(text+mFormatter.format(strokesInQueue()));
                                 strokeQ.clear();
                             } else {
                                 if (! ambiguous(lookupResult)) {
-                                    text += mFormatter.format(lookupResult);
+                                    text = remove_backspaces(text+mFormatter.format(lookupResult));
                                     strokeQ.clear();
                                 }
                             }
@@ -154,6 +155,32 @@ public class SimpleTranslator extends Translator {
             sb.append(s).append("/");
         }
         return sb.substring(0, sb.lastIndexOf("/"));
+    }
+
+    private String remove_backspaces(String input) {
+        StringBuilder result = new StringBuilder();
+        int prefix_bs = 0;
+        boolean start=true;
+        for (int i=0; i< input.length(); i++) {
+            if (start) {
+                if (input.charAt(i)=='\b') {
+                    prefix_bs++;
+                } else {
+                    start=false;
+                    char[] backspaces = new char[prefix_bs];
+                    Arrays.fill(backspaces, '\b');
+                    result.append(new String(backspaces));
+                }
+            }
+            if (!start) {
+                if ((i < (input.length()-1)) && input.charAt(i+1)=='\b') {
+                    i++;
+                } else {
+                    result.append(input.charAt(i));
+                }
+            }
+        }
+        return result.toString();
     }
 
     private void addToQueue(String input) {

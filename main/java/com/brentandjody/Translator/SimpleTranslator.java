@@ -5,6 +5,7 @@ import android.util.Log;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Stack;
 
 /**
  * Created by brent on 01/12/13.
@@ -43,15 +44,31 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public TranslationResult translate(Stroke stroke) {
+        if (stroke==null || stroke.rtfcre().isEmpty()) return new TranslationResult(0, "", "", "");
+        int bs = 0;
+        String outtext = "";
+        String preview = "";
+        String extra = "";
+        TranslationResult tr;
+        for (String s : stroke.rtfcre().split("/")) {
+            tr = translate_simple_stroke(s);
+            outtext += tr.getText();
+            bs += tr.getBackspaces();
+            preview = tr.getPreview();
+            extra = tr.getExtra();
+        }
+        return new TranslationResult(bs, outtext, preview, extra);
+    }
+
+    private TranslationResult translate_simple_stroke(String stroke) {
         if (stroke==null) return new TranslationResult(0, "", "", "");
         if (mDictionary.size()<10) return new TranslationResult(0, "", "Dictionary Not Loaded", "");
         int backspaces = 0;
         String text = "";
         String preview = "";
         String lookupResult;
-        String partial_stroke;
         if (!locked) {
-            if (stroke.rtfcre().equals("*")) { //undo
+            if (stroke.equals("*")) { //undo
                 if (mFormatter.hasQueue()) {
                     mFormatter.removeItemFromQueue();
                 } else {
@@ -62,39 +79,54 @@ public class SimpleTranslator extends Translator {
                     }
                 }
             } else {
-                if (strokeQ.isEmpty())
-                    lookupResult = mDictionary.lookup(stroke.rtfcre());
-                else
-                    lookupResult = mDictionary.lookup(strokesInQueue()+"/"+stroke.rtfcre());
+                strokeQ.add(stroke);
+                lookupResult = mDictionary.lookup(strokesInQueue());
                 if (found(lookupResult)) {
-                    if (ambiguous(lookupResult)) {
-                        text = "";
-                        strokeQ.add(stroke.rtfcre());
-                    } else {
-                        text = lookupResult;
+                    if (! ambiguous(lookupResult)) {
                         strokeQ.clear();
-                    }
-                } else { // (not found)
-                    partial_stroke = stroke.rtfcre();
-                    lookupResult = mDictionary.lookup(partial_stroke);
-                    while (!(found(lookupResult) || strokeQ.isEmpty())) {
-                        partial_stroke = strokeQ.removeLast()+"/"+partial_stroke;
-                        lookupResult = mDictionary.lookup(partial_stroke);
-                    }
-                    // at this point, either a lookup has been found, or the queue is empty
-                    if (found(lookupResult)) {
-                        text = mDictionary.forceLookup(strokesInQueue());
+                        text = mFormatter.format(lookupResult);
+                    } // else stroke is already added to queue
+                } else {
+                    if (strokeQ.size()==1) {
+                        text = mFormatter.format(strokesInQueue());
                         strokeQ.clear();
-                        addToQueue(partial_stroke);
-                    } else {
-                        addToQueue(partial_stroke);
-                        text=strokeQ.removeLast();
-                        text=mDictionary.forceLookup(strokesInQueue())+" "+text;
-                        strokeQ.clear();
+                    } else {  // process strokes in queue
+                        Stack<String> tempQ = new Stack<String>();
+                        while (!(found(lookupResult) || strokeQ.isEmpty())) {
+                            tempQ.push(strokeQ.removeLast());
+                            lookupResult = mDictionary.forceLookup(strokesInQueue());
+                        }
+                        // at this point, either a lookup was found, or the queue is empty
+                        if (found(lookupResult)) {
+                            text = mFormatter.format(lookupResult);
+                            if (text.isEmpty()) text = mDictionary.forceLookup(strokesInQueue());
+                            strokeQ.clear();
+                            while (!tempQ.isEmpty()) {
+                                strokeQ.add(tempQ.pop());
+                            }
+                            // lookup remaining strokes in queue
+                            lookupResult = mDictionary.lookup(strokesInQueue());
+                            if (! found(lookupResult)) {
+                                text += mFormatter.format(strokesInQueue());
+                                strokeQ.clear();
+                            } else {
+                                if (! ambiguous(lookupResult)) {
+                                    text += mFormatter.format(lookupResult);
+                                    strokeQ.clear();
+                                }
+                            }
+
+                        } else {
+                            while (!tempQ.isEmpty()) {
+                                strokeQ.add(tempQ.pop());
+                            }
+                            text = mFormatter.format(strokesInQueue());
+                            strokeQ.clear();
+                        }
                     }
                 }
                 preview = mDictionary.forceLookup(strokesInQueue());
-                text = mFormatter.format(text);
+                if (preview==null || preview.isEmpty()) preview = strokesInQueue();
                 while (text.length()>0 && text.charAt(0)=='\b') {
                     backspaces++;
                     text=text.substring(1);

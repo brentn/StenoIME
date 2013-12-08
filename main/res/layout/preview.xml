@@ -17,8 +17,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/text"
         android:background="@android:color/black"
-        android:layout_below="@+id/shadow"
-        android:alpha=".7">
+        android:layout_below="@+id/shadow">
 
         <TextView
             android:layout_width="0dp"

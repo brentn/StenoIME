@@ -77,34 +77,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     @Override
-    public View onCreateInputView() {
-        mKeyboard = new LinearLayout(this);
-        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
-        if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
-             launchVirtualKeyboard();
-        } else {
-            removeVirtualKeyboard();
-        }
-        initializeTranslator(mTranslatorType);
-        if (mTranslator.usesDictionary()) {
-            mTranslator.lock();
-            mDictionary.setOnDictionaryLoadedListener(this);
-            loadDictionary();
-        }
-        return mKeyboard;
-    }
-
-    @Override
-    public View onCreateCandidatesView() {
-        View view = getLayoutInflater().inflate(R.layout.preview, null);
-        preview = (TextView) view.findViewById(R.id.preview);
-        debug = (TextView) view.findViewById(R.id.debug);
-        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
-        setCandidatesViewShown(true);
-        return view;
-    }
-
-    @Override
     public void onInitializeInterface() {
         super.onInitializeInterface();
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
@@ -113,6 +85,33 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
     }
 
+    @Override
+    public View onCreateInputView() {
+        mKeyboard = new LinearLayout(this);
+        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
+        if (mMachineType == StenoMachine.TYPE.VIRTUAL) {
+             launchVirtualKeyboard();
+        } else {
+            removeVirtualKeyboard();
+        }
+        return mKeyboard;
+    }
+
+    @Override
+    public View onCreateCandidatesView() {
+        View view = getLayoutInflater().inflate(R.layout.preview, null);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText(mTranslator.submitQueue());
+            }
+        });
+        preview = (TextView) view.findViewById(R.id.preview);
+        debug = (TextView) view.findViewById(R.id.debug);
+        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
+        setCandidatesViewShown(true);
+        return view;
+    }
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
@@ -120,12 +119,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         history.clear();
+        setCandidatesViewShown(true);
         initializeTranslator(mTranslatorType);
         if (mTranslator.usesDictionary()) {
             mDictionary.setOnDictionaryLoadedListener(this);
             loadDictionary();
         }
-        setCandidatesViewShown(true);
+
     }
 
     @Override
@@ -141,11 +141,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
-    }
-
-    @Override
-    public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd, int candidatesStart, int candidatesEnd) {
-        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
     }
 
     @Override
@@ -258,18 +253,23 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** Virtual Keyboard ***
 
     private void launchVirtualKeyboard() {
+        setCandidatesViewShown(false);
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         keyboard.setOnStrokeListener(this);
         keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
         if (mDictionary.isLoading())
-            mKeyboard.findViewById(R.id.overlay).setVisibility(View.VISIBLE);
+            lockKeyboard();
+        else
+            unlockKeyboard();
         mKeyboard.invalidate();
+        setCandidatesViewShown(isInputViewShown());
     }
 
     private void removeVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         if (keyboard != null) {
+            setCandidatesViewShown(false);
             keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             keyboard.setVisibility(View.GONE);
         }
@@ -281,14 +281,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (mMachineType == StenoMachine.TYPE.VIRTUAL)
             overlay = mKeyboard.findViewById(R.id.overlay);
         if (preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
-        mTranslator.lock();
+        if (mTranslator!=null) mTranslator.lock();
     }
 
     private void unlockKeyboard() {
         View overlay = mKeyboard.findViewById(R.id.overlay);
         if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
         if (preview_overlay != null) preview_overlay.setVisibility(View.INVISIBLE);
-        mTranslator.unlock();
+        if (mTranslator!=null) mTranslator.unlock();
     }
 
 
@@ -308,12 +308,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 registerMachine(new NKeyRolloverMachine());
+                setCandidatesViewShown(true);
                 break;
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 ((UsbManager)getSystemService(Context.USB_SERVICE))
                         .requestPermission(App.getUsbDevice(), mPermissionIntent);
+                setCandidatesViewShown(true);
                 break;
         }
     }

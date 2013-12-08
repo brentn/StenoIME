@@ -4,13 +4,11 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.util.Log;
 
-import com.brentandjody.Translator.Stroke;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by brent on 03/12/13.
@@ -53,8 +51,11 @@ public class TXBoltMachine extends SerialDevice implements StenoMachine {
                 byte[] buffer = new byte[64];
                 List<String> keys = new ArrayList<String>();
                 try {
+                    Log.w(TAG, "about to connect");
                     connect();
+                    Log.w(TAG, "connected?");
                     while (!finished) {
+                        Log.w(TAG, "begin loop");
                         size = read(buffer, TIMEOUT);
                         for (int i=0; i<size; i++) {
                             data = buffer[i];

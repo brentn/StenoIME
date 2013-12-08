@@ -15,6 +15,7 @@ import java.io.IOException;
  */
 public abstract class SerialDevice {
 
+    public static final String TAG = "StenoIME";
     public static enum STATE {DISCONNECTED, INITIALIZING, CONNECTED, ERROR}
     public static final int USB_TIMEOUT=5000; //milliseconds
     public static final int DEFAULT_READ_BUFFER_SIZE = 16 * 1024;
@@ -50,7 +51,9 @@ public abstract class SerialDevice {
 
     public void reset() throws IOException {
         int result = (mConnection.controlTransfer(UsbConstants.USB_TYPE_VENDOR, 0, 0, 0, null, 0, USB_TIMEOUT));
+        //int result = (mConnection.controlTransfer(0x00000080, 0x03, 0x4138, 0, null, 0, 0)); // read at 9600 baud
         if (result !=0 ) {
+            Log.e(TAG, "serial reset failed ("+result+")");
             throw new IOException("Reset Failed: "+result);
         }
     }
@@ -60,7 +63,7 @@ public abstract class SerialDevice {
         try {
             for (int i=0; i<mDevice.getInterfaceCount(); i++) {
                 if (mConnection.claimInterface(mDevice.getInterface(i), true)) {
-                    Log.d("Serial", "device connected to interface: " + i);
+                    Log.d(TAG, "serial device connected to interface: " + i);
                     mState = STATE.CONNECTED;
                 } else {
                     throw new IOException("Error connecting to interface: " + i);
@@ -114,7 +117,7 @@ public abstract class SerialDevice {
             if (result <=0) {
                 throw new IOException("Error writing " + write_length + " bytes at offset " + offset + " length="+data.length);
             }
-            Log.d("Serial", "Wrote " + result + " bytes.  Attempted=" + write_length);
+            Log.d(TAG, "Wrote " + result + " bytes.  Attempted=" + write_length);
             offset += result;
         }
         return offset;

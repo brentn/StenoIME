@@ -362,8 +362,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                         if(device != null){
                             //TODO: (also add stuff to known devices list)
                             UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-                            UsbDeviceConnection connection = usbManager.openDevice(device);
-                            registerMachine(new TXBoltMachine(device, connection));
+                            registerMachine(new TXBoltMachine(usbManager, device));
                         }
                     }
                     else {

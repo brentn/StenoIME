@@ -2,8 +2,12 @@ package com.brentandjody.Input;
 
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
 import android.util.Log;
 
+
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +19,7 @@ import java.util.List;
  * Implements the TX Bolt (Serial Transmit Only) protocol
  */
 
-public class TXBoltMachine extends SerialDevice implements StenoMachine {
+public class TXBoltMachine implements StenoMachine {
 
     private static String[] STENO_KEYS = {"S-", "T-", "K-", "P-", "W-", "H-",
                                           "R-", "A-", "O-", "*", "-E", "-U",
@@ -24,10 +28,12 @@ public class TXBoltMachine extends SerialDevice implements StenoMachine {
     private static final String TAG = "StenoIME";
     private static final int TIMEOUT = 500;
     private boolean finished=false;
+    private UsbSerialDriver mDriver;
     private OnStrokeListener onStrokeListener;
 
-    public TXBoltMachine(UsbDevice device, UsbDeviceConnection connection) {
-        super(device, connection);
+    public TXBoltMachine(UsbManager manager, UsbDevice device) {
+        mDriver = UsbSerialProber.acquire(manager, device);
+        Log.w(TAG, "Instantiated USB Serial Driver: "+manager+device+mDriver);
     }
 
     @Override
@@ -52,11 +58,12 @@ public class TXBoltMachine extends SerialDevice implements StenoMachine {
                 List<String> keys = new ArrayList<String>();
                 try {
                     Log.w(TAG, "about to connect");
-                    connect();
+                    mDriver.open();
+                    mDriver.setBaudRate(9600);
                     Log.w(TAG, "connected?");
                     while (!finished) {
                         Log.w(TAG, "begin loop");
-                        size = read(buffer, TIMEOUT);
+                        size = mDriver.read(buffer, TIMEOUT);
                         for (int i=0; i<size; i++) {
                             data = buffer[i];
                             key_set=data >> 6;
@@ -69,7 +76,7 @@ public class TXBoltMachine extends SerialDevice implements StenoMachine {
                         }
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, "Error reading data");
+                    Log.e(TAG, "Error reading data: "+e.getMessage());
                 }
             }
         }).start();

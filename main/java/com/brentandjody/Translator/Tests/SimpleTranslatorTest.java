@@ -90,7 +90,6 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        //TODO:this needs to be dict.json
         dictionary.load("test.json", new ProgressBar(getContext()), 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -102,8 +101,9 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         translator.setDictionary(dictionary);
         // special cases
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I");
-        checkResults(translator.translate(new Stroke("APL")), 0, "I am ", "");
-        //checkResults(translator.translate(new Stroke("EU/APL")), 0, "I ", "am");
+        checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am");
+        checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "APL/PWEUG");
+        checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }
 
     private void checkResults(TranslationResult result, int bs, String text, String preview) {

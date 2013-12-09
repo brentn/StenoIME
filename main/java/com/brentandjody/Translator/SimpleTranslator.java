@@ -106,16 +106,8 @@ public class SimpleTranslator extends Translator {
                                 strokeQ.add(tempQ.pop());
                             }
                             // lookup remaining strokes in queue
-                            lookupResult = mDictionary.lookup(strokesInQueue());
-                            if (! found(lookupResult)) {
-                                text = remove_backspaces(text+mFormatter.format(strokesInQueue()));
-                                strokeQ.clear();
-                            } else {
-                                if (! ambiguous(lookupResult)) {
-                                    text = remove_backspaces(text+mFormatter.format(lookupResult));
-                                    strokeQ.clear();
-                                }
-                            }
+                            TranslationResult result = translate_simple_stroke(strokeQ.removeLast()); //recurse
+                            text = text.substring(0, text.length()-result.getBackspaces()) + result.getText();
 
                         } else {
                             while (!tempQ.isEmpty()) {

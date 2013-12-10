@@ -19,31 +19,31 @@ public class StrokeTest extends AndroidTestCase {
         HashSet<String> keys = new HashSet<String>();
         Stroke s = new Stroke(keys);
         assertEquals("", s.rtfcre());
-        assertEquals("Stroke( : )", s.toString());
+        assertEquals("Stroke( : 0)", s.toString());
         assertFalse(s.isCorrection());
         s = new Stroke("");
         assertEquals("", s.rtfcre());
-        assertEquals("Stroke( : )", s.toString());
+        assertEquals("Stroke( : 0)", s.toString());
         assertFalse(s.isCorrection());
         keys.add("R-");
         s = new Stroke(keys);
         assertEquals("R", s.rtfcre());
-        assertEquals("Stroke(R : R-)", s.toString());
+        assertEquals("Stroke(R : 128)", s.toString());
         assertFalse(s.isCorrection());
         s = new Stroke("R");
         assertEquals("R", s.rtfcre());
-        assertEquals("Stroke(R : R)", s.toString());
+        assertEquals("Stroke(R : 128)", s.toString());
         assertFalse(s.isCorrection());
         keys.add("A-"); keys.add("-P");
         s = new Stroke(keys);
         assertEquals("RAP", s.rtfcre());
-        assertEquals("Stroke(RAP : -PA-R-)", s.toString());
+        assertEquals("Stroke(RAP : 33152)", s.toString());
         s = new Stroke("PAUBP");
         assertEquals("PAUPB", s.rtfcre());
-        assertEquals("Stroke(PAUPB : PAUBP)", s.toString());
+        assertEquals("Stroke(PAUPB : 102672)", s.toString());
         s = new Stroke("*");
         assertEquals("*", s.rtfcre());
-        assertEquals("*Stroke(* : *)", s.toString());
+        assertEquals("*Stroke(* : 1024)", s.toString());
         assertTrue(s.isCorrection());
     }
 
@@ -101,6 +101,7 @@ public class StrokeTest extends AndroidTestCase {
         assertEquals("ST", new Stroke(new HashSet<String>() {{add("T-"); add("S-");}}).rtfcre());
         assertEquals("-P", new Stroke(new HashSet<String>() {{add("-P"); add("-P");}}).rtfcre());
         assertEquals("-P", new Stroke(new HashSet<String>() {{add("-P"); add("X-");}}).rtfcre());
+        assertTrue(new Stroke("*").isCorrection());
     }
 
 }

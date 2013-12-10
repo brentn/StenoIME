@@ -35,7 +35,7 @@ public class RawStrokeTranslator extends Translator {
         StringBuilder sb = new StringBuilder();
 
         for (String s : Stroke.STENO_KEYS) {
-            if (stroke.getKeys().contains(s)) {
+            if (stroke.getKeySet().contains(s)) {
                 sb.append(s.replace("-",""));
             } else {
                 sb.append("_");

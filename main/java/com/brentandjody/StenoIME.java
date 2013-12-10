@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
@@ -163,7 +162,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDictionaryLoaded() {
         unlockKeyboard();
-    }
+   }
 
     // Private methods
 

@@ -52,7 +52,6 @@ public class Stroke {
         return list.toArray(result);
     }
 
-
     public static Set<String> normalize(String input) {
         List<String> keys = new ArrayList<String>();
         boolean single_hyphen = (input.contains("-") && (input.indexOf("-") == input.lastIndexOf("-")));
@@ -104,47 +103,59 @@ public class Stroke {
         return new LinkedHashSet<String>(keys);
     }
 
-    private String raw;
-    private Set<String> keys;
-    private String rtfcre;
-    private final boolean isCorrection;
-
-    public Stroke(Set<String> keys) {
-        //sort and remove invalid and duplicate keys
-        this.keys = keys;
-        raw = "";
-        for (String k : keys) {
-            raw += k;
-        }
-        List<String> stroke_keys= new LinkedList<String>();
-        for (String key : STENO_KEYS) {
+    private static int compress(Set<String> keys) {
+        int result = 0;
+        for(int i=0; i<STENO_KEYS.size(); i++) {
+            String key = STENO_KEYS.get(i);
             if (keys.contains(key)) {
-                stroke_keys.add(key);
+                int bit = i;
+                result+= Math.pow(2, bit);
             }
         }
-        rtfcre = constructStroke(convertNumbers(stroke_keys));
-        isCorrection = (rtfcre.equals("*"));
+        return result;
+    }
+
+    private static Set<String> decompress(int keys) {
+        Set<String> result = new HashSet<String>();
+        for (int i=0; i<STENO_KEYS.size(); i++) {
+            String key = STENO_KEYS.get(i);
+            if (((keys >> i) & 1) == 1) {
+                result.add(key);
+            }
+        }
+        return result;
+    }
+
+    private int keys;
+
+    public Stroke(Set<String> keySet) {
+        //sort and remove invalid and duplicate keys
+        this.keys = compress(keySet);
+//        List<String> stroke_keys= new LinkedList<String>();
+//        for (String key : STENO_KEYS) {
+//            if (keys.contains(key)) {
+//                stroke_keys.add(key);
+//            }
+//        }
     }
 
     public Stroke(String keyString) {
-        raw=keyString;
         keyString = keyString.split("/")[0];
-        keys = normalize(keyString);
-        rtfcre = constructStroke(convertNumbers(keys));
-        isCorrection = (rtfcre.equals("*"));
+        keys = compress(normalize(keyString));
+    }
+
+    public boolean isCorrection() {
+        int bit = STENO_KEYS.indexOf("*");
+        int star = (int) Math.pow(2,bit);
+        return keys == star;
     }
 
     public String rtfcre() {
-        return rtfcre;
+        return constructStroke(convertNumbers(decompress(keys)));
     }
 
-    public Set<String> keys() {
+    public int getKeys() {
         return keys;
-    }
-
-    public void removeKey(String k) {
-        keys.remove(k);
-        rtfcre = constructStroke(convertNumbers(keys));
     }
 
     public Stroke[] asArray() {
@@ -153,20 +164,16 @@ public class Stroke {
         return result;
     }
 
-    public boolean isCorrection() {
-        return isCorrection;
-    }
-
     @Override
     public boolean equals(Object o) {
-        return o instanceof Stroke && this.rtfcre.equals(((Stroke) o).rtfcre());
+        return o instanceof Stroke && keys == ((Stroke) o).getKeys();
     }
 
     @Override
     public String toString() {
         String result = "Stroke(";
-        if (isCorrection) result = "*Stroke(";
-        result += rtfcre + " : " + raw + ")";
+        if (isCorrection()) result = "*Stroke(";
+        result += rtfcre() + " : " + keys + ")";
         return result;
     }
 
@@ -189,8 +196,8 @@ public class Stroke {
         return result;
     }
 
-    public Set<String> getKeys() {
-        return keys;
+    public Set<String> getKeySet() {
+        return decompress(keys);
     }
 
     private String constructStroke(List<String> input) {

@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -93,6 +94,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         } else {
             removeVirtualKeyboard();
         }
+        ((Button) mKeyboard.findViewById(R.id.settings_button)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mKeyboard.getContext(), SettingsActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
         return mKeyboard;
     }
 

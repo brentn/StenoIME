@@ -10,6 +10,7 @@ import java.util.List;
 public class Formatter {
 
     private static  enum CASE {Capital, Lowercase}
+    private static final String punctuation = ",.!?:;";
 
     // state variables
     private CASE capitalization=null;
@@ -52,7 +53,11 @@ public class Formatter {
                 if (atom.contains("{&")) {
                     new_glue=true; atom = atom.replace("{&", "");
                 }
-                sb.append(atom.replace("{","").replace("}",""));
+                atom = atom.replace("{","").replace("}","");
+                // remove space before punctuation
+                if (atom.length() == 1 && punctuation.contains(atom))
+                    sb.append("\b");
+                sb.append(atom);
             }
             //process flags
             if (capitalization==CASE.Capital && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toUpperCase());

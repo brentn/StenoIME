@@ -1,13 +1,10 @@
 package com.brentandjody.Input;
 
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
-
-
-import com.hoho.android.usbserial.driver.UsbSerialDriver;
-import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.brentandjody.driver.UsbSerialDriver;
+import com.brentandjody.driver.UsbSerialProber;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,11 +56,12 @@ public class TXBoltMachine implements StenoMachine {
                 try {
                     Log.w(TAG, "about to connect");
                     mDriver.open();
-                    mDriver.setBaudRate(9600);
+                    mDriver.setParameters(9600,8,1,0);
+//                    mDriver.setBaudRate(9600);
                     Log.w(TAG, "connected?");
                     while (!finished) {
-                        Log.w(TAG, "begin loop");
                         size = mDriver.read(buffer, TIMEOUT);
+                        Log.w(TAG, "size:"+size);
                         for (int i=0; i<size; i++) {
                             data = buffer[i];
                             key_set=data >> 6;

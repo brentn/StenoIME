@@ -71,7 +71,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         App = ((StenoApplication) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
+        //mMachineType = StenoMachine.TYPE.values()[prefs.getInt(MACHINE_TYPE, 0)];
+        mMachineType = StenoMachine.TYPE.VIRTUAL;
         mTranslatorType = Translator.TYPE.values()[prefs.getInt(TRANSLATOR_TYPE, 1)];//TODO:change default ot 0
         mDictionary = App.getDictionary();
     }
@@ -128,6 +129,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (debug!=null) debug.setText("");
         history.clear();
         setCandidatesViewShown(true);
+        setMachineType(mMachineType);
         initializeTranslator(mTranslatorType);
         if (mTranslator.usesDictionary()) {
             mDictionary.setOnDictionaryLoadedListener(this);

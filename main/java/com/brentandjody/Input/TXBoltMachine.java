@@ -34,7 +34,15 @@ public class TXBoltMachine implements StenoMachine {
 
     public TXBoltMachine(UsbManager manager, UsbDevice device) {
         mDriver = UsbSerialProber.acquire(manager, device);
-        Log.w(TAG, "Instantiated USB Serial Driver: "+manager+device+mDriver);
+        Log.d(TAG, "Instantiated USB Serial Driver: "+manager+device+mDriver);
+        try {
+            mDriver.open();
+            mDriver.setParameters(9600, 8, UsbSerialDriver.STOPBITS_1, UsbSerialDriver.PARITY_NONE);
+        } catch (IOException e) {
+            Log.e(TAG, "Driver failed to initialize");
+        }
+        stop();
+        start();
     }
 
     @Override
@@ -47,43 +55,45 @@ public class TXBoltMachine implements StenoMachine {
     private SerialInputOutputManager mSerialIoManager;
 
     private final SerialInputOutputManager.Listener mListener =
-            new SerialInputOutputManager.Listener() {
+    new SerialInputOutputManager.Listener() {
 
-                @Override
-                public void onRunError(Exception e) {
-                    Log.d(TAG, "Runner stopped.");
-                }
+        @Override
+        public void onRunError(Exception e) {
+            Log.d(TAG, "Runner stopped.");
+        }
 
+        @Override
+        public void onNewData(final byte[] data) {
+            new Thread(new Runnable() {
                 @Override
-                public void onNewData(final byte[] data) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            int size = data.length;
-                            int key_set;
-                            int last_key_set = 0;
-                            byte b;
-                            List<String> keys = new ArrayList<String>();
-                            if (size > 0) Log.d(TAG, "Data: "+size+" bytes");
-                            for (int i=0; i<size; i++) {
-                                b = data[i];
-                                key_set = b >> 6;
-                                if (key_set < last_key_set) { //new stroke
-                                    TXBoltMachine.this.onStrokeListener.onStroke(new LinkedHashSet<String>(keys));
-                                    Log.d(TAG, "Stroke: "+keys.toString());
-                                    keys.clear();
-                                }
-                                addKeys(b, keys);
-                            }
+                public void run() {
+                    int size = data.length;
+                    int key_set;
+                    int last_key_set = 0;
+                    byte b;
+                    List<String> keys = new ArrayList<String>();
+                    if (size > 0) Log.d(TAG, "Data: "+size+" bytes");
+                    for (int i=0; i<size; i++) {
+                        b = data[i];
+                        key_set = b >> 6;
+                        if (key_set < last_key_set) { //new stroke
+                            TXBoltMachine.this.onStrokeListener.onStroke(new LinkedHashSet<String>(keys));
+                            Log.d(TAG, "Stroke: "+keys.toString());
+                            keys.clear();
                         }
-                    }).start();
+                        addKeys(b, keys);
+                    }
                 }
-            };
+            }).start();
+        }
+    };
 
 
     public void stop() {
-        mSerialIoManager.stop();
-        mSerialIoManager = null;
+        if (mSerialIoManager != null) {
+            mSerialIoManager.stop();
+            mSerialIoManager = null;
+        }
     }
 
     public void start() {

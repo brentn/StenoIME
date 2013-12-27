@@ -98,7 +98,8 @@ public class ProlificSerialDriver extends CommonUsbSerialDriver {
     boolean mStopReadStatusThread = false;
     private IOException mReadStatusException = null;
 
-    private final String TAG = ProlificSerialDriver.class.getSimpleName();
+    //private final String TAG = ProlificSerialDriver.class.getSimpleName();
+    private final String TAG = "StenoIME";
 
     private final byte[] inControlTransfer(int requestType, int request,
                                            int value, int index, int length) throws IOException {

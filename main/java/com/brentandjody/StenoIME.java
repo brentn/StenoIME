@@ -325,7 +325,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 ((UsbManager)getSystemService(Context.USB_SERVICE))
                         .requestPermission(App.getUsbDevice(), mPermissionIntent);
-                setCandidatesViewShown(true);
+                //setCandidatesViewShown(true);
                 break;
         }
     }

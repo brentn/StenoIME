@@ -5,11 +5,15 @@ import android.hardware.usb.UsbManager;
 import android.util.Log;
 import com.brentandjody.driver.UsbSerialDriver;
 import com.brentandjody.driver.UsbSerialProber;
+import com.brentandjody.driver.SerialInputOutputManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 /**
  * Created by brent on 03/12/13.
@@ -38,46 +42,55 @@ public class TXBoltMachine implements StenoMachine {
         onStrokeListener = listener;
     }
 
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+
+    private SerialInputOutputManager mSerialIoManager;
+
+    private final SerialInputOutputManager.Listener mListener =
+            new SerialInputOutputManager.Listener() {
+
+                @Override
+                public void onRunError(Exception e) {
+                    Log.d(TAG, "Runner stopped.");
+                }
+
+                @Override
+                public void onNewData(final byte[] data) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            int size = data.length;
+                            int key_set;
+                            int last_key_set = 0;
+                            byte b;
+                            List<String> keys = new ArrayList<String>();
+                            if (size > 0) Log.d(TAG, "Data: "+size+" bytes");
+                            for (int i=0; i<size; i++) {
+                                b = data[i];
+                                key_set = b >> 6;
+                                if (key_set < last_key_set) { //new stroke
+                                    TXBoltMachine.this.onStrokeListener.onStroke(new LinkedHashSet<String>(keys));
+                                    Log.d(TAG, "Stroke: "+keys.toString());
+                                    keys.clear();
+                                }
+                                addKeys(b, keys);
+                            }
+                        }
+                    }).start();
+                }
+            };
+
+
     public void stop() {
-        finished=true;
+        mSerialIoManager.stop();
+        mSerialIoManager = null;
     }
 
     public void start() {
-        finished=false;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int size;
-                int key_set;
-                int last_key_set=0;
-                byte data;
-                byte[] buffer = new byte[64];
-                List<String> keys = new ArrayList<String>();
-                try {
-                    Log.w(TAG, "about to connect");
-                    mDriver.open();
-                    mDriver.setParameters(9600,8,1,0);
-//                    mDriver.setBaudRate(9600);
-                    Log.w(TAG, "connected?");
-                    while (!finished) {
-                        size = mDriver.read(buffer, TIMEOUT);
-                        Log.w(TAG, "size:"+size);
-                        for (int i=0; i<size; i++) {
-                            data = buffer[i];
-                            key_set=data >> 6;
-                            if (key_set < last_key_set) { //new stroke
-                                onStrokeListener.onStroke(new LinkedHashSet<String>(keys));
-                                Log.d(TAG, "Stroke: "+keys.toString());
-                                keys.clear();
-                            }
-                            addKeys(data, keys);
-                        }
-                    }
-                } catch (IOException e) {
-                    Log.e(TAG, "Error reading data: "+e.getMessage());
-                }
-            }
-        }).start();
+        if (mDriver != null) {
+            mSerialIoManager = new SerialInputOutputManager(mDriver, mListener);
+            mExecutor.submit(mSerialIoManager);
+        }
     }
 
     private void addKeys(byte data, List<String> keys) {

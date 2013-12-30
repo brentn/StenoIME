@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.Button;
@@ -118,7 +117,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         preview = (TextView) view.findViewById(R.id.preview);
         debug = (TextView) view.findViewById(R.id.debug);
         preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
-        setCandidatesViewShown(true);
         return view;
     }
 
@@ -128,14 +126,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         history.clear();
-        setCandidatesViewShown(true);
         setMachineType(mMachineType);
         initializeTranslator(mTranslatorType);
         if (mTranslator.usesDictionary()) {
             mDictionary.setOnDictionaryLoadedListener(this);
             loadDictionary();
         }
-
+        setCandidatesViewShown(true);
     }
 
     @Override
@@ -263,27 +260,22 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** Virtual Keyboard ***
 
     private void launchVirtualKeyboard() {
-        setCandidatesViewShown(false);
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         keyboard.setOnStrokeListener(this);
-        keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+        //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
         if (mDictionary.isLoading())
             lockKeyboard();
         else
             unlockKeyboard();
-        mKeyboard.invalidate();
-        setCandidatesViewShown(isInputViewShown());
     }
 
     private void removeVirtualKeyboard() {
         TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         if (keyboard != null) {
-            setCandidatesViewShown(false);
-            keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+            //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             keyboard.setVisibility(View.GONE);
         }
-        mKeyboard.invalidate();
     }
 
     private void lockKeyboard() {
@@ -320,14 +312,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 registerMachine(new NKeyRolloverMachine());
-                setCandidatesViewShown(true);
                 break;
             case TXBOLT:
                 Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 ((UsbManager)getSystemService(Context.USB_SERVICE))
                         .requestPermission(App.getUsbDevice(), mPermissionIntent);
-                //setCandidatesViewShown(true);
                 break;
         }
     }
@@ -344,6 +334,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         super.onConfigurationChanged(newConfig);
         if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
             setMachineType(StenoMachine.TYPE.KEYBOARD);
+            setCandidatesViewShown(true);
         }
         if(newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
             setMachineType(StenoMachine.TYPE.VIRTUAL);

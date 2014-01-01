@@ -2,18 +2,17 @@ package com.brentandjody.Translator;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ProgressBar;
 
-import com.brentandjody.StenoIME;
+import com.brentandjody.StenoApp;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -24,7 +23,8 @@ import java.util.Collection;
 
 public class Dictionary {
 
-    private static final String[] DICTIONARY_TYPES = {".json"};
+    private static final String[] SUPPORTED_DICTIONARY_TYPES = {".json"};
+    private static final String TAG = "StenoIME";
 
     private TST<String> dictionary;
     private final Context context;
@@ -50,21 +50,28 @@ public class Dictionary {
     }
 
 
-    public void load(String filename, ProgressBar progressBar, int size) {
-        String extension = filename.substring(filename.lastIndexOf("."));
-        if (Arrays.asList(DICTIONARY_TYPES).contains(extension)) {
-            try {
-                InputStream stream = context.getAssets().open(filename);
-                stream.close();
-            } catch (IOException e) {
-                System.err.println("Dictionary File: "+filename+" could not be found");
+    public void load(String[] filenames, ProgressBar progressBar, int size) {
+        // assume filenames is not empty or null
+        Log.d(TAG, "loading dictionary");
+        for (String filename : filenames) {
+            if (filename.contains(".")) {
+                String extension = filename.substring(filename.lastIndexOf("."));
+                if (Arrays.asList(SUPPORTED_DICTIONARY_TYPES).contains(extension)) {
+                    try {
+                        File file = new File(filename);
+                        if (!file.exists()) {
+                            throw new IOException("Dictionary file could not be found.");
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Dictionary File: "+filename+" could not be found");
+                    }
+                } else {
+                    throw new IllegalArgumentException(extension + " is not an accepted dictionary format.");
+                }
             }
-        } else {
-            throw new IllegalArgumentException(extension + " is not an accepted dictionary format.");
         }
         loading = true;
-
-        new JsonLoader(progressBar, size).execute(filename);
+        new JsonLoader(progressBar, size).execute(filenames);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -133,9 +140,8 @@ public class Dictionary {
                 if (filename == null || filename.isEmpty())
                     throw new IllegalArgumentException("Dictionary filename not provided");
                 try {
-                    AssetManager am = context.getAssets();
-                    InputStream filestream = am.open(filename);
-                    InputStreamReader reader = new InputStreamReader(filestream);
+                    File file = new File(filename);
+                    FileReader reader = new FileReader(file);
                     BufferedReader lines = new BufferedReader(reader);
                     while ((line = lines.readLine()) != null) {
                         fields = line.split("\"");
@@ -151,7 +157,6 @@ public class Dictionary {
                     }
                     lines.close();
                     reader.close();
-                    filestream.close();
                 } catch (IOException e) {
                     System.err.println("Dictionary File: " + filename + " could not be found");
                 }
@@ -171,7 +176,7 @@ public class Dictionary {
             super.onPostExecute(result);
             int size = safeLongToInt(result);
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt(StenoIME.DICTIONARY_SIZE, size);
+            editor.putInt(StenoApp.KEY_DICTIONARY_SIZE, size);
             editor.commit();
             loading = false;
             if (onDictionaryLoadedListener != null)

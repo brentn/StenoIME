@@ -21,7 +21,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     public void testLockAndUnlock() throws Exception {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
-        dictionary.load("test.json", new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"test.json"}, new ProgressBar(getContext()), 10);
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -43,7 +43,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json", new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"test.json"}, new ProgressBar(getContext()), 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -90,7 +90,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json", new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"test.json"}, new ProgressBar(getContext()), 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {

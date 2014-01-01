@@ -5,4 +5,8 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="SettingsTheme" parent="android:Theme.Holo.Dialog.NoActionBar">
+
+    </style>
+
 </resources>

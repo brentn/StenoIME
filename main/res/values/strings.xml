@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">StenoIME</string>
     <string name="app_title">Steno Keyboard</string>
-    <string name="loading_dictionary">Loading Dictionary...</string>
-    <string name="settings_title">StenoIME Settings</string>
+    <string name="loading_dictionary">Loading Dictionary</string>
+    <string name="settings_title">Steno Keyboard Settings</string>
+    <string name="add_dictionary">Add Dictionary</string>
+    <string name="dictionaries">Dictionaries</string>
 </resources>

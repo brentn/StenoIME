@@ -15,7 +15,7 @@
         android:focusable="false"
         android:id="@+id/keyboard_container">
 
-        <com.brentandjody.Input.TouchLayer
+        <com.brentandjody.stenoime.Input.TouchLayer
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -248,11 +248,11 @@
 
                     </LinearLayout>
 
-                    <FrameLayout
+                    <Space
                         android:layout_width="fill_parent"
                         android:layout_height="68dp"
                         android:id="@+id/gutter"
-                        android:focusable="true"></FrameLayout>
+                        android:focusable="true"/>
 
                     <LinearLayout
                         android:orientation="horizontal"
@@ -316,10 +316,10 @@
                             android:layout_weight="5"
                             android:id="@+id/thumbs">
 
-                            <FrameLayout
+                            <Space
                                 android:layout_width="fill_parent"
                                 android:layout_height="0dp"
-                                android:layout_weight="1"></FrameLayout>
+                                android:layout_weight="1"/>
 
                             <LinearLayout
                                 android:orientation="horizontal"
@@ -505,7 +505,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-        </com.brentandjody.Input.TouchLayer>
+        </com.brentandjody.stenoime.Input.TouchLayer>
 
         <FrameLayout
             android:layout_width="fill_parent"

@@ -2,13 +2,12 @@ package com.brentandjody.stenoime;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,8 +89,15 @@ public class SelectDictionaryActivity extends ListActivity {
                     // Get the Uri of the selected file
                     Uri uri = data.getData();
                     Log.d(TAG, "File Uri: " + uri.toString());
+
+
                     // Get the path
-                    String path = getPath(this, uri);
+                    File myFile = new File(uri.toString());
+                    String path = myFile.getAbsolutePath();
+                    if (path.contains("/storage/")) path = path.substring(path.indexOf("/storage/"));
+                    //String path = getFileNameByUri(this, uri);
+
+
                     Log.d(TAG, "File Path: " + path);
                     //update list
                     String extension = path.substring(path.lastIndexOf(".")).toLowerCase();
@@ -152,24 +159,39 @@ public class SelectDictionaryActivity extends ListActivity {
         }
     }
 
-    public static String getPath(Context context, Uri uri) {
-        if ("content".equalsIgnoreCase(uri.getScheme())) {
-            String[] projection = { "_data" };
-            Cursor cursor;
-            try {
-                cursor = context.getContentResolver().query(uri, projection, null, null, null);
-                int column_index = cursor.getColumnIndexOrThrow("_data");
-                if (cursor.moveToFirst()) {
-                    return cursor.getString(column_index);
-                }
-            } catch (Exception e) {
-                // Eat it
-            }
-        }
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-        return null;
-    }
+//    public static String getPath(Context context, Uri uri) {
+//        if ("content".equalsIgnoreCase(uri.getScheme())) {
+//            String[] projection = { "_data" };
+//            Cursor cursor;
+//            try {
+//                cursor = context.getContentResolver().query(uri, projection, null, null, null);
+//                int column_index = cursor.getColumnIndexOrThrow("_data");
+//                if (cursor.moveToFirst()) {
+//                    return cursor.getString(column_index);
+//                }
+//            } catch (Exception e) {
+//                // Eat it
+//            }
+//        }
+//        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+//            return uri.getPath();
+//        }
+//        return null;
+//    }
+
+//    public String getRealPathFromURI(Context context, Uri contentUri) {
+//        Cursor cursor = null;
+//        try {
+//            String[] proj = { MediaStore.Images.Media.DATA };
+//            cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
+//            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+//            cursor.moveToFirst();
+//            return cursor.getString(column_index);
+//        } finally {
+//            if (cursor != null) {
+//                cursor.close();
+//            }
+//        }
+//    }
 
 }

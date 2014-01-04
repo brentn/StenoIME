@@ -21,17 +21,13 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        InputStream in = null;
-        OutputStream out = null;
-        in = getContext().getAssets().open("test.json");
+        InputStream in = getContext().getAssets().open("test.json");
         File outFile = new File("/sdcard", "test.json");
-        out = new FileOutputStream(outFile);
+        OutputStream out = new FileOutputStream(outFile);
         copyFile(in, out);
         in.close();
-        in = null;
         out.flush();
         out.close();
-        out = null;
     }
 
     private void copyFile(InputStream in, OutputStream out) throws IOException {
@@ -58,7 +54,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     public void testLockAndUnlock() throws Exception {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
-        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -80,7 +76,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -127,7 +123,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator();
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {

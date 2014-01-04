@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.brentandjody.stenoime"
-    android:versionCode="4"
-    android:versionName="0.42">
+    android:versionCode="6"
+    android:versionName="0.46">
 
     <uses-sdk
         android:minSdkVersion="14"

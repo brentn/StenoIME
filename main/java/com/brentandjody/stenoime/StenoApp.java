@@ -65,7 +65,7 @@ public class StenoApp extends Application {
             mProgressBar.setProgress(0);
             String[] dictionaries = getDictionaryNames();
             if (dictionaries != null) {
-                mDictionary.load(getDictionaryNames(), mProgressBar, size);
+                mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
             }
         }
         return mDictionary;

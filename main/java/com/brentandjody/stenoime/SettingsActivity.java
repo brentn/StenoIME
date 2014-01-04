@@ -1,4 +1,4 @@
-package com.brentandjody;
+package com.brentandjody.stenoime;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;

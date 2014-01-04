@@ -1,4 +1,4 @@
-package com.brentandjody.Translator;
+package com.brentandjody.stenoime.Translator;
 
 
 /**
@@ -8,7 +8,7 @@ package com.brentandjody.Translator;
  */
 public class Definition {
 
-    public static enum CAPITALIZATION {NORMAL, UPPERCASE, LOWERCASE};
+    public static enum CAPITALIZATION {NORMAL, UPPERCASE, LOWERCASE}
 
     private final Stroke[] strokes;
     private final String english;

@@ -1,14 +1,18 @@
-package com.brentandjody.Translator;
+package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
-import android.content.res.AssetManager;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.ProgressBar;
+
+import com.brentandjody.stenoime.StenoApp;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -19,14 +23,17 @@ import java.util.Collection;
 
 public class Dictionary {
 
-    private static final String[] DICTIONARY_TYPES = {".json"};
+    private static final String[] SUPPORTED_DICTIONARY_TYPES = {".json"};
+    private static final String TAG = "StenoIME";
 
     private TST<String> dictionary;
     private final Context context;
     private boolean loading = false;
+    private SharedPreferences prefs;
 
     public Dictionary(Context c) {
         context = c;
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         dictionary = new TST<String>();
     }
 
@@ -43,21 +50,28 @@ public class Dictionary {
     }
 
 
-    public void load(String filename) {
-        String extension = filename.substring(filename.lastIndexOf("."));
-        if (Arrays.asList(DICTIONARY_TYPES).contains(extension)) {
-            try {
-                InputStream stream = context.getAssets().open(filename);
-                stream.close();
-            } catch (IOException e) {
-                System.err.println("Dictionary File: "+filename+" could not be found");
+    public void load(String[] filenames, ProgressBar progressBar, int size) {
+        // assume filenames is not empty or null
+        Log.d(TAG, "loading dictionary");
+        for (String filename : filenames) {
+            if (filename.contains(".")) {
+                String extension = filename.substring(filename.lastIndexOf("."));
+                if (Arrays.asList(SUPPORTED_DICTIONARY_TYPES).contains(extension)) {
+                    try {
+                        File file = new File(filename);
+                        if (!file.exists()) {
+                            throw new IOException("Dictionary file could not be found.");
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Dictionary File: "+filename+" could not be found");
+                    }
+                } else {
+                    throw new IllegalArgumentException(extension + " is not an accepted dictionary format.");
+                }
             }
-        } else {
-            throw new IllegalArgumentException(extension + " is not an accepted dictionary format.");
         }
         loading = true;
-
-        new JsonLoader().execute(filename);
+        new JsonLoader(progressBar, size).execute(filenames);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -107,17 +121,27 @@ public class Dictionary {
     }
 
     private class JsonLoader extends AsyncTask<String, Integer, Long> {
+        private int loaded;
+        private int total_size;
+        private ProgressBar progressBar;
+
+        public JsonLoader(ProgressBar progress, int size) {
+            progressBar = progress;
+            total_size = size;
+        }
+
         protected Long doInBackground(String... filenames) {
-            int count = filenames.length;
+            loaded = 0;
+            int update_interval = total_size/100;
+            if (update_interval == 0) update_interval=1;
             String line, stroke, translation;
             String[] fields;
             for (String filename : filenames) {
                 if (filename == null || filename.isEmpty())
                     throw new IllegalArgumentException("Dictionary filename not provided");
                 try {
-                    AssetManager am = context.getAssets();
-                    InputStream filestream = am.open(filename);
-                    InputStreamReader reader = new InputStreamReader(filestream);
+                    File file = new File(filename);
+                    FileReader reader = new FileReader(file);
                     BufferedReader lines = new BufferedReader(reader);
                     while ((line = lines.readLine()) != null) {
                         fields = line.split("\"");
@@ -125,23 +149,53 @@ public class Dictionary {
                             stroke = fields[1];
                             translation = fields[3];
                             dictionary.put(stroke, translation);
+                            loaded++;
+                            if (loaded%update_interval==0) {
+                                onProgressUpdate(loaded);
+                            }
                         }
                     }
                     lines.close();
                     reader.close();
-                    filestream.close();
                 } catch (IOException e) {
                     System.err.println("Dictionary File: " + filename + " could not be found");
                 }
             }
-            return (long) count;
+            return (long) loaded;
         }
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setMax(total_size);
+            progressBar.setProgress(0);
+        }
+
+        @Override
         protected void onPostExecute(Long result) {
+            super.onPostExecute(result);
+            int size = safeLongToInt(result);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt(StenoApp.KEY_DICTIONARY_SIZE, size);
+            editor.commit();
             loading = false;
             if (onDictionaryLoadedListener != null)
                 onDictionaryLoadedListener.onDictionaryLoaded();
         }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            progressBar.setProgress(values[0]);
+        }
+
     }
 
+    private static int safeLongToInt(long l) {
+        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException
+                    (l + " cannot be cast to int without changing its value.");
+        }
+        return (int) l;
+    }
 }

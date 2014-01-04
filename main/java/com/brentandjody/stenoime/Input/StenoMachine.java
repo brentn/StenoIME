@@ -1,4 +1,4 @@
-package com.brentandjody.Keyboard;
+package com.brentandjody.stenoime.Input;
 
 import java.util.Set;
 
@@ -13,9 +13,8 @@ public interface StenoMachine {
     public interface OnStrokeListener {
         public void onStroke(Set<String> keys);
     }
-    public interface OnStateChangeListener {
-        public void onStateChange(String state);
-    }
 
+    public abstract void start();
+    public abstract void stop();
     public abstract void setOnStrokeListener(OnStrokeListener listener);
 }

@@ -1,9 +1,9 @@
-package com.brentandjody.Translator.Tests;
+package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 
-import com.brentandjody.Translator.Definition;
-import com.brentandjody.Translator.Stroke;
+import com.brentandjody.stenoime.Translator.Definition;
+import com.brentandjody.stenoime.Translator.Stroke;
 
 import java.util.Arrays;
 import java.util.HashSet;

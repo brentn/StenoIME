@@ -1,4 +1,4 @@
-package com.brentandjody.Translator
+package com.brentandjody.stenoime.Translator
         ;
 
 import java.util.LinkedList;

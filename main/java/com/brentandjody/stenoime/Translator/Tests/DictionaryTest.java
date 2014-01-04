@@ -1,13 +1,20 @@
-package com.brentandjody.Translator.Tests;
+package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
+import android.util.Log;
+import android.widget.ProgressBar;
 
-import com.brentandjody.Translator.Dictionary;
-import com.brentandjody.Translator.Stroke;
+import com.brentandjody.stenoime.Translator.Dictionary;
+import com.brentandjody.stenoime.Translator.Stroke;
 
 import junit.framework.Assert;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -15,12 +22,57 @@ import java.util.concurrent.CountDownLatch;
 
 public class DictionaryTest extends AndroidTestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        String[] files = new String[] {"test.json", "test2.json", "test3.json"};
+        for (String file : files) {
+            InputStream in = null;
+            OutputStream out = null;
+            try {
+                in = getContext().getAssets().open(file);
+                File outFile = new File("/sdcard", file);
+                out = new FileOutputStream(outFile);
+                copyFile(in, out);
+                in.close();
+                in = null;
+                out.flush();
+                out.close();
+                out = null;
+            } catch(IOException e) {
+                Log.e("tag", "Failed to copy asset file: " + file, e);
+            }
+        }
+    }
+
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while((read = in.read(buffer)) != -1){
+            out.write(buffer, 0, read);
+        }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        String[] files = new String[] {"test.json", "test2.json", "test3.json"};
+        for (String file : files) {
+            try {
+                File outFile = new File("/sdcard", file);
+                outFile.delete();
+            } catch(Exception e) {
+                Log.e("tag", "Failed to delete temporary dictionary: " + file, e);
+            }
+        }
+    }
 
     public void testIsLoading() throws Exception {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         assertFalse(dictionary.isLoading());
-        dictionary.load("dict.json");
+        String[] files = new String[] {"test.json", "test2.json", "test3.json"};
+        dictionary.load(files, new ProgressBar(getContext()), 0);
         assertTrue(dictionary.isLoading());
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -36,14 +88,14 @@ public class DictionaryTest extends AndroidTestCase {
         Dictionary dictionary = new Dictionary(getContext());
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
-        dictionary.load("booga.json");
+        dictionary.load(new String[] {"booga.json"},new ProgressBar(getContext()), 0);
         assertEquals("Dictionary File: booga.json could not be found", errContent.toString().trim());
     }
 
     public void testIllegalFileType() throws Exception{
         Dictionary dictionary = new Dictionary(getContext());
         try {
-            dictionary.load("test.rtf");
+            dictionary.load(new String[] {"test.rtf"}, new ProgressBar(getContext()), 0);
             Assert.fail("Illegal file type");
         } catch (Exception e) {
         }
@@ -53,7 +105,7 @@ public class DictionaryTest extends AndroidTestCase {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         assertEquals(0, dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -72,7 +124,7 @@ public class DictionaryTest extends AndroidTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch1 = new CountDownLatch(1);
         assertEquals(0,dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -83,7 +135,7 @@ public class DictionaryTest extends AndroidTestCase {
         final int size = dictionary.size();
         assertTrue(size > 0);
         assertEquals("adjudicator", dictionary.lookup("AD/SKWRAOUD/KAEUT/TOR"));
-        dictionary.load(("test2.json"));
+        dictionary.load((new String[] {"/sdcard/test2.json"}), new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -100,7 +152,7 @@ public class DictionaryTest extends AndroidTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latch1 = new CountDownLatch(1);
         assertEquals(0,dictionary.size());
-        dictionary.load("test.json");
+        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -110,7 +162,7 @@ public class DictionaryTest extends AndroidTestCase {
         latch.await();
         int size = dictionary.size();
         assertTrue(size > 0);
-        dictionary.load(("test3.json"));
+        dictionary.load(new String[] {"/sdcard/test3.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -124,7 +176,7 @@ public class DictionaryTest extends AndroidTestCase {
     public void testLookupAndForceLookup() throws Exception {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json");
+        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -143,7 +195,7 @@ public class DictionaryTest extends AndroidTestCase {
     public void testLongestValidStroke() throws Exception {
         Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load("test.json");
+        dictionary.load(new String[] {"/sdcard/test.json"}, new ProgressBar(getContext()), 0);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {

@@ -1,4 +1,4 @@
-package com.brentandjody.Keyboard;
+package com.brentandjody.stenoime.Input;
 
 import android.util.Log;
 import android.view.KeyEvent;
@@ -85,6 +85,16 @@ public class NKeyRolloverMachine implements StenoMachine {
                 }
             }
         }
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 
     @Override

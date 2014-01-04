@@ -1,8 +1,8 @@
-package com.brentandjody.Translator.Tests;
+package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 
-import com.brentandjody.Translator.TST;
+import com.brentandjody.stenoime.Translator.TST;
 
 import java.util.LinkedList;
 import java.util.Queue;

@@ -37,6 +37,15 @@ public class Formatter {
                 if (atom.equals("{#Tab}")) {
                     sb.append("\t"); space=""; atom="";
                 }
+                if (atom.equals("{.}")) {
+                    sb.append("\b.  "); new_capitalization=CASE.Capital; atom="";
+                }
+                if (atom.equals("{?}")) {
+                    sb.append("\b.  "); new_capitalization=CASE.Capital; atom="";
+                }
+                if (atom.equals("{!}")) {
+                    sb.append("\b.  "); new_capitalization=CASE.Capital; atom="";
+                }
                 if (atom.contains("{^")) {
                     sb.append("\b"); atom = atom.replace("{^", "");
                 }

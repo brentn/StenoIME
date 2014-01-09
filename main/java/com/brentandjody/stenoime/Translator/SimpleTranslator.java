@@ -118,7 +118,7 @@ public class SimpleTranslator extends Translator {
                         }
                     }
                 }
-                preview = mDictionary.forceLookup(strokesInQueue());
+                preview = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                 if (preview==null || preview.isEmpty()) preview = strokesInQueue();
                 while (text.length()>0 && text.charAt(0)=='\b') {
                     backspaces++;

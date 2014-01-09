@@ -3,6 +3,11 @@
     <string name="app_title">Steno Keyboard</string>
     <string name="loading_dictionary">Loading Dictionary</string>
     <string name="settings_title">Steno Keyboard Settings</string>
+    <string name="select_translator">Select Translation Method</string>
     <string name="add_dictionary">Add Dictionary</string>
     <string name="dictionaries">Dictionaries</string>
+    <string name="translator_type">Translator type</string>
+    <string name="translator">Translator</string>
+    <string name="formatter">Formatter</string>
+    <string name="inline_preview">Inline preview</string>
 </resources>

@@ -64,9 +64,8 @@ public class StenoApp extends Application {
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mProgressBar.setProgress(0);
             String[] dictionaries = getDictionaryNames();
-            if (dictionaries != null) {
-                mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
-            }
+            mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
+
         }
         return mDictionary;
     }
@@ -78,7 +77,7 @@ public class StenoApp extends Application {
     public String[] getDictionaryNames() {
         String data = prefs.getString(KEY_DICTIONARIES, "");
         if (data.isEmpty()) {
-            return null;
+            return new String[0];
         }
         return data.split(DELIMITER);
     }

@@ -47,6 +47,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
+    private static final boolean INLINE_PREVIEW = true;
 
     private StenoApp App;
     private SharedPreferences prefs;
@@ -57,6 +58,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private TextView debug;
     private LinearLayout preview_overlay;
     private Stack<Integer> history = new Stack<Integer>();
+    private int preview_length = 0;
 
     @Override
     public void onCreate() {
@@ -111,6 +113,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
         history.clear();
+        preview_length=0;
         initializeTranslator(App.getTranslatorType());
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
             launchVirtualKeyboard();
@@ -122,7 +125,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onUpdateCursor(Rect newCursor) {
         super.onUpdateCursor(newCursor);
-        history.clear();
+//        history.clear();
+//        preview_length=0;
     }
 
     @Override
@@ -186,15 +190,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void loadDictionary() {
-        if (App.getDictionaryNames() == null)
-            selectDictionaries();
-        else {
-            if (!App.isDictionaryLoaded()) {
-                lockKeyboard();
-                App.getDictionary(this);
-            } else {
-                unlockKeyboard();
-            }
+        if (!App.isDictionaryLoaded()) {
+            lockKeyboard();
+            App.getDictionary(this);
+        } else {
+            unlockKeyboard();
         }
     }
 
@@ -203,8 +203,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         debug.setText(tr.getExtra());
         InputConnection connection = getCurrentInputConnection();
         if (connection == null) return; //short circuit
-        // deal with backspaces
         connection.beginBatchEdit();
+        if (INLINE_PREVIEW && preview_length>0) {
+            connection.deleteSurroundingText(preview_length, 0);
+        }
+        // deal with backspaces
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
             if (history.isEmpty()) {
                 smartDelete(connection);
@@ -215,6 +218,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
         }
         connection.commitText(tr.getText(), 1);
+        if (INLINE_PREVIEW) {
+            String p = tr.getPreview();
+            connection.commitText(p, 1);
+            preview_length = p.length();
+        }
         connection.endBatchEdit();
     }
 

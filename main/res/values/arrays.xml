@@ -4,9 +4,18 @@
         <item>Raw Strokes</item>
         <item>Simple Dictionary</item>
     </string-array>
-
     <integer-array name="translator_values">
         <item>0</item>
         <item>1</item>
     </integer-array>
+
+    <string-array name="preview_modes">
+        <item>Inline Preview</item>
+        <item>Separate Preview</item>
+    </string-array>
+    <integer-array name="preview_values">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+
 </resources>

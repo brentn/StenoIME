@@ -6,8 +6,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
-import java.util.Arrays;
-
 public class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
     private SharedPreferences prefs;
@@ -16,21 +14,14 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //Preference translator = findPreference("pref_translator");
 
     }
 
     @Override
     public boolean onPreferenceClick(Preference preference) {
-        if (preference.getKey().equals("pref_key_add_button")) {
-//            selectDictionary();
-            return true;
-        }
         return false;
     }
 
-    private static String[] getNames(Class<? extends Enum<?>> e) {
-        return Arrays.toString(e.getEnumConstants()).replaceAll("\\[|]", "").split(", ");
-    }
 
 }

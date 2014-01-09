@@ -139,6 +139,7 @@ public class Dictionary {
             loaded = 0;
             int update_interval = total_size/100;
             if (update_interval == 0) update_interval=1;
+            progressBar.setProgress(0);
             String line, stroke, translation;
             String[] fields;
             //if no personal dictionaries are defined, load the default

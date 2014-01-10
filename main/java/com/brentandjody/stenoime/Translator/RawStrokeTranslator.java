@@ -24,6 +24,9 @@ public class RawStrokeTranslator extends Translator {
     }
 
     @Override
+    public void reset() {}
+
+    @Override
     public TranslationResult submitQueue() {
         return new TranslationResult(0, "", "", "");
     }

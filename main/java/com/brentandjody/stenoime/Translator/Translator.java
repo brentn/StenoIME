@@ -11,6 +11,7 @@ public abstract class Translator {
     public abstract boolean usesDictionary();
     public abstract void lock();
     public abstract void unlock();
+    public abstract void reset();
     public abstract TranslationResult submitQueue();
     public abstract TranslationResult translate(Stroke stroke);
 

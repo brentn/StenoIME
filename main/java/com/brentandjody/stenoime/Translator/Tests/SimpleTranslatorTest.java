@@ -64,11 +64,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         });
         latch.await();
         translator.setDictionary(dictionary);
-        assertEquals("adds", translator.translate(new Stroke("ADZ")).getPreview());
+        assertEquals("adds ", translator.translate(new Stroke("ADZ")).getPreview());
         translator.lock();
         assertEquals("",translator.translate(new Stroke("ADZ")).getPreview());
         translator.unlock();
-        assertEquals("adds", translator.translate(new Stroke("ADZ")).getPreview());
+        assertEquals("adds ", translator.translate(new Stroke("ADZ")).getPreview());
     }
 
 
@@ -89,34 +89,39 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(null), 0, "", "");
         // not found (with & without queue)
         checkResults(translator.translate(new Stroke("-T")), 0, "-T ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
         // deterministic (with & without queue)
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "adds realized ", "");
         // ambiguous (with & without queue)
         checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
-        checkResults(translator.translate(new Stroke("TKRESZ")), 0, "", "address");
+        checkResults(translator.translate(new Stroke("TKRESZ")), 0, "", "address ");
         checkResults(translator.translate(new Stroke("SAOE")), 0, "addressee ", "");
         // endings (with & without queue
         checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
         checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
         checkResults(translator.translate(new Stroke("-G")), 1, "ing ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
         checkResults(translator.translate(new Stroke("-D")), 1, "ed ", "");
         // undo (with & without queue)
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), -1, "", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds");
+        checkResults(translator.translate(new Stroke("*")), 9, "", "");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("*")), -1, "", "");
-        checkResults(translator.translate(new Stroke("*")), -1, "", "");
+        checkResults(translator.translate(new Stroke("*")), 3, "", "");
+        checkResults(translator.translate(new Stroke("*")), 5, "", "");
+        checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
+        checkResults(translator.translate(new Stroke("*")), 9, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "im");
     }
 
     public void testSpecialCases() throws Exception {
@@ -133,8 +138,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         latch.await();
         translator.setDictionary(dictionary);
         // special cases
-        checkResults(translator.translate(new Stroke("EU")), 0, "", "I");
-        checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am");
+        checkResults(translator.translate(new Stroke("EU")), 0, "", "I ");
+        checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am ");
         checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "APL/PWEUG");
         checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }

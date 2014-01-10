@@ -36,7 +36,6 @@ import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
 
 import java.util.Set;
-import java.util.Stack;
 
 /**
  * Created by brent on 30/11/13.
@@ -57,7 +56,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private TextView preview;
     private TextView debug;
     private LinearLayout preview_overlay;
-    private Stack<Integer> history = new Stack<Integer>();
     private int preview_length = 0;
 
     @Override
@@ -112,7 +110,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
-        history.clear();
+        mTranslator.reset();
         preview_length=0;
         initializeTranslator(App.getTranslatorType());
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
@@ -132,7 +130,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((ViewGroup) mKeyboard.getParent()).removeAllViews();
+        ViewGroup parent = (ViewGroup) mKeyboard.getParent();
+        parent.removeAllViews();
         setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
@@ -177,9 +176,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void processStroke(Stroke stroke) {
         TranslationResult translation = mTranslator.translate(stroke);
         sendText(translation);
-        int undo_size = 0;
-        if (translation.getBackspaces()>=0) undo_size = translation.getText().length()-translation.getBackspaces();
-        if (undo_size > 0) history.push(undo_size);
     }
 
     private void selectDictionaries() {
@@ -209,11 +205,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         // deal with backspaces
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
-            if (history.isEmpty()) {
-                smartDelete(connection);
-            } else {
-                connection.deleteSurroundingText(history.pop(), 0);
-            }
+            smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
         }
@@ -371,5 +363,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         }
     };
+
 
 }

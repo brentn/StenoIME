@@ -84,15 +84,7 @@ public class SimpleTranslator extends Translator {
                         strokeQ.removeLast();
                     } else {
                         if (!history.isEmpty()) {
-                            HistoryItem hItem = history.pop();
-                            backspaces += hItem.length();
-                            String hStroke = hItem.stroke();
-                            if (hStroke.contains("/")) {
-                                hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
-                                for (String s : hStroke.split("/")) {
-                                    strokeQ.add(s);
-                                }
-                            }
+                            backspaces = undoStrokeFromHistory();
                         } else {
                             backspaces=-1; // special code for "remove last word"
                         }
@@ -181,6 +173,27 @@ public class SimpleTranslator extends Translator {
             return strokesInQueue();
         else
             return mFormatter.format(lookupResult);
+    }
+
+    private int undoStrokeFromHistory() {
+        int backspaces=0;
+        HistoryItem hItem = history.pop();
+        backspaces += hItem.length();
+        String hStroke = hItem.stroke();
+        if (hStroke.contains("/")) {
+            hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
+            for (String s : hStroke.split("/")) {
+                strokeQ.add(s);
+            }
+        } else { // replay prior stroke (in case it was ambiguous)
+            hItem = history.pop();
+            backspaces += hItem.length();
+            hStroke = hItem.stroke();
+            for (String s : hStroke.split("/")) {
+                strokeQ.add(s);
+            }
+        }
+        return backspaces;
     }
 
     private String remove_backspaces(String input) {

@@ -112,11 +112,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
+        checkResults(translator.translate(new Stroke("*")), 12, "", "\bed ");
+        checkResults(translator.translate(new Stroke("ADZ")), 1, "ed ", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("*")), 3, "", "");
-        checkResults(translator.translate(new Stroke("*")), 5, "", "");
+        checkResults(translator.translate(new Stroke("*")), 8, "", "adds ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");

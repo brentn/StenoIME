@@ -110,9 +110,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
-        mTranslator.reset();
         preview_length=0;
         initializeTranslator(App.getTranslatorType());
+        if (mTranslator!=null) mTranslator.reset();
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
             launchVirtualKeyboard();
         } else {

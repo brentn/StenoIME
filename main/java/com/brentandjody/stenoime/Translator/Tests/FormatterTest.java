@@ -21,22 +21,22 @@ public class FormatterTest extends AndroidTestCase {
         assertEquals("\bspin ", formatter.format("{^spin}"));
         assertEquals("cycle", formatter.format("{cycle^}"));
         // flags
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         assertEquals("", formatter.format("{-|}"));
-        assertTrue(formatter.hasQueue());
+        assertTrue(formatter.hasFlags());
         assertEquals("Hobby ", formatter.format("hobby"));
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         formatter.format("{>}");
         assertEquals("cRAYON ", formatter.format("CRAYON"));
         assertEquals("a ", formatter.format("{&a}"));
         assertEquals("\bb ", formatter.format("{&b}"));
         assertEquals("\bc ", formatter.format("{&c"));
-        assertTrue(formatter.hasQueue());
+        assertTrue(formatter.hasFlags());
         assertEquals("d ", formatter.format("d"));
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         // combinations
         assertEquals("\n  ", formatter.format("{#Return}{  }{-|}"));
-        assertTrue(formatter.hasQueue());
+        assertTrue(formatter.hasFlags());
         assertEquals("Canada ", formatter.format("canada"));
 
 
@@ -48,21 +48,21 @@ public class FormatterTest extends AndroidTestCase {
 
     public void testHasQueue() throws Exception {
         Formatter formatter = new Formatter();
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         formatter.format("{#Return}");
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         formatter.format("{-|}");
-        assertTrue(formatter.hasQueue());
+        assertTrue(formatter.hasFlags());
     }
 
     public void testRemoveItemFromQueue() throws Exception {
         Formatter formatter = new Formatter();
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
         formatter.format("{-|}");
         formatter.format("{&e");
-        assertTrue(formatter.hasQueue());
+        assertTrue(formatter.hasFlags());
         formatter.removeItemFromQueue();
-        assertFalse(formatter.hasQueue());
+        assertFalse(formatter.hasFlags());
     }
 
     public void testBreakApart() throws Exception {

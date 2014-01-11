@@ -112,16 +112,31 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 12, "", "\bed ");
+        checkResults(translator.translate(new Stroke("*")), 12, " ", "ed ");
         checkResults(translator.translate(new Stroke("ADZ")), 1, "ed ", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("*")), 8, "", "adds ");
+        checkResults(translator.translate(new Stroke("*")), 8, " ", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("*")), 8, "", "EUPL/PHORT");
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
+        checkResults(translator.translate(new Stroke("-PL")), 1, ". ", "");
+        checkResults(translator.translate(new Stroke("*")), 10, "", "immortal ");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "immortal ", "thank ");
+        checkResults(translator.translate(new Stroke("-FL")), 0, "", "thankful ");
+        checkResults(translator.translate(new Stroke("-PBS")), 0, "thankfulness ", "");
+        checkResults(translator.translate(new Stroke("*")), 13, "", "thankful ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "thank ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("A*")), 0, "a ", "");
+        checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");
+        checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");
+        checkResults(translator.translate(new Stroke("*")), 2, "b ", "");
+        checkResults(translator.translate(new Stroke("*")), 2, "a ", "");
     }
 
     public void testSpecialCases() throws Exception {

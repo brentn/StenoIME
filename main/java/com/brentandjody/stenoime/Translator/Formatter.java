@@ -9,24 +9,31 @@ import java.util.List;
  */
 public class Formatter {
 
-    private static  enum CASE {Capital, Lowercase}
+    public static  enum CASE {Capital, Lowercase}
     private static final String punctuation = ",.!?:;";
 
+    private int backspaces;
     // state variables
     private CASE capitalization=null;
+    private String space=" ";
+    private boolean restored=false;
     private boolean glue=false;
 
     public Formatter() {
     }
 
     public String format (String input) {
+        backspaces=0;
         if (input==null || input.length()==0) return "";
         String output=input;
-        String space=" ";
+        if (!restored) {
+            space=" ";
+            restored=false;
+        }
         boolean new_glue=false;
         CASE new_capitalization=null;
         StringBuilder sb = new StringBuilder();
-        if (hasQueue() || input.contains("{")) {
+        if (hasFlags() || input.contains("{")) {
             for (String atom : breakApart(input)) {
                 if (atom.equals("{#Return}")) {
                     sb.append("\n"); space=""; atom="";
@@ -38,13 +45,13 @@ public class Formatter {
                     sb.append("\t"); space=""; atom="";
                 }
                 if (atom.equals("{.}")) {
-                    sb.append("\b.  "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b. "); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{?}")) {
-                    sb.append("\b?  "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b? "); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{!}")) {
-                    sb.append("\b!  "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b! "); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.contains("{^")) {
                     sb.append("\b"); atom = atom.replace("{^", "");
@@ -63,23 +70,38 @@ public class Formatter {
                     new_glue=true; atom = atom.replace("{&", "");
                 }
                 atom = atom.replace("{","").replace("}","");
-                // remove space before punctuation
-                if (atom.length() == 1 && punctuation.contains(atom))
-                    sb.append("\b");
                 sb.append(atom);
             }
-            //process flags
-            if (capitalization==CASE.Capital && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toUpperCase());
-            if (capitalization==CASE.Lowercase && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toLowerCase());
-            if (glue && new_glue) sb.reverse().append("\b").reverse();
+            // process flags
+            if (glue && new_glue)
+                sb.reverse().append("\b").reverse();
+            if (capitalization==CASE.Capital && sb.length()>0)
+                sb.replace(0,1,sb.substring(0,1).toUpperCase());
+            if (capitalization==CASE.Lowercase && sb.length()>0)
+                sb.replace(0,1,sb.substring(0,1).toLowerCase());
             capitalization = new_capitalization;
             glue = new_glue;
+
             output = sb.toString();
         }
-        return output+space;
+        return remove_backspaces(output)+space;
     }
 
-    public boolean hasQueue() { return (glue || (capitalization!=null)); }
+    public State getState() {
+        return new State(capitalization, glue, space);
+    }
+
+    public void restoreState(State state) {
+        capitalization = state.getCapitalization();
+        glue = state.hasGlue();
+        space=state.prefix_space();
+        restored=true;
+    }
+
+    public boolean hasFlags() { return (glue || (capitalization!=null)); }
+
+    public int backspaces() {return backspaces;}
+
 
     public void removeItemFromQueue() { glue=false; capitalization=null; }
 
@@ -103,6 +125,49 @@ public class Formatter {
             result.add(s);
         }
         return result;
+    }
+
+    private String remove_backspaces(String text) {
+        StringBuilder result = new StringBuilder();
+        boolean start = true;
+        int i=0;
+        for (char c : text.toCharArray()) {
+            if (c=='\b') {
+                if (start) {
+                    backspaces++;
+                } else {
+                    result.deleteCharAt(i-1);
+                    i--;
+                }
+            } else {
+                start = false;
+                result.append(c);
+                i++;
+            }
+        }
+        return result.toString();
+    }
+
+    public class State {
+        private CASE capitalization;
+        private boolean glue;
+        private String prefix_space;
+
+        public State(CASE capitalization, boolean glue, String space) {
+            this.capitalization=capitalization;
+            this.glue=glue;
+            this.prefix_space=space;
+        }
+
+        public CASE getCapitalization() {
+            return capitalization;
+        }
+        public boolean hasGlue() {
+            return glue;
+        }
+        public String prefix_space() {
+            return prefix_space;
+        }
     }
 
 }

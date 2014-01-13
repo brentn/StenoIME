@@ -17,6 +17,16 @@ public class SettingsFragment extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+        // about button
+        Preference about = findPreference("about_button");
+        about.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(getActivity(), AboutActivity.class);
+                startActivity(intent);
+                return false;
+            }
+        });
         // set translator text
         ListPreference translator = (ListPreference) findPreference("pref_translator");
         translator.setSummary(translator.getEntry());

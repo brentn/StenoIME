@@ -2,6 +2,11 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="About">
+        <Preference android:key="about_button"
+            android:title="About..."/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/translator">
         <ListPreference android:key="pref_translator"
             android:title="@string/translator_type"

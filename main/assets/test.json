@@ -355,11 +355,14 @@
 "EUPL": "{im^}"
 "EUPL/PHORT/AL": "immortal",
 "-F": "of",
+"KPA": "{-|}",
 "PAEUL": "pail",
 "PWEUG": "big",
+"R-R": "{#Return}",
 "S": "is",
 "S/AUL/PW-FPLT": "is all about{.}",
 "S/E": "is he",
+"SKWR-RBGS": "{^...},
 "S-P": "{^ ^}",
 "S/R/PW-PB": "have been",
 "S/SKWRUF/HRAOEUBG": "is just like",
@@ -375,5 +378,6 @@
 "TPAOEUPBGD": "finding",
 "TPAOEUPBGDZ": "findings",
 "-PL": "{.}",
+"-PL/S": "...",
 "U": "you"
 }

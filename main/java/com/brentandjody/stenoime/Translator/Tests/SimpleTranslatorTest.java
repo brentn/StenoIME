@@ -124,11 +124,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("-PL")), 1, ".  ", "");
-        checkResults(translator.translate(new Stroke("*")), 11, "", "immortal ");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "");
         // test period and subsequent capital with undo
-        checkResults(translator.translate(new Stroke("-PL")), 0, "immortal.  ", "");
-        checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
+        checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
         checkResults(translator.translate(new Stroke("*")), 10, "", "Thank ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
@@ -147,6 +147,13 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");
         checkResults(translator.translate(new Stroke("*")), 3, " ", "b ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        // caps should persist through enter
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
+        checkResults(translator.translate(new Stroke("KPA")), 0, "", "");
+        checkResults(translator.translate(new Stroke("U")), 0, "You ", "");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
+        checkResults(translator.translate(new Stroke("R-R")), 1, ".  \n", "");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
     }
 
     public void testSpecialCases() throws Exception {

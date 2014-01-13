@@ -72,16 +72,19 @@ public class Formatter {
                 sb.append(atom);
             }
             // process flags
+            boolean text_not_empty = !sb.toString().replace("\n","").isEmpty();
             if (glue && new_glue)
                 sb.reverse().append("\b").reverse();
-            if (capitalization==CASE.Capital && sb.length()>0)
-                sb.replace(0,1,sb.substring(0,1).toUpperCase());
-            if (capitalization==CASE.Lowercase && sb.length()>0)
-                sb.replace(0,1,sb.substring(0,1).toLowerCase());
-            if (new_capitalization != null || sb.length()>0)
+            if (text_not_empty) {
+                if (capitalization==CASE.Capital)
+                    sb.replace(0,1,sb.substring(0,1).toUpperCase());
+                if (capitalization==CASE.Lowercase)
+                    sb.replace(0,1,sb.substring(0,1).toLowerCase());
+            }
+            glue = new_glue;
+            if (text_not_empty || new_capitalization!=null) {
                 capitalization = new_capitalization;
-            if (new_glue || sb.length()>0)
-                glue = new_glue;
+            }
 
             output = sb.toString();
             if (reset_state) {

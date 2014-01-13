@@ -46,10 +46,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
-    private static final boolean INLINE_PREVIEW = true;
 
     private StenoApp App;
     private SharedPreferences prefs;
+    private boolean inline_preview;
     private LinearLayout mKeyboard;
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
@@ -63,6 +63,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         super.onCreate();
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
@@ -82,9 +83,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         ((Button) mKeyboard.findViewById(R.id.settings_button)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectDictionaries();
-            }
-        });
+            launchSettingsActivity();
+        }
+    });
         return mKeyboard;
     }
 
@@ -107,6 +108,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
+        inline_preview = prefs.getBoolean("pref_inline_preview", false);
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
@@ -123,8 +125,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onUpdateCursor(Rect newCursor) {
         super.onUpdateCursor(newCursor);
-//        history.clear();
-//        preview_length=0;
     }
 
     @Override
@@ -177,8 +177,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         sendText(mTranslator.translate(stroke));
     }
 
-    private void selectDictionaries() {
-        Intent intent = new Intent(mKeyboard.getContext(), SelectDictionaryActivity.class);
+    private void launchSettingsActivity() {
+        Intent intent = new Intent(mKeyboard.getContext(), SettingsActivity.class);
         lockKeyboard();
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
@@ -200,7 +200,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (connection == null) return; //short circuit
         connection.beginBatchEdit();
         //remove the preview
-        if (INLINE_PREVIEW && preview_length>0) {
+        if (inline_preview && preview_length>0) {
             connection.deleteSurroundingText(preview_length, 0);
         }
         // deal with backspaces
@@ -211,7 +211,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         connection.commitText(tr.getText(), 1);
         //draw the preview
-        if (INLINE_PREVIEW) {
+        if (inline_preview) {
             String p = tr.getPreview();
             connection.commitText(p, 1);
             preview_length = p.length();
@@ -255,10 +255,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         keyboard.setOnStrokeListener(this);
         //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
-        if (App.getDictionary(this).isLoading())
-            lockKeyboard();
-        else
-            unlockKeyboard();
+        if (mTranslator.usesDictionary()) {
+            if (App.getDictionary(this).isLoading())
+                lockKeyboard();
+            else
+                unlockKeyboard();
+        }
     }
 
     private void removeVirtualKeyboard() {

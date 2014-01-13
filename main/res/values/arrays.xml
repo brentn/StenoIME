@@ -4,10 +4,10 @@
         <item>Raw Strokes</item>
         <item>Simple Dictionary</item>
     </string-array>
-    <integer-array name="translator_values">
+    <string-array name="translator_values">
         <item>0</item>
         <item>1</item>
-    </integer-array>
+    </string-array>
 
     <string-array name="preview_modes">
         <item>Inline Preview</item>

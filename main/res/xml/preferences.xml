@@ -5,19 +5,22 @@
     <PreferenceCategory android:title="@string/translator">
         <ListPreference android:key="pref_translator"
             android:title="@string/translator_type"
-            android:entries="@array/translator_names"/>
-            <!--android:entryValues="@array/translator_values"-->
-            <!--android:defaultValue="0"/>-->
-        <Preference android:key="pref_dictionaries"
-            title="@string/dictionaries"/>
-
+            android:entries="@array/translator_names"
+            android:entryValues="@array/translator_values"
+            android:defaultValue="1"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/formatter">
         <SwitchPreference android:key="pref_inline_preview"
-            android:title="@string/inline_preview"/>
-            <!--android:defaultValue="0"/>-->
+            android:title="@string/inline_preview"
+            android:summaryOn="Ambiguous (preview) words will be shown after regular text.\n"
+            android:summaryOff="Ambiguous words will be shown above the keyboard.\n"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
 
+    <PreferenceCategory android:title="Dictionary">
+        <Preference android:key="pref_dictionary_button"
+            android:title="Edit Dictionaries"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

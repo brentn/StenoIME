@@ -45,6 +45,6 @@ public class RawStrokeTranslator extends Translator {
             }
         }
         sb.append("\n");
-        return new TranslationResult(0, sb.toString(), null, null);
+        return new TranslationResult(0, sb.toString(), "", "");
     }
 }

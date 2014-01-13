@@ -74,7 +74,7 @@ public class SimpleTranslator extends Translator {
         Formatter.State state;
         int backspaces = 0;
         String text = "";
-        String preview = "";
+        String preview_text = "";
         String lookupResult;
         if (!locked) {
             if (stroke.equals("*")) { //undo
@@ -97,7 +97,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), state));
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                         strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
@@ -105,7 +105,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(strokesInQueue());
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), state));
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                         strokeQ.clear();
                     } else {  // process strokes in queue
                         Stack<String> tempQ = new Stack<String>();
@@ -117,10 +117,10 @@ public class SimpleTranslator extends Translator {
                         if (found(lookupResult)) {
                             state = mFormatter.getState();
                             text = mFormatter.format(lookupResult);
-                            mFormatter.restoreState(state);
+//                            mFormatter.restoreState(state);
                             if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), state));
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                             strokeQ.clear();
                             while (!tempQ.isEmpty()) {
                                 strokeQ.add(tempQ.pop());
@@ -136,16 +136,16 @@ public class SimpleTranslator extends Translator {
                             state = mFormatter.getState();
                             text = mFormatter.format(strokesInQueue());
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), state));
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                             strokeQ.clear();
                         }
                     }
                 }
             }
-            preview = lookupQueue();
+            preview_text = lookupQueue();
         }
-        Log.d(TAG, "text:"+text+" preview:"+preview);
-        return new TranslationResult(backspaces, text, preview, "");
+        Log.d(TAG, "text:"+text+" preview:"+lookupQueue());
+        return new TranslationResult(backspaces, text, preview_text, "");
     }
 
     @Override
@@ -173,17 +173,18 @@ public class SimpleTranslator extends Translator {
         if (lookupResult==null)
             return strokesInQueue();
         else
-            return mFormatter.format(lookupResult);
+            return mFormatter.format(lookupResult, true);
     }
 
     private HistoryItem undoStrokeFromHistory() {
-        HistoryItem result = new HistoryItem(0, "", null);
+        HistoryItem result = new HistoryItem(0, "", 0, null);
         HistoryItem hItem = history.pop();
+        int num_spaces=hItem.backspaces();
+        result.setStroke(spaces(num_spaces));
         result.setLength(hItem.length());
         String hStroke = hItem.stroke();
         if (hStroke.contains("/")) {
-            mFormatter.restoreState(hItem.state);
-            result.setStroke(hItem.getState().prefix_space());
+            mFormatter.restoreState(hItem.getState());
             mDictionary.forceLookup(hStroke.substring(hStroke.lastIndexOf("/") + 1));
             hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
             for (String s : hStroke.split("/")) {
@@ -192,9 +193,9 @@ public class SimpleTranslator extends Translator {
         } else { // replay prior stroke (in case it was ambiguous)
             if (!history.isEmpty()) {
                 hItem = history.pop();
-                mFormatter.restoreState(hItem.state);
-                result.setStroke(hItem.getState().prefix_space());
-                result.increaseLength(hItem.length());
+                mFormatter.restoreState(hItem.getState());
+                result.setStroke(spaces(hItem.backspaces()));
+                result.increaseLength(hItem.length()-num_spaces);
                 hStroke = hItem.stroke();
                 for (String s : hStroke.split("/")) {
                     strokeQ.add(s);
@@ -209,14 +210,22 @@ public class SimpleTranslator extends Translator {
         Collections.addAll(strokeQ, input.split("/"));
     }
 
+    private String spaces(int length) {
+        char[] result = new char[length];
+        Arrays.fill(result, ' ');
+        return new String(result);
+    }
+
     class HistoryItem {
         private int length;
         private String stroke;
+        private int backspaces;
         private Formatter.State state;
 
-        public HistoryItem(int l, String s, Formatter.State st) {
+        public HistoryItem(int l, String s, int bs, Formatter.State st) {
             length = l;
             stroke = s;
+            backspaces = bs;
             state = st;
         }
 
@@ -227,8 +236,8 @@ public class SimpleTranslator extends Translator {
             this.stroke = stroke;
         }
 
-        public void increaseLength(int d) {
-            length += d;
+        public void increaseLength(int amount) {
+            this.length += amount;
         }
 
         public int length() {
@@ -236,6 +245,9 @@ public class SimpleTranslator extends Translator {
         }
         public String stroke() {
             return stroke;
+        }
+        public int backspaces() {
+            return backspaces;
         }
         public Formatter.State getState() {
             return state;

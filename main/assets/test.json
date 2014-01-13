@@ -3,8 +3,8 @@
 "PW*": "{&b}",
 "KR*": "{&c}",
 "THAPBG": "thank",
-"THAPBG/-FL": "thankful",
-"THAPBG/-FL/-PBS": "thankfulness",
+"-FL": "{^ful}",
+"-PBS": "{^ness}",
 "AD/SKWRAEUS/EPBT": "adjacent",
 "AD/SKWRAOU/TKEU/KAEUGS": "adjudication",
 "AD/SKWRAOU/TKEU/SHUPL": "ad judicium",
@@ -373,6 +373,7 @@
 "TPAOEUPBDZ": "finds",
 "TPAOEUPBG": "fining",
 "TPAOEUPBGD": "finding",
-"TPAOEUPBGDZ": "findings"
-"-PL": "{.}"
+"TPAOEUPBGDZ": "findings",
+"-PL": "{.}",
+"U": "you"
 }

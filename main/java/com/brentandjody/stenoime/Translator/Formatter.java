@@ -10,26 +10,25 @@ import java.util.List;
 public class Formatter {
 
     public static  enum CASE {Capital, Lowercase}
-    private static final String punctuation = ",.!?:;";
 
     private int backspaces;
     // state variables
     private CASE capitalization=null;
-    private String space=" ";
-    private boolean restored=false;
     private boolean glue=false;
 
     public Formatter() {
     }
 
     public String format (String input) {
+        return format (input, false);  //format string and update state by default
+    }
+
+    public String format (String input, boolean reset_state) {
+        State prior_state = getState();
         backspaces=0;
         if (input==null || input.length()==0) return "";
         String output=input;
-        if (!restored) {
-            space=" ";
-            restored=false;
-        }
+        String space = " ";
         boolean new_glue=false;
         CASE new_capitalization=null;
         StringBuilder sb = new StringBuilder();
@@ -79,23 +78,26 @@ public class Formatter {
                 sb.replace(0,1,sb.substring(0,1).toUpperCase());
             if (capitalization==CASE.Lowercase && sb.length()>0)
                 sb.replace(0,1,sb.substring(0,1).toLowerCase());
-            capitalization = new_capitalization;
-            glue = new_glue;
+            if (new_capitalization != null || sb.length()>0)
+                capitalization = new_capitalization;
+            if (new_glue || sb.length()>0)
+                glue = new_glue;
 
             output = sb.toString();
+            if (reset_state) {
+                restoreState(prior_state);
+            }
         }
         return remove_backspaces(output)+space;
     }
 
     public State getState() {
-        return new State(capitalization, glue, space);
+        return new State(capitalization, glue);
     }
 
     public void restoreState(State state) {
         capitalization = state.getCapitalization();
         glue = state.hasGlue();
-        space=state.prefix_space();
-        restored=true;
     }
 
     public boolean hasFlags() { return (glue || (capitalization!=null)); }
@@ -151,12 +153,10 @@ public class Formatter {
     public class State {
         private CASE capitalization;
         private boolean glue;
-        private String prefix_space;
 
-        public State(CASE capitalization, boolean glue, String space) {
+        public State(CASE capitalization, boolean glue) {
             this.capitalization=capitalization;
             this.glue=glue;
-            this.prefix_space=space;
         }
 
         public CASE getCapitalization() {
@@ -165,9 +165,7 @@ public class Formatter {
         public boolean hasGlue() {
             return glue;
         }
-        public String prefix_space() {
-            return prefix_space;
-        }
+
     }
 
 }

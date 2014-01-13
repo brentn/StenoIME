@@ -35,7 +35,6 @@ import com.brentandjody.stenoime.Translator.Stroke;
 import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
 
-import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -175,8 +174,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void processStroke(Stroke stroke) {
-        TranslationResult translation = mTranslator.translate(stroke);
-        sendText(translation);
+        sendText(mTranslator.translate(stroke));
     }
 
     private void selectDictionaries() {
@@ -210,12 +208,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
-            //this is a hack
-//            if ((tr.getText().isEmpty())
-//                    && (tr.getPreview().isEmpty())
-//                    && (!connection.getTextBeforeCursor(1, 0).equals(" "))) { //if the last character is not a space
-//                connection.commitText(" ", 1);
-//            }
         }
         connection.commitText(tr.getText(), 1);
         //draw the preview

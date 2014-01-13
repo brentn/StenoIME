@@ -16,9 +16,11 @@ public class FormatterTest extends AndroidTestCase {
         assertEquals("Bob ", formatter.format("Bob"));
         // special keys
         assertEquals("\n", formatter.format("{#Return}"));
-        assertEquals("\b", formatter.format("{#BackSpace}"));
+        assertEquals("", formatter.format("{#BackSpace}"));
+        assertEquals(1, formatter.backspaces());
         assertEquals("\t", formatter.format("{#Tab}"));
-        assertEquals("\bspin ", formatter.format("{^spin}"));
+        assertEquals("spin ", formatter.format("{^spin}"));
+        assertEquals(1, formatter.backspaces());
         assertEquals("cycle", formatter.format("{cycle^}"));
         // flags
         assertFalse(formatter.hasFlags());
@@ -29,8 +31,10 @@ public class FormatterTest extends AndroidTestCase {
         formatter.format("{>}");
         assertEquals("cRAYON ", formatter.format("CRAYON"));
         assertEquals("a ", formatter.format("{&a}"));
-        assertEquals("\bb ", formatter.format("{&b}"));
-        assertEquals("\bc ", formatter.format("{&c"));
+        assertEquals("b ", formatter.format("{&b}"));
+        assertEquals(1, formatter.backspaces());
+        assertEquals("c ", formatter.format("{&c"));
+        assertEquals(1, formatter.backspaces());
         assertTrue(formatter.hasFlags());
         assertEquals("d ", formatter.format("d"));
         assertFalse(formatter.hasFlags());

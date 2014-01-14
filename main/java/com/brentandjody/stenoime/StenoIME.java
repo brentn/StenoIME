@@ -46,6 +46,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
+    private static final boolean ENABLE_HARDWARE = false;
 
     private StenoApp App;
     private SharedPreferences prefs;

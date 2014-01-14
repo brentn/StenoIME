@@ -39,7 +39,7 @@ public class StenoApp extends Application {
         mInputDevice =null;
         int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
         mTranslatorType = Translator.TYPE.values()[val];
-        mMachineType = StenoMachine.TYPE.values()[prefs.getInt(KEY_MACHINE_TYPE, 0)]; //default is virtual
+        mMachineType = StenoMachine.TYPE.VIRTUAL;
     }
 
     // Setters
@@ -47,7 +47,10 @@ public class StenoApp extends Application {
         mInputDevice = sm;}
     public void setUsbDevice(UsbDevice ud) { mUsbDevice = ud; }
     public void setProgressBar(ProgressBar pb) { mProgressBar = pb; }
-    public void setMachineType(StenoMachine.TYPE t) { mMachineType = t; }
+    public void setMachineType(StenoMachine.TYPE t) {
+        mMachineType = StenoMachine.TYPE.VIRTUAL;
+        //mMachineType = t;
+    }
     public void setTranslatorType(Translator.TYPE t) { mTranslatorType = t; }
 
     // Getters

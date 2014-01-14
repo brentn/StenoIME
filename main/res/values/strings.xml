@@ -15,10 +15,14 @@
     Unfortunately it takes quite a bit of work to learn, and until recently, expensive hardware/software to get started.</p>
     <p>Plover (<a href=http://stenoknight.com/wiki/Getting_Started>http://stenoknight.com/wiki/Getting_Started</a>) is an open-source project
     that allows anyone to try-out Machine Stenography using an inexpensive ($50-$100) keyboard, OR a full-fledged steno machine.</p>
-    <p>There are also several excellent training guides available:<ul>
+    <p>There are also several excellent training guides available:</p>
+    <ul>
     <li><a href=http://qwertysteno.com>http://qwertysteno.com</a><br/></li>
     <li><a href=https://sites.google.com/site/ploverdoc>https://sites.google.com/site/ploverdoc</a><br/></li>
-    <li><a href=http://ploverdojo.appspot.com/>http://ploverdojo.appspot.com/</a></li></ul><br/></p>
+    <li><a href=http://ploverdojo.appspot.com/>http://ploverdojo.appspot.com/</a></li>
+    </ul><br/>
+    <p>While it doesn’t seem practical to achieve these speeds using a virtual keyboard,  it is possible to exceed “hunt-and-peck”,
+    “thumb-typing” or even “swype” speeds.</p>
     <p>These tools are designed primarily to aid those learning machine stenography to become more familiar with how it works, the use of the
         stenographic keyboard, and the strokes in their dictionary.</p>
     <p>The Dictionary is a mapping of chords or chord-combinations to specific (english) words or phrases.  Dictionaries can be built upon

@@ -10,6 +10,7 @@ import java.util.List;
 public class Formatter {
 
     public static  enum CASE {Capital, Lowercase}
+    public static final String punctuation = ":;,";
 
     private int backspaces;
     // state variables
@@ -43,6 +44,9 @@ public class Formatter {
                 if (atom.equals("{#Tab}")) {
                     sb.append("\t"); space=""; atom="";
                 }
+                if (atom.equals("{,}")) {
+                    sb.append("\b,"); atom="";
+                }
                 if (atom.equals("{.}")) {
                     sb.append("\b. "); new_capitalization=CASE.Capital; atom="";
                 }
@@ -69,6 +73,9 @@ public class Formatter {
                     new_glue=true; atom = atom.replace("{&", "");
                 }
                 atom = atom.replace("{","").replace("}","");
+                // remove space before punctuation
+                if (atom.length() == 1 && punctuation.contains(atom))
+                    sb.append("\b");
                 sb.append(atom);
             }
             // process flags

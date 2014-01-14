@@ -57,6 +57,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private TextView debug;
     private LinearLayout preview_overlay;
     private int preview_length = 0;
+    private boolean redo_space;
 
     @Override
     public void onCreate() {
@@ -202,6 +203,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //remove the preview
         if (inline_preview && preview_length>0) {
             connection.deleteSurroundingText(preview_length, 0);
+            if (redo_space)
+                connection.commitText(" ", 1);
         }
         // deal with backspaces
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
@@ -213,6 +216,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //draw the preview
         if (inline_preview) {
             String p = tr.getPreview();
+            if (mTranslator instanceof SimpleTranslator) {
+                int bs = ((SimpleTranslator) mTranslator).preview_backspaces();
+                redo_space=(bs > 0);
+            }
+            if (redo_space)
+                connection.deleteSurroundingText(1, 0);
             connection.commitText(p, 1);
             preview_length = p.length();
         }

@@ -20,6 +20,7 @@ public class SimpleTranslator extends Translator {
     private Formatter mFormatter;
     private Deque<String> strokeQ = new ArrayDeque<String>();
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
+    private int preview_backspaces=0;
 
 
     public SimpleTranslator() {
@@ -117,7 +118,6 @@ public class SimpleTranslator extends Translator {
                         if (found(lookupResult)) {
                             state = mFormatter.getState();
                             text = mFormatter.format(lookupResult);
-//                            mFormatter.restoreState(state);
                             if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
                             history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
@@ -144,7 +144,7 @@ public class SimpleTranslator extends Translator {
             }
             preview_text = lookupQueue();
         }
-        Log.d(TAG, "text:"+text+" preview:"+lookupQueue());
+        Log.d(TAG, "text:"+text+" preview:"+preview_text);
         return new TranslationResult(backspaces, text, preview_text, "");
     }
 
@@ -154,6 +154,8 @@ public class SimpleTranslator extends Translator {
         strokeQ.clear();
         return new TranslationResult(0, queue, "", "");
     }
+
+    public int preview_backspaces() { return preview_backspaces; }
 
     private boolean found(String s) {return (s != null); }
     private boolean ambiguous(String s) { return s.equals("");}
@@ -168,12 +170,16 @@ public class SimpleTranslator extends Translator {
     }
 
     private String lookupQueue() {
+        preview_backspaces=0;
         if (strokeQ.isEmpty()) return "";
         String lookupResult = mDictionary.forceLookup(strokesInQueue());
-        if (lookupResult==null)
+        if (lookupResult==null) {
             return strokesInQueue();
-        else
-            return mFormatter.format(lookupResult, true);
+        } else {
+            String result = mFormatter.format(lookupResult, true);
+            preview_backspaces = mFormatter.backspaces();
+            return result;
+        }
     }
 
     private HistoryItem undoStrokeFromHistory() {
@@ -187,9 +193,7 @@ public class SimpleTranslator extends Translator {
             mFormatter.restoreState(hItem.getState());
             mDictionary.forceLookup(hStroke.substring(hStroke.lastIndexOf("/") + 1));
             hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
-            for (String s : hStroke.split("/")) {
-                strokeQ.add(s);
-            }
+            Collections.addAll(strokeQ, hStroke.split("/"));
         } else { // replay prior stroke (in case it was ambiguous)
             if (!history.isEmpty()) {
                 hItem = history.pop();
@@ -197,9 +201,7 @@ public class SimpleTranslator extends Translator {
                 result.setStroke(spaces(hItem.backspaces()));
                 result.increaseLength(hItem.length()-num_spaces);
                 hStroke = hItem.stroke();
-                for (String s : hStroke.split("/")) {
-                    strokeQ.add(s);
-                }
+                Collections.addAll(strokeQ, hStroke.split("/"));
             }
         }
         return result;

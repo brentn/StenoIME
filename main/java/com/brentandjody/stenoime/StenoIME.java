@@ -36,7 +36,6 @@ import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
 
 import java.util.Set;
-import java.util.Stack;
 
 /**
  * Created by brent on 30/11/13.
@@ -50,19 +49,22 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private StenoApp App;
     private SharedPreferences prefs;
+    private boolean inline_preview;
     private LinearLayout mKeyboard;
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
     private TextView preview;
     private TextView debug;
     private LinearLayout preview_overlay;
-    private Stack<Integer> history = new Stack<Integer>();
+    private int preview_length = 0;
+    private boolean redo_space;
 
     @Override
     public void onCreate() {
         super.onCreate();
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
@@ -82,9 +84,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         ((Button) mKeyboard.findViewById(R.id.settings_button)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectDictionaries();
-            }
-        });
+            launchSettingsActivity();
+        }
+    });
         return mKeyboard;
     }
 
@@ -107,11 +109,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
+        inline_preview = prefs.getBoolean("pref_inline_preview", false);
         if (preview!=null) preview.setText("");
         if (debug!=null) debug.setText("");
         setCandidatesViewShown(true);
-        history.clear();
+        preview_length=0;
         initializeTranslator(App.getTranslatorType());
+        if (mTranslator!=null) mTranslator.reset();
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
             launchVirtualKeyboard();
         } else {
@@ -122,13 +126,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onUpdateCursor(Rect newCursor) {
         super.onUpdateCursor(newCursor);
-        history.clear();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ((ViewGroup) mKeyboard.getParent()).removeAllViews();
+        ViewGroup parent = (ViewGroup) mKeyboard.getParent();
+        parent.removeAllViews();
         setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
@@ -171,30 +175,22 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void processStroke(Stroke stroke) {
-        TranslationResult translation = mTranslator.translate(stroke);
-        sendText(translation);
-        int undo_size = 0;
-        if (translation.getBackspaces()>=0) undo_size = translation.getText().length()-translation.getBackspaces();
-        if (undo_size > 0) history.push(undo_size);
+        sendText(mTranslator.translate(stroke));
     }
 
-    private void selectDictionaries() {
-        Intent intent = new Intent(mKeyboard.getContext(), SelectDictionaryActivity.class);
+    private void launchSettingsActivity() {
+        Intent intent = new Intent(mKeyboard.getContext(), SettingsActivity.class);
         lockKeyboard();
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
     private void loadDictionary() {
-        if (App.getDictionaryNames() == null)
-            selectDictionaries();
-        else {
-            if (!App.isDictionaryLoaded()) {
-                lockKeyboard();
-                App.getDictionary(this);
-            } else {
-                unlockKeyboard();
-            }
+        if (!App.isDictionaryLoaded()) {
+            lockKeyboard();
+            App.getDictionary(this);
+        } else {
+            unlockKeyboard();
         }
     }
 
@@ -203,18 +199,32 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         debug.setText(tr.getExtra());
         InputConnection connection = getCurrentInputConnection();
         if (connection == null) return; //short circuit
-        // deal with backspaces
         connection.beginBatchEdit();
+        //remove the preview
+        if (inline_preview && preview_length>0) {
+            connection.deleteSurroundingText(preview_length, 0);
+            if (redo_space)
+                connection.commitText(" ", 1);
+        }
+        // deal with backspaces
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
-            if (history.isEmpty()) {
-                smartDelete(connection);
-            } else {
-                connection.deleteSurroundingText(history.pop(), 0);
-            }
+            smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
         }
         connection.commitText(tr.getText(), 1);
+        //draw the preview
+        if (inline_preview) {
+            String p = tr.getPreview();
+            if (mTranslator instanceof SimpleTranslator) {
+                int bs = ((SimpleTranslator) mTranslator).preview_backspaces();
+                redo_space=(bs > 0);
+            }
+            if (redo_space)
+                connection.deleteSurroundingText(1, 0);
+            connection.commitText(p, 1);
+            preview_length = p.length();
+        }
         connection.endBatchEdit();
     }
 
@@ -254,10 +264,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         keyboard.setOnStrokeListener(this);
         //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
-        if (App.getDictionary(this).isLoading())
-            lockKeyboard();
-        else
-            unlockKeyboard();
+        if (mTranslator.usesDictionary()) {
+            if (App.getDictionary(this).isLoading())
+                lockKeyboard();
+            else
+                unlockKeyboard();
+        }
     }
 
     private void removeVirtualKeyboard() {
@@ -363,5 +375,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         }
     };
+
 
 }

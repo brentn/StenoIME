@@ -3,6 +3,27 @@
     <string name="app_title">Steno Keyboard</string>
     <string name="loading_dictionary">Loading Dictionary</string>
     <string name="settings_title">Steno Keyboard Settings</string>
+    <string name="select_translator">Select Translation Method</string>
     <string name="add_dictionary">Add Dictionary</string>
     <string name="dictionaries">Dictionaries</string>
+    <string name="translator_type">Translator type</string>
+    <string name="translator">Translator</string>
+    <string name="formatter">Formatter</string>
+    <string name="inline_preview">Inline preview</string>
+        <string name="about_text"><![CDATA[<p><strong><i>Machine Stenography</i></strong> (court reporting) uses a <i>chording</i>
+    keyboard to provide the ability to type text at speeds that exceed that of human speech.
+    Unfortunately it takes quite a bit of work to learn, and until recently, expensive hardware/software to get started.</p>
+    <p>Plover (<a href=http://stenoknight.com/wiki/Getting_Started>http://stenoknight.com/wiki/Getting_Started</a>) is an open-source project
+    that allows anyone to try-out Machine Stenography using an inexpensive ($50-$100) keyboard, OR a full-fledged steno machine.</p>
+    <p>There are also several excellent training guides available:<ul>
+    <li><a href=http://qwertysteno.com>http://qwertysteno.com</a><br/></li>
+    <li><a href=https://sites.google.com/site/ploverdoc>https://sites.google.com/site/ploverdoc</a><br/></li>
+    <li><a href=http://ploverdojo.appspot.com/>http://ploverdojo.appspot.com/</a></li></ul><br/></p>
+    <p>These tools are designed primarily to aid those learning machine stenography to become more familiar with how it works, the use of the
+        stenographic keyboard, and the strokes in their dictionary.</p>
+    <p>The Dictionary is a mapping of chords or chord-combinations to specific (english) words or phrases.  Dictionaries can be built upon
+    many different stenographic theories - so if you have already learned some machine stenography, you will want a dictionary built on the
+    theory you have learned.</p>
+    <p>The default dictionary is taken from the <i>Plover</i> project, and is built on a synthesis of  NYCI and StenEd theories.
+</p>]]></string>
 </resources>

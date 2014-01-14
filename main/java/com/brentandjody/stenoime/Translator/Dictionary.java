@@ -2,6 +2,7 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -13,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -50,7 +53,7 @@ public class Dictionary {
     }
 
 
-    public void load(String[] filenames, ProgressBar progressBar, int size) {
+    public void load(String[] filenames, AssetManager assetManager, ProgressBar progressBar, int size) {
         // assume filenames is not empty or null
         Log.d(TAG, "loading dictionary");
         for (String filename : filenames) {
@@ -71,7 +74,7 @@ public class Dictionary {
             }
         }
         loading = true;
-        new JsonLoader(progressBar, size).execute(filenames);
+        new JsonLoader(assetManager, progressBar, size).execute(filenames);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -120,32 +123,34 @@ public class Dictionary {
         return ((outline+"/").contains(stroke+"/"));
     }
 
-    private class JsonLoader extends AsyncTask<String, Integer, Long> {
+    private class JsonLoader extends AsyncTask<String, Integer, Integer> {
         private int loaded;
         private int total_size;
         private ProgressBar progressBar;
+        private AssetManager assetManager;
 
-        public JsonLoader(ProgressBar progress, int size) {
+        public JsonLoader(AssetManager am, ProgressBar progress, int size) {
+            assetManager = am;
             progressBar = progress;
             total_size = size;
         }
 
-        protected Long doInBackground(String... filenames) {
+        protected Integer doInBackground(String... filenames) {
             loaded = 0;
             int update_interval = total_size/100;
             if (update_interval == 0) update_interval=1;
+            progressBar.setProgress(0);
             String line, stroke, translation;
             String[] fields;
-            for (String filename : filenames) {
-                if (filename == null || filename.isEmpty())
-                    throw new IllegalArgumentException("Dictionary filename not provided");
+            //if no personal dictionaries are defined, load the default
+            if (filenames.length==0) {
                 try {
-                    File file = new File(filename);
-                    FileReader reader = new FileReader(file);
+                    InputStream filestream = assetManager.open("dict.json");
+                    InputStreamReader reader = new InputStreamReader(filestream);
                     BufferedReader lines = new BufferedReader(reader);
                     while ((line = lines.readLine()) != null) {
                         fields = line.split("\"");
-                        if ((fields.length >= 3) && (fields[3].length() > 0)) {
+                        if ((fields.length > 3) && (fields[3].length() > 0)) {
                             stroke = fields[1];
                             translation = fields[3];
                             dictionary.put(stroke, translation);
@@ -157,11 +162,38 @@ public class Dictionary {
                     }
                     lines.close();
                     reader.close();
+                    filestream.close();
                 } catch (IOException e) {
-                    System.err.println("Dictionary File: " + filename + " could not be found");
+                    Log.e(TAG, "Error loading default dictionary asset");
+                }
+            } else {
+                for (String filename : filenames) {
+                    if (filename == null || filename.isEmpty())
+                        throw new IllegalArgumentException("Dictionary filename not provided");
+                    try {
+                        File file = new File(filename);
+                        FileReader reader = new FileReader(file);
+                        BufferedReader lines = new BufferedReader(reader);
+                        while ((line = lines.readLine()) != null) {
+                            fields = line.split("\"");
+                            if ((fields.length >= 3) && (fields[3].length() > 0)) {
+                                stroke = fields[1];
+                                translation = fields[3];
+                                dictionary.put(stroke, translation);
+                                loaded++;
+                                if (loaded%update_interval==0) {
+                                    onProgressUpdate(loaded);
+                                }
+                            }
+                        }
+                        lines.close();
+                        reader.close();
+                    } catch (IOException e) {
+                        System.err.println("Dictionary File: " + filename + " could not be found");
+                    }
                 }
             }
-            return (long) loaded;
+            return loaded;
         }
 
         @Override
@@ -172,7 +204,7 @@ public class Dictionary {
         }
 
         @Override
-        protected void onPostExecute(Long result) {
+        protected void onPostExecute(Integer result) {
             super.onPostExecute(result);
             int size = safeLongToInt(result);
             SharedPreferences.Editor editor = prefs.edit();

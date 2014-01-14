@@ -24,6 +24,9 @@ public class RawStrokeTranslator extends Translator {
     }
 
     @Override
+    public void reset() {}
+
+    @Override
     public TranslationResult submitQueue() {
         return new TranslationResult(0, "", "", "");
     }
@@ -42,6 +45,6 @@ public class RawStrokeTranslator extends Translator {
             }
         }
         sb.append("\n");
-        return new TranslationResult(0, sb.toString(), null, null);
+        return new TranslationResult(0, sb.toString(), "", "");
     }
 }

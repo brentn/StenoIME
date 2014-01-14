@@ -116,7 +116,7 @@ public class TouchLayer extends RelativeLayout {
                 i = event.getActionIndex();
                 if (i >= NUMBER_OF_FINGERS) break;
                 int count = event.getPointerCount();
-                if (count == 1) { //TODO: only complete if keys are selected
+                if (count == 1) {
                     paths[0].reset();
                     invalidate();
                     if (anyKeysSelected()) {
@@ -258,19 +258,6 @@ public class TouchLayer extends RelativeLayout {
         Point topLeft = getScreenOffset(key);
         bottomRight.set(topLeft.x+key.getWidth(), topLeft.y+key.getHeight());
         return !((p.x < topLeft.x) || (p.x > bottomRight.x) || (p.y < topLeft.y) || (p.y > bottomRight.y));
-    }
-
-    public void test_keys(String keystring) {
-        ArrayList<View> keyViews = new ArrayList<View>();
-        for (String key : keystring.split("/")) {
-            findViewsWithText(keyViews, key.replace("-",""), FIND_VIEWS_WITH_TEXT);
-            for (View keyView : keys) {
-                if (((TextView) keyView).getHint()!=null)
-                    if (((TextView) keyView).getHint().toString().equals(key))
-                        keyView.setSelected(true);
-            }
-        }
-        onStrokeListener.onStroke(getStroke());
     }
 
 }

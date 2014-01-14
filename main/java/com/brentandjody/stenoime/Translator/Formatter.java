@@ -9,9 +9,10 @@ import java.util.List;
  */
 public class Formatter {
 
-    private static  enum CASE {Capital, Lowercase}
-    private static final String punctuation = ",.!?:;";
+    public static  enum CASE {Capital, Lowercase}
+    public static final String punctuation = ":;,";
 
+    private int backspaces;
     // state variables
     private CASE capitalization=null;
     private boolean glue=false;
@@ -20,13 +21,19 @@ public class Formatter {
     }
 
     public String format (String input) {
+        return format (input, false);  //format string and update state by default
+    }
+
+    public String format (String input, boolean reset_state) {
+        State prior_state = getState();
+        backspaces=0;
         if (input==null || input.length()==0) return "";
         String output=input;
-        String space=" ";
+        String space = " ";
         boolean new_glue=false;
         CASE new_capitalization=null;
         StringBuilder sb = new StringBuilder();
-        if (hasQueue() || input.contains("{")) {
+        if (hasFlags() || input.contains("{")) {
             for (String atom : breakApart(input)) {
                 if (atom.equals("{#Return}")) {
                     sb.append("\n"); space=""; atom="";
@@ -36,6 +43,18 @@ public class Formatter {
                 }
                 if (atom.equals("{#Tab}")) {
                     sb.append("\t"); space=""; atom="";
+                }
+                if (atom.equals("{,}")) {
+                    sb.append("\b,"); atom="";
+                }
+                if (atom.equals("{.}")) {
+                    sb.append("\b. "); new_capitalization=CASE.Capital; atom="";
+                }
+                if (atom.equals("{?}")) {
+                    sb.append("\b? "); new_capitalization=CASE.Capital; atom="";
+                }
+                if (atom.equals("{!}")) {
+                    sb.append("\b! "); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.contains("{^")) {
                     sb.append("\b"); atom = atom.replace("{^", "");
@@ -59,18 +78,42 @@ public class Formatter {
                     sb.append("\b");
                 sb.append(atom);
             }
-            //process flags
-            if (capitalization==CASE.Capital && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toUpperCase());
-            if (capitalization==CASE.Lowercase && sb.length()>0) sb.replace(0,1,sb.substring(0,1).toLowerCase());
-            if (glue && new_glue) sb.reverse().append("\b").reverse();
-            capitalization = new_capitalization;
+            // process flags
+            boolean text_not_empty = !sb.toString().replace("\n","").isEmpty();
+            if (glue && new_glue)
+                sb.reverse().append("\b").reverse();
+            if (text_not_empty) {
+                if (capitalization==CASE.Capital)
+                    sb.replace(0,1,sb.substring(0,1).toUpperCase());
+                if (capitalization==CASE.Lowercase)
+                    sb.replace(0,1,sb.substring(0,1).toLowerCase());
+            }
             glue = new_glue;
+            if (text_not_empty || new_capitalization!=null) {
+                capitalization = new_capitalization;
+            }
+
             output = sb.toString();
+            if (reset_state) {
+                restoreState(prior_state);
+            }
         }
-        return output+space;
+        return remove_backspaces(output)+space;
     }
 
-    public boolean hasQueue() { return (glue || (capitalization!=null)); }
+    public State getState() {
+        return new State(capitalization, glue);
+    }
+
+    public void restoreState(State state) {
+        capitalization = state.getCapitalization();
+        glue = state.hasGlue();
+    }
+
+    public boolean hasFlags() { return (glue || (capitalization!=null)); }
+
+    public int backspaces() {return backspaces;}
+
 
     public void removeItemFromQueue() { glue=false; capitalization=null; }
 
@@ -94,6 +137,45 @@ public class Formatter {
             result.add(s);
         }
         return result;
+    }
+
+    private String remove_backspaces(String text) {
+        StringBuilder result = new StringBuilder();
+        boolean start = true;
+        int i=0;
+        for (char c : text.toCharArray()) {
+            if (c=='\b') {
+                if (start) {
+                    backspaces++;
+                } else {
+                    result.deleteCharAt(i-1);
+                    i--;
+                }
+            } else {
+                start = false;
+                result.append(c);
+                i++;
+            }
+        }
+        return result.toString();
+    }
+
+    public class State {
+        private CASE capitalization;
+        private boolean glue;
+
+        public State(CASE capitalization, boolean glue) {
+            this.capitalization=capitalization;
+            this.glue=glue;
+        }
+
+        public CASE getCapitalization() {
+            return capitalization;
+        }
+        public boolean hasGlue() {
+            return glue;
+        }
+
     }
 
 }

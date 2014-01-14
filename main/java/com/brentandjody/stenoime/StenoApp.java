@@ -20,7 +20,7 @@ public class StenoApp extends Application {
     public static final String KEY_DICTIONARIES = "dictionaries";
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
     public static final String KEY_MACHINE_TYPE = "default_machine_type";
-    public static final String KEY_TRANSLATOR_TYPE = "selected_translator_type";
+    public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
 
     private Dictionary mDictionary;
     private StenoMachine mInputDevice;
@@ -37,7 +37,8 @@ public class StenoApp extends Application {
         mDictionary = new Dictionary(getApplicationContext());
         mProgressBar = new ProgressBar(getApplicationContext());
         mInputDevice =null;
-        mTranslatorType = Translator.TYPE.values()[prefs.getInt(StenoApp.KEY_TRANSLATOR_TYPE, 1)];//TODO:change default ot 0
+        int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
+        mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.values()[prefs.getInt(KEY_MACHINE_TYPE, 0)]; //default is virtual
     }
 
@@ -63,10 +64,8 @@ public class StenoApp extends Application {
                 mDictionary.setOnDictionaryLoadedListener(listener);
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mProgressBar.setProgress(0);
-            String[] dictionaries = getDictionaryNames();
-            if (dictionaries != null) {
-                mDictionary.load(getDictionaryNames(), mProgressBar, size);
-            }
+            mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
+
         }
         return mDictionary;
     }
@@ -78,7 +77,7 @@ public class StenoApp extends Application {
     public String[] getDictionaryNames() {
         String data = prefs.getString(KEY_DICTIONARIES, "");
         if (data.isEmpty()) {
-            return null;
+            return new String[0];
         }
         return data.split(DELIMITER);
     }

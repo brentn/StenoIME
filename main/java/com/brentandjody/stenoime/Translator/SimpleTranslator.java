@@ -19,6 +19,9 @@ public class SimpleTranslator extends Translator {
     private Dictionary mDictionary;
     private Formatter mFormatter;
     private Deque<String> strokeQ = new ArrayDeque<String>();
+    private Stack<HistoryItem> history = new Stack<HistoryItem>();
+    private int preview_backspaces=0;
+
 
     public SimpleTranslator() {
         mFormatter = new Formatter();
@@ -44,6 +47,11 @@ public class SimpleTranslator extends Translator {
     }
 
     @Override
+    public void reset() {
+        history.removeAllElements();
+    }
+
+    @Override
     public TranslationResult translate(Stroke stroke) {
         if (stroke==null || stroke.rtfcre().isEmpty()) return new TranslationResult(0, "", "", "");
         int bs = 0;
@@ -64,19 +72,22 @@ public class SimpleTranslator extends Translator {
     private TranslationResult translate_simple_stroke(String stroke) {
         if (stroke==null) return new TranslationResult(0, "", "", "");
         if (mDictionary.size()<10) return new TranslationResult(0, "", "Dictionary Not Loaded", "");
+        Formatter.State state;
         int backspaces = 0;
         String text = "";
-        String preview = "";
+        String preview_text = "";
         String lookupResult;
         if (!locked) {
             if (stroke.equals("*")) { //undo
-                if (mFormatter.hasQueue()) {
-                    mFormatter.removeItemFromQueue();
+                if (!strokeQ.isEmpty()) {
+                    strokeQ.removeLast();
                 } else {
-                    if (!strokeQ.isEmpty()) {
-                        strokeQ.removeLast();
+                    if (!history.isEmpty()) {
+                        HistoryItem reset = undoStrokeFromHistory();
+                        backspaces = reset.length();
+                        text = reset.stroke();
                     } else {
-                        backspaces=-1; // special code for "remove an entire word"
+                        backspaces=-1; // special code for "remove last word"
                     }
                 }
             } else {
@@ -84,12 +95,18 @@ public class SimpleTranslator extends Translator {
                 lookupResult = mDictionary.lookup(strokesInQueue());
                 if (found(lookupResult)) {
                     if (! ambiguous(lookupResult)) {
-                        strokeQ.clear();
+                        state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
+                        backspaces = mFormatter.backspaces();
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
+                        strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
                     if (strokeQ.size()==1) {
+                        state = mFormatter.getState();
                         text = mFormatter.format(strokesInQueue());
+                        backspaces = mFormatter.backspaces();
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                         strokeQ.clear();
                     } else {  // process strokes in queue
                         Stack<String> tempQ = new Stack<String>();
@@ -99,8 +116,11 @@ public class SimpleTranslator extends Translator {
                         }
                         // at this point, either a lookup was found, or the queue is empty
                         if (found(lookupResult)) {
+                            state = mFormatter.getState();
                             text = mFormatter.format(lookupResult);
-                            if (text.isEmpty()) text = mDictionary.forceLookup(strokesInQueue());
+                            if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+                            backspaces = mFormatter.backspaces();
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                             strokeQ.clear();
                             while (!tempQ.isEmpty()) {
                                 strokeQ.add(tempQ.pop());
@@ -113,21 +133,19 @@ public class SimpleTranslator extends Translator {
                             while (!tempQ.isEmpty()) {
                                 strokeQ.add(tempQ.pop());
                             }
+                            state = mFormatter.getState();
                             text = mFormatter.format(strokesInQueue());
+                            backspaces = mFormatter.backspaces();
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                             strokeQ.clear();
                         }
                     }
                 }
-                preview = mDictionary.forceLookup(strokesInQueue());
-                if (preview==null || preview.isEmpty()) preview = strokesInQueue();
-                while (text.length()>0 && text.charAt(0)=='\b') {
-                    backspaces++;
-                    text=text.substring(1);
-                }
             }
+            preview_text = lookupQueue();
         }
-        Log.d(TAG, "text:"+text+" preview:"+preview);
-        return new TranslationResult(backspaces, text, preview, "("+Integer.toString(strokeQ.size())+")");
+        Log.d(TAG, "text:"+text+" preview:"+preview_text);
+        return new TranslationResult(backspaces, text, preview_text, "");
     }
 
     @Override
@@ -136,6 +154,8 @@ public class SimpleTranslator extends Translator {
         strokeQ.clear();
         return new TranslationResult(0, queue, "", "");
     }
+
+    public int preview_backspaces() { return preview_backspaces; }
 
     private boolean found(String s) {return (s != null); }
     private boolean ambiguous(String s) { return s.equals("");}
@@ -149,34 +169,91 @@ public class SimpleTranslator extends Translator {
         return sb.substring(0, sb.lastIndexOf("/"));
     }
 
-    private String remove_backspaces(String input) {
-        StringBuilder result = new StringBuilder();
-        int prefix_bs = 0;
-        boolean start=true;
-        for (int i=0; i< input.length(); i++) {
-            if (start) {
-                if (input.charAt(i)=='\b') {
-                    prefix_bs++;
-                } else {
-                    start=false;
-                    char[] backspaces = new char[prefix_bs];
-                    Arrays.fill(backspaces, '\b');
-                    result.append(new String(backspaces));
-                }
-            }
-            if (!start) {
-                if ((i < (input.length()-1)) && input.charAt(i+1)=='\b') {
-                    i++;
-                } else {
-                    result.append(input.charAt(i));
-                }
+    private String lookupQueue() {
+        preview_backspaces=0;
+        if (strokeQ.isEmpty()) return "";
+        String lookupResult = mDictionary.forceLookup(strokesInQueue());
+        if (lookupResult==null) {
+            return strokesInQueue();
+        } else {
+            String result = mFormatter.format(lookupResult, true);
+            preview_backspaces = mFormatter.backspaces();
+            return result;
+        }
+    }
+
+    private HistoryItem undoStrokeFromHistory() {
+        HistoryItem result = new HistoryItem(0, "", 0, null);
+        HistoryItem hItem = history.pop();
+        int num_spaces=hItem.backspaces();
+        result.setStroke(spaces(num_spaces));
+        result.setLength(hItem.length());
+        String hStroke = hItem.stroke();
+        if (hStroke.contains("/")) {
+            mFormatter.restoreState(hItem.getState());
+            mDictionary.forceLookup(hStroke.substring(hStroke.lastIndexOf("/") + 1));
+            hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
+            Collections.addAll(strokeQ, hStroke.split("/"));
+        } else { // replay prior stroke (in case it was ambiguous)
+            if (!history.isEmpty()) {
+                hItem = history.pop();
+                mFormatter.restoreState(hItem.getState());
+                result.setStroke(spaces(hItem.backspaces()));
+                result.increaseLength(hItem.length()-num_spaces);
+                hStroke = hItem.stroke();
+                Collections.addAll(strokeQ, hStroke.split("/"));
             }
         }
-        return result.toString();
+        return result;
     }
+
 
     private void addToQueue(String input) {
         Collections.addAll(strokeQ, input.split("/"));
+    }
+
+    private String spaces(int length) {
+        char[] result = new char[length];
+        Arrays.fill(result, ' ');
+        return new String(result);
+    }
+
+    class HistoryItem {
+        private int length;
+        private String stroke;
+        private int backspaces;
+        private Formatter.State state;
+
+        public HistoryItem(int l, String s, int bs, Formatter.State st) {
+            length = l;
+            stroke = s;
+            backspaces = bs;
+            state = st;
+        }
+
+        public void setLength(int length) {
+            this.length=length;
+        }
+        public void setStroke(String stroke) {
+            this.stroke = stroke;
+        }
+
+        public void increaseLength(int amount) {
+            this.length += amount;
+        }
+
+        public int length() {
+            return length;
+        }
+        public String stroke() {
+            return stroke;
+        }
+        public int backspaces() {
+            return backspaces;
+        }
+        public Formatter.State getState() {
+            return state;
+        }
     }
 }
 

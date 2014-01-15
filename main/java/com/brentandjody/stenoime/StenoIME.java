@@ -34,6 +34,8 @@ import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
 import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
+import com.brentandjody.stenoime.util.IabHelper;
+import com.brentandjody.stenoime.util.IabResult;
 
 import java.util.Set;
 
@@ -59,10 +61,24 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private LinearLayout preview_overlay;
     private int preview_length = 0;
     private boolean redo_space;
+    private IabHelper iabHelper;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        // set up in-app billing
+        String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
+        iabHelper = new IabHelper(this, publicKey);
+        iabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d(TAG, "Problem setting up In-app Billing: " + result);
+                }
+                // Hooray, IAB is fully set up!
+                // query purchased items
+            }
+        });
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
@@ -136,6 +152,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         parent.removeAllViews();
         setCandidatesViewShown(false);
         unregisterReceiver(mUsbReceiver);
+        if (iabHelper != null) iabHelper.dispose();
+        iabHelper = null;
         mKeyboard=null;
     }
 

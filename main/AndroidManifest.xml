@@ -1,25 +1,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.brentandjody.stenoime"
-    android:versionCode="11"
-    android:versionName="0.51">
+    android:versionCode="13"
+    android:versionName="1.01">
 
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="19" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
      <!--WRITE permission is only required for tests.  Disable it otherwise. -->
-    <!--<uses-permission-->
-        <!--android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-feature android:name="android.hardware.usb.host" />
 
     <application android:allowBackup="true"
         android:name=".StenoApp"
         android:label="@string/app_name"
-        android:debuggable="false"
+        android:debuggable="true"
         android:icon="@drawable/ic_launcher">
 
         <!-- Declares the input method service -->

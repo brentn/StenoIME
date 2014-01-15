@@ -3,7 +3,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference android:key="about_button"
-        android:title="About..."/>
+        android:title="About stenography..."/>
 
     <PreferenceCategory android:title="@string/translator">
         <ListPreference android:key="pref_translator"
@@ -24,6 +24,13 @@
     <PreferenceCategory android:title="Dictionary">
         <Preference android:key="pref_dictionary_button"
             android:title="Edit Dictionaries"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Hardware">
+        <SwitchPreference android:key="pref_kbd_enabled"
+            android:title="Enable NKRO Keyboard"
+            android:defaultValue="false"
+            android:enabled="false"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

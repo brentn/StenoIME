@@ -47,10 +47,7 @@ public class StenoApp extends Application {
         mInputDevice = sm;}
     public void setUsbDevice(UsbDevice ud) { mUsbDevice = ud; }
     public void setProgressBar(ProgressBar pb) { mProgressBar = pb; }
-    public void setMachineType(StenoMachine.TYPE t) {
-        mMachineType = StenoMachine.TYPE.VIRTUAL;
-        //mMachineType = t;
-    }
+    public void setMachineType(StenoMachine.TYPE t) {  mMachineType = t; }
     public void setTranslatorType(Translator.TYPE t) { mTranslatorType = t; }
 
     // Getters

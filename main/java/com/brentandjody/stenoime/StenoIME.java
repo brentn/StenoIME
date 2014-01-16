@@ -320,27 +320,30 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** Stuff to change Input Device ***
 
     private void setMachineType(StenoMachine.TYPE t) {
-        if (t==null) t= StenoMachine.TYPE.VIRTUAL;
-        if (App.getMachineType()==t) return; //short circuit
-        App.setMachineType(t);
-        saveIntPreference(StenoApp.KEY_MACHINE_TYPE, App.getMachineType().ordinal());
-        switch (App.getMachineType()) {
-            case VIRTUAL:
-                App.setInputDevice(null);
-                if (mKeyboard!=null) launchVirtualKeyboard();
-                break;
-            case KEYBOARD:
-                Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
-                if (mKeyboard!=null) removeVirtualKeyboard();
-                registerMachine(new NKeyRolloverMachine());
-                break;
-            case TXBOLT:
-                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
-                if (mKeyboard!=null) removeVirtualKeyboard();
-                ((UsbManager)getSystemService(Context.USB_SERVICE))
-                        .requestPermission(App.getUsbDevice(), mPermissionIntent);
-                break;
-        }
+        App.setMachineType(StenoMachine.TYPE.VIRTUAL);
+        return;
+
+//        if (t==null) t= StenoMachine.TYPE.VIRTUAL;
+//        if (App.getMachineType()==t) return; //short circuit
+//        App.setMachineType(t);
+//        saveIntPreference(StenoApp.KEY_MACHINE_TYPE, App.getMachineType().ordinal());
+//        switch (App.getMachineType()) {
+//            case VIRTUAL:
+//                App.setInputDevice(null);
+//                if (mKeyboard!=null) launchVirtualKeyboard();
+//                break;
+//            case KEYBOARD:
+//                Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
+//                if (mKeyboard!=null) removeVirtualKeyboard();
+//                registerMachine(new NKeyRolloverMachine());
+//                break;
+//            case TXBOLT:
+//                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
+//                if (mKeyboard!=null) removeVirtualKeyboard();
+//                ((UsbManager)getSystemService(Context.USB_SERVICE))
+//                        .requestPermission(App.getUsbDevice(), mPermissionIntent);
+//                break;
+//        }
     }
 
     private void registerMachine(StenoMachine machine) {

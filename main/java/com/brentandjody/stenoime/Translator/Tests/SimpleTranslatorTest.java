@@ -154,6 +154,10 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("R-R")), 1, ".  \n", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
+        //Suffix Folding
+        checkResults(translator.translate(new Stroke("UD")), 0, "youed ", "");
+        checkResults(translator.translate(new Stroke("UG")), 0, "youing ", "");
+        checkResults(translator.translate(new Stroke("US")), 0, "yous ", "");
     }
 
     public void testSpecialCases() throws Exception {

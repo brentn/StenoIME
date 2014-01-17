@@ -104,7 +104,7 @@ public class SimpleTranslator extends Translator {
                 } else {
                     if (strokeQ.size()==1) {
                         state = mFormatter.getState();
-                        text = mFormatter.format(strokesInQueue());
+                        text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                         backspaces = mFormatter.backspaces();
                         history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                         strokeQ.clear();
@@ -134,7 +134,7 @@ public class SimpleTranslator extends Translator {
                                 strokeQ.add(tempQ.pop());
                             }
                             state = mFormatter.getState();
-                            text = mFormatter.format(strokesInQueue());
+                            text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
                             history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
                             strokeQ.clear();
@@ -180,6 +180,26 @@ public class SimpleTranslator extends Translator {
             preview_backspaces = mFormatter.backspaces();
             return result;
         }
+    }
+
+    private String trySuffixFolding(String stroke) {
+        if (stroke == null) return stroke;
+        char last_char = stroke.charAt(stroke.length()-1);
+        String lookup = "";
+        if (last_char=='G') {
+            lookup = mDictionary.forceLookup(stroke.substring(0, stroke.length()-1));
+            if (lookup != null) return lookup+"ing";
+        }
+        if (last_char=='D') {
+            lookup = mDictionary.forceLookup(stroke.substring(0, stroke.length()-1));
+            if (lookup != null) return lookup+"ed";
+        }
+        if (last_char=='S') {
+            lookup = mDictionary.forceLookup(stroke.substring(0, stroke.length()-1));
+            if (lookup != null) return lookup+"s";
+        }
+        //otherwise
+        return stroke;
     }
 
     private HistoryItem undoStrokeFromHistory() {

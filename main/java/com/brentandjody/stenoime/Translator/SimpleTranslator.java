@@ -1,5 +1,6 @@
 package com.brentandjody.stenoime.Translator;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayDeque;
@@ -21,10 +22,12 @@ public class SimpleTranslator extends Translator {
     private Deque<String> strokeQ = new ArrayDeque<String>();
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
+    private Context context;
 
 
-    public SimpleTranslator() {
+    public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
+        this.context = context;
     }
 
     public void setDictionary(Dictionary dictionary) {
@@ -143,6 +146,14 @@ public class SimpleTranslator extends Translator {
                 }
             }
             preview_text = lookupQueue();
+            TranslationResult current = new TranslationResult(backspaces, text, preview_text, "");
+            if (mFormatter.wasSuffix()) {
+                TranslationResult fixed = applySuffixOrthography(current, stroke);
+                current=null;
+                text = fixed.getText();
+                backspaces = fixed.getBackspaces();
+                fixed=null;
+            }
         }
         Log.d(TAG, "text:"+text+" preview:"+preview_text);
         return new TranslationResult(backspaces, text, preview_text, "");
@@ -182,10 +193,22 @@ public class SimpleTranslator extends Translator {
         }
     }
 
+    private TranslationResult applySuffixOrthography(TranslationResult current, String stroke) {
+        Suffixes suffixMachine = new Suffixes(context);
+        String suffix = current.getText();
+        history.pop(); //this was the current suffix, so ignore it;
+        HistoryItem item = history.pop();
+        mFormatter.restoreState(item.getState());
+        String word = mFormatter.format(mDictionary.forceLookup(item.stroke()));
+        String result = suffixMachine.bestMatch(word, suffix);
+        history.push(new HistoryItem(result.length(), item.stroke()+"/"+stroke, item.backspaces(), item.getState()));
+        return new TranslationResult(item.length(),result , "","");
+    }
+
     private String trySuffixFolding(String stroke) {
         if (stroke == null) return stroke;
         char last_char = stroke.charAt(stroke.length()-1);
-        String lookup = "";
+        String lookup;
         if (last_char=='G') {
             lookup = mDictionary.forceLookup(stroke.substring(0, stroke.length()-1));
             if (lookup != null) return lookup+"ing";

@@ -42,12 +42,22 @@ public class FormatterTest extends AndroidTestCase {
         assertEquals("\n  ", formatter.format("{#Return}{  }{-|}"));
         assertTrue(formatter.hasFlags());
         assertEquals("Canada ", formatter.format("canada"));
+    }
 
-
-
-
-
-
+    public void testIsSuffix() throws Exception {
+        Formatter formatter = new Formatter();
+        formatter.format("abc");
+        assertFalse(formatter.wasSuffix());
+        formatter.format("^x");
+        assertFalse(formatter.wasSuffix());
+        formatter.format("{^a}");
+        assertTrue(formatter.wasSuffix());
+        formatter.format("{^}");
+        assertFalse(formatter.wasSuffix());
+        formatter.format ("{^ ^}");
+        assertFalse(formatter.wasSuffix());
+        formatter.format("{^alnlnf");
+        assertTrue(formatter.wasSuffix());
     }
 
     public void testHasQueue() throws Exception {

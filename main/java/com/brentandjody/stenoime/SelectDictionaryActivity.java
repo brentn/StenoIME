@@ -165,7 +165,7 @@ public class SelectDictionaryActivity extends ListActivity {
     }
 
     /**
-     * Get a file path from a Uri. This will get the the path for Storage Access
+     * Get a file path from a Uri. This will score the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
      *

@@ -13,6 +13,7 @@ public class Formatter {
     public static final String punctuation = ":;,";
 
     private int backspaces;
+    private boolean suffix;
     // state variables
     private CASE capitalization=null;
     private boolean glue=false;
@@ -25,6 +26,7 @@ public class Formatter {
     }
 
     public String format (String input, boolean reset_state) {
+        suffix = false;
         State prior_state = getState();
         backspaces=0;
         if (input==null || input.length()==0) return "";
@@ -35,6 +37,7 @@ public class Formatter {
         StringBuilder sb = new StringBuilder();
         if (hasFlags() || input.contains("{")) {
             for (String atom : breakApart(input)) {
+                suffix = isSuffix(atom);
                 if (atom.equals("{#Return}")) {
                     sb.append("\n"); space=""; atom="";
                 }
@@ -137,6 +140,16 @@ public class Formatter {
             result.add(s);
         }
         return result;
+    }
+
+    public boolean wasSuffix() { return suffix; }
+
+    private boolean isSuffix(String atom) {
+        if (atom==null) return false;
+        if (atom.length()<3) return false;
+        if (atom.charAt(atom.length()-2)=='^') return false; //it is a joiner, not a suffix
+        if (atom.charAt(0)=='{' && atom.charAt(1)=='^') return true;
+        return false;
     }
 
     private String remove_backspaces(String text) {

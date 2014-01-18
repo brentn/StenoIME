@@ -47,12 +47,12 @@ public class SimpleTranslatorTest extends AndroidTestCase {
 
 
     public void testUsesDictionary() throws Exception {
-        SimpleTranslator translator = new SimpleTranslator();
+        SimpleTranslator translator = new SimpleTranslator(getContext());
         assertTrue(translator.usesDictionary());
     }
 
     public void testLockAndUnlock() throws Exception {
-        final SimpleTranslator translator = new SimpleTranslator();
+        final SimpleTranslator translator = new SimpleTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -73,7 +73,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
 
 
     public void testTranslate() throws Exception {
-        final SimpleTranslator translator = new SimpleTranslator();
+        final SimpleTranslator translator = new SimpleTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
@@ -102,17 +102,17 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // endings (with & without queue
         checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
         checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
-        checkResults(translator.translate(new Stroke("-G")), 1, "ing ", "");
+        checkResults(translator.translate(new Stroke("-G")), 6, "adulting ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
-        checkResults(translator.translate(new Stroke("-D")), 1, "ed ", "");
+        checkResults(translator.translate(new Stroke("-D")), 6, "admitted ", "");
         // undo (with & without queue)
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 12, " ", "ed ");
+        checkResults(translator.translate(new Stroke("*")), 18, "realize ", "ed ");
         checkResults(translator.translate(new Stroke("ADZ")), 1, "ed ", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
         checkResults(translator.translate(new Stroke("*")), 7, "", "adds ");
@@ -161,7 +161,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     }
 
     public void testSpecialCases() throws Exception {
-        final SimpleTranslator translator = new SimpleTranslator();
+        final SimpleTranslator translator = new SimpleTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);

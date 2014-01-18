@@ -83,7 +83,7 @@ public abstract class SerialDevice {
     }
 
     public int read(final byte[] data, final int timeout) throws IOException {
-        //TODO: get the real interface and endpoint
+        //TODO: score the real interface and endpoint
         final UsbEndpoint endpoint = mDevice.getInterface(0).getEndpoint(0);
         final int totalBytesRead;
         synchronized (mReadBufferLock) {
@@ -97,7 +97,7 @@ public abstract class SerialDevice {
     }
 
     public int write(final byte[] data, final int timeout) throws IOException {
-        //TODO: get the real interface and endpoint
+        //TODO: score the real interface and endpoint
         final UsbEndpoint endpoint = mDevice.getInterface(0).getEndpoint(1);
         int offset = 0;
         while (offset < data.length) {

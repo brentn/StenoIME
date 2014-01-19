@@ -23,11 +23,19 @@ public class SimpleTranslator extends Translator {
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
     private Context context;
+    private Suffixes suffixMachine;
 
 
     public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
         this.context = context;
+        suffixMachine = new Suffixes(context);
+    }
+
+    public SimpleTranslator(Context context, boolean useWordList) { //for testing
+        mFormatter = new Formatter();
+        this.context = context;
+        suffixMachine = new Suffixes(context, useWordList);
     }
 
     public void setDictionary(Dictionary dictionary) {
@@ -137,6 +145,13 @@ public class SimpleTranslator extends Translator {
                             text = mFormatter.format(lookupResult);
                             if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
+                            if (mFormatter.wasSuffix()) {
+                                history.push(new HistoryItem(0,"","",0,null)); //dummy item
+                                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, "", ""), strokesInQueue());
+                                text = fixed.getText();
+                                backspaces = fixed.getBackspaces();
+                                fixed=null;
+                            }
                             history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             strokeQ.clear();
                             if (!tempQ.isEmpty()) {
@@ -163,16 +178,14 @@ public class SimpleTranslator extends Translator {
                 }
             }
             preview_text = lookupQueue();
-            TranslationResult result = new TranslationResult(backspaces, text, preview_text, "");
             if (mFormatter.wasSuffix()) {
-                TranslationResult fixed = applySuffixOrthography(result, stroke);
-                result=null;
+                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, preview_text, ""), stroke);
                 text = fixed.getText();
                 backspaces = fixed.getBackspaces();
                 fixed=null;
             }
         }
-        Log.d(TAG, "text:"+text+" preview:"+preview_text);
+        Log.d(TAG, "text:" + text + " preview:" + preview_text);
         return new TranslationResult(backspaces, text, preview_text, "");
     }
 
@@ -211,7 +224,6 @@ public class SimpleTranslator extends Translator {
     }
 
     private TranslationResult applySuffixOrthography(TranslationResult current, String stroke) {
-        Suffixes suffixMachine = new Suffixes(context);
         String suffix = current.getText();
         history.pop(); //this was the current suffix, so ignore it;
         HistoryItem item = history.pop();

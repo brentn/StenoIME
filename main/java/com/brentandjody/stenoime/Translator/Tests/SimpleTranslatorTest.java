@@ -73,7 +73,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
 
 
     public void testTranslate() throws Exception {
-        final SimpleTranslator translator = new SimpleTranslator(getContext());
+        final SimpleTranslator translator = new SimpleTranslator(getContext(), true);
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
@@ -104,8 +104,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
         checkResults(translator.translate(new Stroke("-G")), 6, "adulting ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
-        checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
+        checkResults(translator.translate(new Stroke("HREU")), 0, "adds ", "ly ");
+        checkResults(translator.translate(new Stroke("ADZ")), 5, "addsly ", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
         checkResults(translator.translate(new Stroke("-D")), 6, "admitted ", "");
         // undo (with & without queue)
@@ -114,9 +114,9 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
         checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
-        checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
-        checkResults(translator.translate(new Stroke("*")), 7, "", "adds ");
+        checkResults(translator.translate(new Stroke("HREU")), 0, "adds ", "ly ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("*")), 14, "admitted ", "");
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
@@ -158,6 +158,12 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("UD")), 0, "youed ", "");
         checkResults(translator.translate(new Stroke("UG")), 0, "youing ", "");
         checkResults(translator.translate(new Stroke("US")), 0, "yous ", "");
+        //Word List
+        checkResults(translator.translate(new Stroke("ART")), 0, "", "art ");
+        checkResults(translator.translate(new Stroke("EUFT")), 0, "", "artist ");
+        checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
+        checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
+        checkResults(translator.translate(new Stroke("U")), 9, "artistically you ", "");
     }
 
     public void testSpecialCases() throws Exception {

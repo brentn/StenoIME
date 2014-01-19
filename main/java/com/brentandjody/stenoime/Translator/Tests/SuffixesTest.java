@@ -10,7 +10,7 @@ import com.brentandjody.stenoime.Translator.Suffixes;
 public class SuffixesTest extends AndroidTestCase {
 
     public void testOrthography() throws Exception {
-        Suffixes mSuffixes = new Suffixes(getContext());
+        Suffixes mSuffixes = new Suffixes(getContext(), true);
         assertEquals("artistically ", mSuffixes.bestMatch("artistic", "ly"));
         assertEquals("establishes ", mSuffixes.bestMatch("establish", "s"));
         assertEquals("speeches ", mSuffixes.bestMatch("speech", "s"));

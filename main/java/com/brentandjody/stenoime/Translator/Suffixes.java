@@ -2,6 +2,8 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 
+import com.brentandjody.stenoime.StenoApp;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 
 /**
  * Created by brentn on 16/01/14.
+ * Handle English suffix orthography with optional word list
  */
 public class Suffixes {
 
@@ -26,10 +29,18 @@ public class Suffixes {
 
     private static final Rule[] RULES = new Rule[]{RULE1, RULE2, RULE3, RULE4, RULE5, RULE6, RULE7, RULE8, RULE9, RULE10};
 
-    private WordList word_list;
+    private WordList word_list=null;
 
     public Suffixes(Context context) {
-        word_list = new WordList(context);
+        if ((context instanceof StenoApp) && (((StenoApp)context).useWordList())) {
+            word_list = new WordList(context);
+        }
+    }
+
+    public Suffixes(Context context, boolean useWordList) {  //for testing (need to specify wordlist manually
+        if (useWordList) {
+            word_list = new WordList(context);
+        }
     }
 
     public String bestMatch(String word, String suffix) {
@@ -38,13 +49,14 @@ public class Suffixes {
         Comparator<Word> wordScoreComparator = new WordScoreComparator();
         Queue<Word> candidates = new PriorityQueue<Word>(3, wordScoreComparator);
         //try 'ible' instead of able
-        if (suffix == "able") {
+        if (suffix.equals("able")) {
+
             candidates.addAll(in_word_list(make_candidates_from_rules(word, "ible")));
-            candidates.add(new Word(word+"ible", word_list.score(word+"ible")));
+            candidates.add(new Word(word+"ible", word_score(word + "ible")));
         }
         //try a simple join
-        if (word_list.contains(word + suffix)) {
-            candidates.add(new Word(word+suffix, word_list.score(word + suffix)));
+        if (in_word_list(word + suffix)) {
+            candidates.add(new Word(word+suffix, word_score(word + suffix)));
         }
         //try rules
         candidates.addAll(in_word_list(make_candidates_from_rules(word, suffix)));
@@ -56,7 +68,12 @@ public class Suffixes {
         return (word+suffix)+" ";
     }
 
+    private boolean in_word_list(String word) {
+        return word_list == null || word_list.contains(word);
+    }
+
     private Queue<Word> in_word_list(Queue<Word> candidates) {
+        if (word_list==null) return candidates; //if not using word list
         Comparator<Word> wordScoreComparator = new WordScoreComparator();
         Queue<Word> result = new PriorityQueue<Word>(3, wordScoreComparator) {
         };
@@ -70,6 +87,11 @@ public class Suffixes {
             result.add(word);
         }
         return result;
+    }
+
+    private int word_score(String word) {
+        if (word_list==null) return 999; //if not using word list
+        return word_list.score(word);
     }
 
     private Queue<Word> make_candidates_from_rules(String word, String suffix) {

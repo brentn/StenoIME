@@ -112,8 +112,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 18, "realize ", "ed ");
-        checkResults(translator.translate(new Stroke("ADZ")), 1, "ed ", "adds ");
+        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "addsly ", "");
         checkResults(translator.translate(new Stroke("*")), 7, "", "adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
@@ -130,23 +130,23 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
-        checkResults(translator.translate(new Stroke("*")), 10, "", "Thank ");
+        checkResults(translator.translate(new Stroke("*")), 10, "Thank ", "");
+        checkResults(translator.translate(new Stroke("*")), 9, " ", ".  "); //TODO:why the space? and following 1
+        checkResults(translator.translate(new Stroke("ADZ")), 1, ".  ", "Adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "Adds ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 11, "", "immortal ");
-        checkResults(translator.translate(new Stroke("THAPBG")), 0, "immortal thank ", "");
-        checkResults(translator.translate(new Stroke("-FL")), 1, "ful ", "");
-        checkResults(translator.translate(new Stroke("-PBS")), 1, "ness ", "");
-        checkResults(translator.translate(new Stroke("*")), 8, " ", "ful ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 15, "", "immortal ");
+        checkResults(translator.translate(new Stroke("*")), 11, "immortal ", "");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
+        checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");
+        checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");
+        checkResults(translator.translate(new Stroke("*")), 13, "thankful ", "");
+        checkResults(translator.translate(new Stroke("*")), 9, "thank ", "");
+        checkResults(translator.translate(new Stroke("*")), 15, "immortal ", "");
         // test fingerspelling and undo
-        checkResults(translator.translate(new Stroke("A*")), 0, "immortal a ", "");
+        checkResults(translator.translate(new Stroke("A*")), 0, "a ", "");
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");
-        checkResults(translator.translate(new Stroke("*")), 3, " ", "b ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("*")), 3, "b ", "");
+        checkResults(translator.translate(new Stroke("*")), 3, "a ", "");
         // caps should persist through enter
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
         checkResults(translator.translate(new Stroke("KPA")), 0, "", "");

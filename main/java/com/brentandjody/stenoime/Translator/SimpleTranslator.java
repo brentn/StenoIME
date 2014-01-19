@@ -54,7 +54,6 @@ public class SimpleTranslator extends Translator {
         history.removeAllElements();
     }
 
-    @Override
     public TranslationResult translate(Stroke stroke) {
         if (stroke==null || stroke.rtfcre().isEmpty()) return new TranslationResult(0, "", "", "");
         int bs = 0;
@@ -89,6 +88,21 @@ public class SimpleTranslator extends Translator {
                         HistoryItem reset = undoStrokeFromHistory();
                         backspaces = reset.length();
                         text = reset.stroke();
+                        if (!strokeQ.isEmpty()) {
+                            //replay the queue
+                            stroke="";
+                            Stack<String> tempQ = new Stack<String>();
+                            while (!strokeQ.isEmpty()) {
+                                tempQ.push(strokeQ.removeLast());
+                            }
+                            while (!tempQ.isEmpty()) {
+                                String tempStroke = tempQ.pop();
+                                stroke += "/"+tempStroke;
+                                TranslationResult recurse = translate_simple_stroke(tempStroke);
+                                text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
+                            }
+                            if (!stroke.isEmpty()) stroke=stroke.substring(1);
+                        }
                     } else {
                         backspaces=-1; // special code for "remove last word"
                     }
@@ -101,7 +115,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                         strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
@@ -109,7 +123,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
+                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                         strokeQ.clear();
                     } else {  // process strokes in queue
                         Stack<String> tempQ = new Stack<String>();
@@ -123,15 +137,18 @@ public class SimpleTranslator extends Translator {
                             text = mFormatter.format(lookupResult);
                             if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             strokeQ.clear();
-                            while (!tempQ.isEmpty()) {
-                                strokeQ.add(tempQ.pop());
+                            if (!tempQ.isEmpty()) {
+                                stroke = "";
+                                while (!tempQ.isEmpty()) { //recursively replay strokes
+                                    String tempStroke = tempQ.pop();
+                                    stroke += "/"+tempStroke;
+                                    TranslationResult recurse = translate_simple_stroke(tempStroke);
+                                    text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
+                                }
+                                if (!stroke.isEmpty()) stroke = stroke.substring(1);
                             }
-                            // lookup remaining strokes in queue
-                            TranslationResult result = translate_simple_stroke(strokeQ.removeLast()); //recurse
-                            text = text.substring(0, text.length()-result.getBackspaces()) + result.getText();
-
                         } else {
                             while (!tempQ.isEmpty()) {
                                 strokeQ.add(tempQ.pop());
@@ -139,17 +156,17 @@ public class SimpleTranslator extends Translator {
                             state = mFormatter.getState();
                             text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), backspaces, state));
+                            history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             strokeQ.clear();
                         }
                     }
                 }
             }
             preview_text = lookupQueue();
-            TranslationResult current = new TranslationResult(backspaces, text, preview_text, "");
+            TranslationResult result = new TranslationResult(backspaces, text, preview_text, "");
             if (mFormatter.wasSuffix()) {
-                TranslationResult fixed = applySuffixOrthography(current, stroke);
-                current=null;
+                TranslationResult fixed = applySuffixOrthography(result, stroke);
+                result=null;
                 text = fixed.getText();
                 backspaces = fixed.getBackspaces();
                 fixed=null;
@@ -198,11 +215,11 @@ public class SimpleTranslator extends Translator {
         String suffix = current.getText();
         history.pop(); //this was the current suffix, so ignore it;
         HistoryItem item = history.pop();
+        String word = item.text();
         mFormatter.restoreState(item.getState());
-        String word = mFormatter.format(mDictionary.forceLookup(item.stroke()));
         String result = suffixMachine.bestMatch(word, suffix);
-        history.push(new HistoryItem(result.length(), item.stroke()+"/"+stroke, item.backspaces(), item.getState()));
-        return new TranslationResult(item.length(),result , "","");
+        history.push(new HistoryItem(result.length(), item.stroke() + "/" + stroke, result, item.backspaces(), item.getState()));
+        return new TranslationResult(item.length(), result , "","");
     }
 
     private String trySuffixFolding(String stroke) {
@@ -226,7 +243,7 @@ public class SimpleTranslator extends Translator {
     }
 
     private HistoryItem undoStrokeFromHistory() {
-        HistoryItem result = new HistoryItem(0, "", 0, null);
+        HistoryItem result = new HistoryItem(0, "", "", 0, null);
         HistoryItem hItem = history.pop();
         int num_spaces=hItem.backspaces();
         result.setStroke(spaces(num_spaces));
@@ -264,14 +281,16 @@ public class SimpleTranslator extends Translator {
     class HistoryItem {
         private int length;
         private String stroke;
+        private String text;
         private int backspaces;
         private Formatter.State state;
 
-        public HistoryItem(int l, String s, int bs, Formatter.State st) {
-            length = l;
-            stroke = s;
-            backspaces = bs;
-            state = st;
+        public HistoryItem(int length, String stroke, String text, int bs, Formatter.State state) {
+            this.length = length;
+            this.stroke = stroke;
+            this.text = text;
+            this.backspaces = bs;
+            this.state = state;
         }
 
         public void setLength(int length) {
@@ -290,6 +309,9 @@ public class SimpleTranslator extends Translator {
         }
         public String stroke() {
             return stroke;
+        }
+        public String text() {
+            return text;
         }
         public int backspaces() {
             return backspaces;

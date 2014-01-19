@@ -105,12 +105,13 @@ public class Formatter {
     }
 
     public State getState() {
-        return new State(capitalization, glue);
+        return new State(capitalization, glue, suffix);
     }
 
     public void restoreState(State state) {
         capitalization = state.getCapitalization();
         glue = state.hasGlue();
+        suffix = state.suffix();
     }
 
     public boolean hasFlags() { return (glue || (capitalization!=null)); }
@@ -148,8 +149,7 @@ public class Formatter {
         if (atom==null) return false;
         if (atom.length()<3) return false;
         if (atom.charAt(atom.length()-2)=='^') return false; //it is a joiner, not a suffix
-        if (atom.charAt(0)=='{' && atom.charAt(1)=='^') return true;
-        return false;
+        return atom.charAt(0) == '{' && atom.charAt(1) == '^';
     }
 
     private String remove_backspaces(String text) {
@@ -176,10 +176,12 @@ public class Formatter {
     public class State {
         private CASE capitalization;
         private boolean glue;
+        private boolean suffix;
 
-        public State(CASE capitalization, boolean glue) {
+        public State(CASE capitalization, boolean glue, boolean suffix) {
             this.capitalization=capitalization;
             this.glue=glue;
+            this.suffix=suffix;
         }
 
         public CASE getCapitalization() {
@@ -188,7 +190,9 @@ public class Formatter {
         public boolean hasGlue() {
             return glue;
         }
-
+        public boolean suffix() {
+            return suffix;
+        }
     }
 
 }

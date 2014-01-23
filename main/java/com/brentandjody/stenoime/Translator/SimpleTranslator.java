@@ -225,7 +225,9 @@ public class SimpleTranslator extends Translator {
 
     private TranslationResult applySuffixOrthography(TranslationResult current, String stroke) {
         String suffix = current.getText();
+        if (history.isEmpty()) return current;
         history.pop(); //this was the current suffix, so ignore it;
+        if (history.isEmpty()) return current;
         HistoryItem item = history.pop();
         String word = item.text();
         mFormatter.restoreState(item.getState());

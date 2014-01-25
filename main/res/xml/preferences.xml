@@ -11,6 +11,11 @@
             android:entries="@array/translator_names"
             android:entryValues="@array/translator_values"
             android:defaultValue="1"/>
+        <SwitchPreference android:key="pref_suffix_correction"
+            android:title="Use Word List"
+            android:summaryOn="More accurate suffixes, but slower"
+            android:summaryOff="Generate suffixes based on rules"
+            android:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/formatter">

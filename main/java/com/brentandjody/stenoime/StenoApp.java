@@ -93,6 +93,7 @@ public class StenoApp extends Application {
     public UsbDevice getUsbDevice() { return mUsbDevice; }
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
+    public boolean useWordList() { return prefs.getBoolean("pref_suffix_correction", false); }
 
     public Dictionary getDictionary(Dictionary.OnDictionaryLoadedListener listener) {
         // if dictionary is empty, load it - otherwise just return it

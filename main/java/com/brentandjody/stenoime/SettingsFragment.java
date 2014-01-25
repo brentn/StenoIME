@@ -1,7 +1,6 @@
 package com.brentandjody.stenoime;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -27,8 +26,9 @@ public class SettingsFragment extends PreferenceFragment {
                 return false;
             }
         });
-        // set translator text
+        // set translator options
         ListPreference translator = (ListPreference) findPreference("pref_translator");
+        final Preference suffixes = findPreference("pref_suffix_correction");
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -36,8 +36,9 @@ public class SettingsFragment extends PreferenceFragment {
                 ListPreference translator = (ListPreference) preference;
                 translator.setValue(newValue.toString());
                 translator.setSummary(translator.getEntry());
-                int val = Integer.parseInt(newValue.toString());
-                ((StenoApp) getActivity().getApplication()).setTranslatorType(Translator.TYPE.values()[val]);
+                Translator.TYPE tType = Translator.TYPE.values()[Integer.parseInt(newValue.toString())];
+                ((StenoApp) getActivity().getApplication()).setTranslatorType(tType);
+                suffixes.setEnabled(tType == Translator.TYPE.SimpleDictionary);
                 return false;
             }
         });

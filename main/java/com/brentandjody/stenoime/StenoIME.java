@@ -168,7 +168,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         switch (t) {
             case RawStrokes: mTranslator = new RawStrokeTranslator(); break;
             case SimpleDictionary:
-                mTranslator = new SimpleTranslator();
+                mTranslator = new SimpleTranslator(getApplicationContext());
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
                 break;
         }

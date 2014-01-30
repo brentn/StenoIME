@@ -30,10 +30,10 @@ public class StenoApp extends Application {
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
     public static final String KEY_MACHINE_TYPE = "default_machine_type";
     public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
+    public static final String KEY_NKRO_ENABLED = "pref_kbd_enabled";
 
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     private static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
-
 
     private Dictionary mDictionary;
     private StenoMachine mInputDevice;
@@ -45,11 +45,13 @@ public class StenoApp extends Application {
     private IabHelper iabHelper;
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
     private String nkroPrice;
+    private boolean nkro_enabled = true;
+    private boolean txbolt_enabled = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = new Dictionary(getApplicationContext());
         mProgressBar = new ProgressBar(getApplicationContext());
         mInputDevice =null;
@@ -85,7 +87,15 @@ public class StenoApp extends Application {
         mInputDevice = sm;}
     public void setUsbDevice(UsbDevice ud) { mUsbDevice = ud; }
     public void setProgressBar(ProgressBar pb) { mProgressBar = pb; }
-    public void setMachineType(StenoMachine.TYPE t) {  mMachineType = StenoMachine.TYPE.VIRTUAL; }
+    public void setMachineType(StenoMachine.TYPE t) {
+        switch (t) {
+            case VIRTUAL: mMachineType = t;
+                break;
+            case KEYBOARD: if (nkro_enabled) mMachineType = t;
+                break;
+            case TXBOLT: if (txbolt_enabled) mMachineType = t;
+        }
+    }
     public void setTranslatorType(Translator.TYPE t) { mTranslatorType = t; }
 
     // Getters

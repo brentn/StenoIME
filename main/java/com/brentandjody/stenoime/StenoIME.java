@@ -53,6 +53,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     //layout vars
     private LinearLayout mKeyboard;
     private LinearLayout preview_overlay;
+    private View candidates_view;
+    private View candidates_bar;
     private TextView preview;
     private TextView debug_text;
 
@@ -68,11 +70,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        if (isKeyboardConnected(getResources().getConfiguration())) {
-            setMachineType(StenoMachine.TYPE.KEYBOARD);
-        } else {
-            setMachineType(StenoMachine.TYPE.VIRTUAL);
-        }
     }
 
     @Override
@@ -91,6 +88,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         // called before initialization of interfaces, and after config changes
         Log.d(TAG, "onInitializeInterface()");
         super.onInitializeInterface();
+        if (isKeyboardConnected(getResources().getConfiguration())) {
+            setMachineType(StenoMachine.TYPE.KEYBOARD);
+        } else {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
+        }
+        onStartInput(false);
 //TXBOLT:        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
 //        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 //        registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
@@ -113,19 +116,20 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public View onCreateCandidatesView() {
         Log.d(TAG, "onCreateCandidatesView()");
-        View view = getLayoutInflater().inflate(R.layout.preview, null);
-        view.setOnClickListener(new View.OnClickListener() {
+        candidates_view = getLayoutInflater().inflate(R.layout.preview, null);
+        candidates_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendText(mTranslator.submitQueue());
             }
         });
-        preview = (TextView) view.findViewById(R.id.preview);
-        preview_overlay = (LinearLayout) view.findViewById(R.id.preview_overlay);
-        debug_text = (TextView) view.findViewById(R.id.debug);
+        candidates_bar = candidates_view.findViewById(R.id.text);
+        preview = (TextView) candidates_view.findViewById(R.id.preview);
+        preview_overlay = (LinearLayout) candidates_view.findViewById(R.id.preview_overlay);
+        debug_text = (TextView) candidates_view.findViewById(R.id.debug);
 
         App.setProgressBar((ProgressBar) preview_overlay.findViewById(R.id.progressBar));
-        return view;
+        return candidates_view;
     }
 
 
@@ -135,17 +139,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "onStartInputView()");
 
         super.onStartInputView(info, restarting);
+        onStartInput(restarting);
+    }
 
+    public void onStartInput(boolean restarting) {
+        Log.d(TAG, "onStartInput()");
+
+        initializeTranslator();
         initializePreview();
-        initializeTranslator(App.getTranslatorType());
+        lockIfRequired();
         if (!restarting && mTranslator!=null)
             mTranslator.reset(); // clear stroke history
-
-        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
-            launchVirtualKeyboard();
-        } else {
-            removeVirtualKeyboard();
-        }
     }
 
 
@@ -186,8 +190,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void initializePreview() {
+        if (candidates_view == null) {
+            candidates_view = onCreateCandidatesView();
+        }
         inline_preview = prefs.getBoolean("pref_inline_preview", false);
-        setCandidatesViewShown(!inline_preview);
+        if (App.isDictionaryLoaded())
+            showPreviewBar(!inline_preview);
         if (! inline_preview) {
             if (preview!=null) preview.setText("");
             if (debug_text !=null) debug_text.setText("");
@@ -195,8 +203,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         preview_length=0;
     }
 
-    private void initializeTranslator(Translator.TYPE t) {
-        switch (t) {
+    private void initializeTranslator() {
+        switch (App.getTranslatorType()) {
             case RawStrokes: mTranslator = new RawStrokeTranslator(); break;
             case SimpleDictionary:
                 mTranslator = new SimpleTranslator(getApplicationContext());
@@ -297,12 +305,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         keyboard.setOnStrokeListener(this);
         //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
         keyboard.setVisibility(View.VISIBLE);
-        if (mTranslator.usesDictionary()) {
-            if (App.getDictionary(this).isLoading())
-                lockKeyboard();
-            else
-                unlockKeyboard();
-        }
     }
 
     private void removeVirtualKeyboard() {
@@ -310,6 +312,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (keyboard != null) {
             //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             keyboard.setVisibility(View.GONE);
+        }
+    }
+
+    private void lockIfRequired() {
+        if (mTranslator.usesDictionary()) {
+            loadDictionary();
         }
     }
 
@@ -321,13 +329,26 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         if (preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
         if (mTranslator!=null) mTranslator.lock();
+        showPreviewBar(true);
     }
 
     private void unlockKeyboard() {
-        View overlay = mKeyboard.findViewById(R.id.overlay);
-        if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
+        if (mKeyboard != null) {
+            View overlay = mKeyboard.findViewById(R.id.overlay);
+            if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
+        }
         if (preview_overlay != null) preview_overlay.setVisibility(View.INVISIBLE);
         if (mTranslator!=null) mTranslator.unlock();
+        showPreviewBar(!inline_preview);
+    }
+
+    private void showPreviewBar(boolean show) {
+        setCandidatesViewShown(true);
+        if (show) {
+            candidates_bar.setVisibility(View.VISIBLE);
+        } else {
+            candidates_bar.setVisibility(View.GONE);
+        }
     }
 
 

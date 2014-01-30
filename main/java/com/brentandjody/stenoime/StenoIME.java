@@ -47,15 +47,21 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
 
+    private static boolean KEYBOARD_CONNECTED=false;
+    private static boolean TXBOLT_CONNECTED=false;
+
     private StenoApp App;
     private SharedPreferences prefs;
     private boolean inline_preview;
-    private LinearLayout mKeyboard;
     private Translator mTranslator;
     private PendingIntent mPermissionIntent;
+
+    //layout vars
+    private LinearLayout mKeyboard;
+    private LinearLayout preview_overlay;
     private TextView preview;
     private TextView debug;
-    private LinearLayout preview_overlay;
+
     private int preview_length = 0;
     private boolean redo_space;
 
@@ -63,7 +69,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onCreate() {
         super.onCreate();
-        // set up in-app billing
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values

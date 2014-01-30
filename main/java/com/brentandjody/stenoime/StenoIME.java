@@ -14,7 +14,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -43,7 +42,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
 
-    private static boolean KEYBOARD_CONNECTED=false;
     private static boolean TXBOLT_CONNECTED=false;
 
     private StenoApp App; // to make it easier to access the Application class
@@ -70,14 +68,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        KEYBOARD_CONNECTED = isKeyboardConnected(getResources().getConfiguration());
+        if (isKeyboardConnected(getResources().getConfiguration())) {
+            setMachineType(StenoMachine.TYPE.KEYBOARD);
+        } else {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
-        KEYBOARD_CONNECTED = isKeyboardConnected(newConfig);
-        if (KEYBOARD_CONNECTED) {
+        if (isKeyboardConnected(newConfig)) {
             setMachineType(StenoMachine.TYPE.KEYBOARD);
         } else {
             setMachineType(StenoMachine.TYPE.VIRTUAL);
@@ -99,11 +100,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public View onCreateInputView() {
         Log.d(TAG, "onCreateInputView()");
         mKeyboard = new LinearLayout(this);
-        try {
-            mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
-        } catch (NullPointerException e) {
-            Log.e(TAG, "Could not load keyboard layout!");
-        }
+        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
         mKeyboard.findViewById(R.id.settings_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -116,13 +113,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public View onCreateCandidatesView() {
         Log.d(TAG, "onCreateCandidatesView()");
-        View view = null;
-        try {
-        view = getLayoutInflater().inflate(R.layout.preview, null);
-        } catch (NullPointerException e) {
-            Log.e(TAG, "Could not load candidates view");
-            return null;
-        }
+        View view = getLayoutInflater().inflate(R.layout.preview, null);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,12 +135,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "onStartInputView()");
 
         super.onStartInputView(info, restarting);
-        if (!restarting)
-           mTranslator.reset(); //clear stroke history
 
         initializePreview();
         initializeTranslator(App.getTranslatorType());
-        if (mTranslator!=null) mTranslator.reset();
+        if (!restarting && mTranslator!=null)
+            mTranslator.reset(); // clear stroke history
 
         if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
             launchVirtualKeyboard();

@@ -75,11 +75,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
+        Configuration config  = getResources().getConfiguration();
         if (isKeyboardConnected(newConfig)) {
             setMachineType(StenoMachine.TYPE.KEYBOARD);
         } else {
             setMachineType(StenoMachine.TYPE.VIRTUAL);
         }
+            super.onConfigurationChanged(newConfig);
     }
 
 
@@ -323,7 +325,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void lockKeyboard() {
         View overlay;
-        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+        if ((mKeyboard != null) && (App.getMachineType() == StenoMachine.TYPE.VIRTUAL)) {
             overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay != null) overlay.setVisibility(View.VISIBLE);
         }

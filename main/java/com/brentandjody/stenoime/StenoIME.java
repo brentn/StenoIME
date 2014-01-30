@@ -152,7 +152,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mUsbReceiver);
+//TXBOLT:        unregisterReceiver(mUsbReceiver);
         mKeyboard=null;
     }
 

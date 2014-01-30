@@ -112,6 +112,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 launchSettingsActivity();
             }
         });
+        launchVirtualKeyboard();
         return mKeyboard;
     }
 
@@ -364,6 +365,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         switch (App.getMachineType()) {
             case VIRTUAL:
                 App.setInputDevice(null);
+                if (mKeyboard==null) onCreateInputView();
+                if (candidates_view==null) onCreateCandidatesView();
                 if (mKeyboard!=null) launchVirtualKeyboard();
                 break;
             case KEYBOARD:

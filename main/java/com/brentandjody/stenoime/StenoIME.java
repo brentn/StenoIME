@@ -155,6 +155,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             mTranslator.reset(); // clear stroke history
     }
 
+    @Override
+    public void onFinishInput() {
+        Log.d(TAG, "onFinishInput()");
+        super.onFinishInput();
+        showPreviewBar(false);
+    }
 
     @Override
     public void onDestroy() {

@@ -36,16 +36,16 @@ public class StenoApp extends Application {
     private static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
 
     private Dictionary mDictionary;
-    private StenoMachine mInputDevice;
+    private StenoMachine mInputDevice = null;
     private UsbDevice mUsbDevice;
     private Translator.TYPE mTranslatorType;
     private StenoMachine.TYPE mMachineType;
     private SharedPreferences prefs;
-    private ProgressBar mProgressBar;
+    private ProgressBar mProgressBar = null;
     private IabHelper iabHelper;
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
     private String nkroPrice;
-    private boolean nkro_enabled = true;
+    private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
 
     @Override
@@ -53,8 +53,7 @@ public class StenoApp extends Application {
         super.onCreate();
         prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = new Dictionary(getApplicationContext());
-        mProgressBar = null;
-        mInputDevice =null;
+        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
         int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
         mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.VIRTUAL;
@@ -88,6 +87,7 @@ public class StenoApp extends Application {
     public void setUsbDevice(UsbDevice ud) { mUsbDevice = ud; }
     public void setProgressBar(ProgressBar pb) { mProgressBar = pb; }
     public void setMachineType(StenoMachine.TYPE t) {
+        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
         switch (t) {
             case VIRTUAL: mMachineType = t;
                 break;
@@ -95,6 +95,7 @@ public class StenoApp extends Application {
                 break;
             case TXBOLT: if (txbolt_enabled) mMachineType = t;
         }
+        if (mMachineType==null) mMachineType= StenoMachine.TYPE.VIRTUAL;
     }
     public void setTranslatorType(Translator.TYPE t) { mTranslatorType = t; }
 
@@ -104,6 +105,7 @@ public class StenoApp extends Application {
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
     public boolean useWordList() { return prefs.getBoolean("pref_suffix_correction", false); }
+    public boolean isNkro_enabled() {return nkro_enabled; }
 
     public Dictionary getDictionary(Dictionary.OnDictionaryLoadedListener listener) {
         // if dictionary is empty, load it - otherwise just return it

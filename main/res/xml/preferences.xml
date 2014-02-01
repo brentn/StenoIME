@@ -34,8 +34,7 @@
     <PreferenceCategory android:title="Hardware">
         <SwitchPreference android:key="pref_kbd_enabled"
             android:title="Enable NKRO Keyboard"
-            android:defaultValue="false"
-            android:enabled="false"/>
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

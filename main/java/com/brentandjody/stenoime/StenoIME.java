@@ -12,8 +12,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -30,6 +32,7 @@ import com.brentandjody.stenoime.Translator.Stroke;
 import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
 
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -61,6 +64,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private int preview_length = 0;
     private boolean redo_space;
+    
+    private int stats_strokes;
+    private int stats_chars;
+    private long stats_start;
+    private int stats_corrections;
 
 
     @Override
@@ -70,13 +78,26 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
+        resetStats();
         //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
-        super.onConfigurationChanged(newConfig);
+        if (! App.isNkro_enabled()) {
+            newConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
+        }
+        //super.onConfigurationChanged(newConfig);
+//        if (isKeyboardConnected(newConfig) && App.isNkro_enabled())
+//            removeVirtualKeyboard();
+//        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
+//                .hideSoftInputFromWindow(_pay_box_helper.getWindowToken(), 0);
+//        else
+//            launchVirtualKeyboard();
+//        //always show keyboard (sometimes just the preview)
+//        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
+//                .toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
     }
 
 
@@ -143,8 +164,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "onStartInput()");
         initializePreview();
         initializeTranslator();
-        if (!restarting && mTranslator!=null)
+        if (!restarting && mTranslator!=null) {
             mTranslator.reset(); // clear stroke history
+            resetStats();
+        }
     }
 
     @Override
@@ -152,6 +175,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
         setCandidatesViewShown(false);
+        recordStats();
     }
 
     @Override
@@ -218,6 +242,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void processStroke(Stroke stroke) {
         if (!keyboard_locked) {
             sendText(mTranslator.translate(stroke));
+            stats_strokes++;
+        }
+        if (stroke.isCorrection()) {
+            stats_corrections++;
         }
     }
 
@@ -246,16 +274,19 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //remove the preview
         if (inline_preview && preview_length>0) {
             connection.deleteSurroundingText(preview_length, 0);
-            if (redo_space)
+            if (redo_space) {
                 connection.commitText(" ", 1);
+            }
         }
         // deal with backspaces
         if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
             smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
+            stats_chars -= tr.getBackspaces();
         }
         connection.commitText(tr.getText(), 1);
+        stats_chars += tr.getText().length();
         //draw the preview
         if (inline_preview) {
             String p = tr.getPreview();
@@ -277,6 +308,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             while (! (t.length()==0 || t.equals(" "))) {
                 connection.deleteSurroundingText(1, 0);
                 t = connection.getTextBeforeCursor(1, 0).toString();
+                stats_chars --;
             }
         } finally {
             connection.commitText("", 1);
@@ -288,6 +320,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(name, value);
         editor.commit();
+    }
+    
+    private void resetStats() {
+        stats_chars=0;
+        stats_strokes=0;
+        stats_start= new Date().getTime();
+    }
+    
+    private void recordStats() {
+        long stats_duration = new Date().getTime() - stats_start;
+        //TODO: save to database
     }
 
     // *** NKeyRollover Keyboard ***
@@ -315,6 +358,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             keyboard.setVisibility(View.GONE);
         }
+        setCandidatesViewShown(false);//temporarily hide
     }
 
     private void lockIfRequired() {

@@ -47,6 +47,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private StenoApp App; // to make it easier to access the Application class
     private SharedPreferences prefs;
     private boolean inline_preview;
+    private boolean keyboard_locked=false;
     private Translator mTranslator;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
@@ -75,13 +76,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
-        Configuration config  = getResources().getConfiguration();
-        if (isKeyboardConnected(newConfig)) {
-            setMachineType(StenoMachine.TYPE.KEYBOARD);
-        } else {
-            setMachineType(StenoMachine.TYPE.VIRTUAL);
-        }
-            super.onConfigurationChanged(newConfig);
+        super.onConfigurationChanged(newConfig);
     }
 
 
@@ -140,25 +135,22 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onStartInputView(EditorInfo info, boolean restarting) {
         //Called when starting input to a new field
         Log.d(TAG, "onStartInputView()");
-
         super.onStartInputView(info, restarting);
         onStartInput(restarting);
     }
 
     public void onStartInput(boolean restarting) {
         Log.d(TAG, "onStartInput()");
-
-        initializeTranslator();
         initializePreview();
-        lockIfRequired();
+        initializeTranslator();
         if (!restarting && mTranslator!=null)
             mTranslator.reset(); // clear stroke history
     }
 
     @Override
-    public void onFinishInput() {
-        Log.d(TAG, "onFinishInput()");
-        super.onFinishInput();
+    public void onUnbindInput() {
+        Log.d(TAG, "onUnbindInput()");
+        super.onUnbindInput();
         setCandidatesViewShown(false);
     }
 
@@ -199,9 +191,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void initializePreview() {
-        if (candidates_view == null) {
-            candidates_view = onCreateCandidatesView();
-        }
+        Log.d(TAG, "initializePreview()");
+        setCandidatesViewShown(true);
         inline_preview = prefs.getBoolean("pref_inline_preview", false);
         if (App.isDictionaryLoaded())
             showPreviewBar(!inline_preview);
@@ -213,6 +204,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void initializeTranslator() {
+        Log.d(TAG, "initializeTranslator()");
         switch (App.getTranslatorType()) {
             case RawStrokes: mTranslator = new RawStrokeTranslator(); break;
             case SimpleDictionary:
@@ -220,12 +212,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
                 break;
         }
-        if (mTranslator.usesDictionary())
-            loadDictionary();
+        lockIfRequired();
     }
 
     private void processStroke(Stroke stroke) {
-        sendText(mTranslator.translate(stroke));
+        if (!keyboard_locked) {
+            sendText(mTranslator.translate(stroke));
+        }
     }
 
     private void launchSettingsActivity() {
@@ -336,8 +329,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay != null) overlay.setVisibility(View.VISIBLE);
         }
-        if (preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
+        if (!App.isDictionaryLoaded() && preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
         if (mTranslator!=null) mTranslator.lock();
+        keyboard_locked=true;
         showPreviewBar(true);
     }
 
@@ -346,8 +340,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             View overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
         }
-        if (preview_overlay != null) preview_overlay.setVisibility(View.INVISIBLE);
+        if (preview_overlay != null) preview_overlay.setVisibility(View.GONE);
         if (mTranslator!=null) mTranslator.unlock();
+        keyboard_locked=false;
         showPreviewBar(!inline_preview);
     }
 
@@ -378,6 +373,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             case KEYBOARD:
                 Toast.makeText(this,"Physical Keyboard Detected",Toast.LENGTH_SHORT).show();
                 if (mKeyboard!=null) removeVirtualKeyboard();
+                if (candidates_view==null) onCreateCandidatesView();
                 registerMachine(new NKeyRolloverMachine());
                 break;
 //TXBOLT:            case TXBOLT:

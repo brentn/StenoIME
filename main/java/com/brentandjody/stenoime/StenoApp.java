@@ -53,7 +53,7 @@ public class StenoApp extends Application {
         super.onCreate();
         prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = new Dictionary(getApplicationContext());
-        mProgressBar = new ProgressBar(getApplicationContext());
+        mProgressBar = null;
         mInputDevice =null;
         int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
         mTranslatorType = Translator.TYPE.values()[val];

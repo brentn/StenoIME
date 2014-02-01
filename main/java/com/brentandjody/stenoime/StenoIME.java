@@ -85,19 +85,19 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
+        // if nkro is not enabled, ensure the virtual keyboard is always shown, even with hardware connected
         if (! App.isNkro_enabled()) {
             newConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
+            newConfig.keyboard = Configuration.KEYBOARD_UNDEFINED;
+            launchVirtualKeyboard();
+        } else {
+            if (isKeyboardConnected(newConfig)) {
+                removeVirtualKeyboard();
+            } else {
+                launchVirtualKeyboard();
+            }
+            super.onConfigurationChanged(newConfig);
         }
-        //super.onConfigurationChanged(newConfig);
-//        if (isKeyboardConnected(newConfig) && App.isNkro_enabled())
-//            removeVirtualKeyboard();
-//        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
-//                .hideSoftInputFromWindow(_pay_box_helper.getWindowToken(), 0);
-//        else
-//            launchVirtualKeyboard();
-//        //always show keyboard (sometimes just the preview)
-//        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE))
-//                .toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
     }
 
 
@@ -168,6 +168,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             mTranslator.reset(); // clear stroke history
             resetStats();
         }
+    }
+
+    @Override
+    public void onViewClicked(boolean focusChanged) {
+        Log.d(TAG, "onViewClicked()");
+        super.onViewClicked(focusChanged);
+        setCandidatesViewShown(true);
     }
 
     @Override
@@ -329,7 +336,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
     
     private void recordStats() {
-        long stats_duration = new Date().getTime() - stats_start;
+        Double stats_duration = (new Date().getTime() - stats_start)/60000d;
+        Log.i(TAG,"Strokes:"+stats_strokes+" Words:"+(stats_chars/5)+" Duration:"+stats_duration);
+        if (stats_strokes>0 && stats_duration>.01) Log.i(TAG,"Speed:"+((stats_chars/5)/(stats_duration)+" Ratio: 1:"+(stats_chars/stats_strokes)));
         //TODO: save to database
     }
 
@@ -358,7 +367,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             keyboard.setVisibility(View.GONE);
         }
-        setCandidatesViewShown(false);//temporarily hide
+        setCandidatesViewShown(false);//temporarily hide (until onInitializePreview())
     }
 
     private void lockIfRequired() {

@@ -105,7 +105,10 @@ public class StenoApp extends Application {
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
     public boolean useWordList() { return prefs.getBoolean("pref_suffix_correction", false); }
-    public boolean isNkro_enabled() {return nkro_enabled; }
+    public boolean isNkro_enabled() {
+        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
+        return nkro_enabled;
+    }
 
     public Dictionary getDictionary(Dictionary.OnDictionaryLoadedListener listener) {
         // if dictionary is empty, load it - otherwise just return it

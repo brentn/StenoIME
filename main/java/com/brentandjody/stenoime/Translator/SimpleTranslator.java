@@ -182,7 +182,6 @@ public class SimpleTranslator extends Translator {
                 TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, preview_text, ""), stroke);
                 text = fixed.getText();
                 backspaces = fixed.getBackspaces();
-                fixed=null;
             }
         }
         Log.d(TAG, "text:" + text + " preview:" + preview_text);

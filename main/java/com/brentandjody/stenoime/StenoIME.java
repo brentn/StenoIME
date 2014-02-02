@@ -51,6 +51,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private SharedPreferences prefs;
     private boolean inline_preview;
     private boolean keyboard_locked=false;
+    private boolean configuration_changed;
     private Translator mTranslator;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
@@ -75,8 +76,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onCreate() {
         Log.d(TAG, "onCreate()");
         super.onCreate();
+        //initialize global stuff
         App = ((StenoApp) getApplication());
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        configuration_changed=false;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         resetStats();
         //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
@@ -85,19 +88,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged()");
-        // if nkro is not enabled, ensure the virtual keyboard is always shown, even with hardware connected
-        if (! App.isNkro_enabled()) {
-            newConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-            newConfig.keyboard = Configuration.KEYBOARD_UNDEFINED;
-            launchVirtualKeyboard();
-        } else {
-            if (isKeyboardConnected(newConfig)) {
-                removeVirtualKeyboard();
-            } else {
-                launchVirtualKeyboard();
-            }
-            super.onConfigurationChanged(newConfig);
-        }
+        configuration_changed=true;
     }
 
 
@@ -106,82 +97,69 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         // called before initialization of interfaces, and after config changes
         Log.d(TAG, "onInitializeInterface()");
         super.onInitializeInterface();
-        if (isKeyboardConnected(getResources().getConfiguration())) {
-            setMachineType(StenoMachine.TYPE.KEYBOARD);
-        } else {
-            setMachineType(StenoMachine.TYPE.VIRTUAL);
-        }
-        onStartInput(false);
-//TXBOLT:        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-//        registerReceiver(mUsbReceiver, filter); //listen for plugged/unplugged events
+        // create the candidates_view here (early), because we need to show progress when loading dictionary
+        initializeCandidatesView();
+        initializeMachine();
     }
 
     @Override
     public View onCreateInputView() {
         Log.d(TAG, "onCreateInputView()");
+        super.onCreateInputView();
         mKeyboard = new LinearLayout(this);
         mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
+        TouchLayer touchLayer = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
+        touchLayer.setOnStrokeListener(this);
         mKeyboard.findViewById(R.id.settings_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 launchSettingsActivity();
             }
         });
-        launchVirtualKeyboard();
         return mKeyboard;
     }
 
     @Override
     public View onCreateCandidatesView() {
         Log.d(TAG, "onCreateCandidatesView()");
-        candidates_view = getLayoutInflater().inflate(R.layout.preview, null);
-        candidates_view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sendText(mTranslator.submitQueue());
-            }
-        });
-        candidates_bar = candidates_view.findViewById(R.id.text);
-        preview = (TextView) candidates_view.findViewById(R.id.preview);
-        preview_overlay = (LinearLayout) candidates_view.findViewById(R.id.preview_overlay);
-        debug_text = (TextView) candidates_view.findViewById(R.id.debug);
-
-        App.setProgressBar((ProgressBar) preview_overlay.findViewById(R.id.progressBar));
+        super.onCreateCandidatesView();
         return candidates_view;
     }
 
-
     @Override
-    public void onStartInputView(EditorInfo info, boolean restarting) {
-        //Called when starting input to a new field
-        Log.d(TAG, "onStartInputView()");
-        super.onStartInputView(info, restarting);
-        onStartInput(restarting);
-    }
-
-    public void onStartInput(boolean restarting) {
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
         Log.d(TAG, "onStartInput()");
-        initializePreview();
-        initializeTranslator();
-        if (!restarting && mTranslator!=null) {
-            mTranslator.reset(); // clear stroke history
-            resetStats();
+        super.onStartInput(attribute, restarting);
+        if (attribute.initialSelStart < 0 && attribute.initialSelEnd < 0) { //no edit field is selected
+            setCandidatesViewShown(false);
+            removeVirtualKeyboard();
+        } else {
+            initializePreview();
+            if (mTranslator!= null) {
+                if (mTranslator.usesDictionary())  loadDictionary();
+                if (!restarting) mTranslator.reset(); // clear stroke history
+            }
+            drawUI();
         }
+        initializeTranslator(); //this has to come after drawing everything else (to show the progressbar)
     }
 
     @Override
-    public void onViewClicked(boolean focusChanged) {
-        Log.d(TAG, "onViewClicked()");
-        super.onViewClicked(focusChanged);
-        setCandidatesViewShown(true);
+    public void onFinishInput() {
+        Log.d(TAG, "onFinishInput()");
+        super.onFinishInput();
+        if (configuration_changed) {
+            configuration_changed=false;
+            return;
+        }
+        setCandidatesViewShown(false);
+        removeVirtualKeyboard();
     }
 
     @Override
     public void onUnbindInput() {
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
-        setCandidatesViewShown(false);
         recordStats();
     }
 
@@ -216,17 +194,49 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     // Private methods
 
-    private boolean isKeyboardConnected(Configuration config) {
-        return (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO
+    private boolean isKeyboardConnected() {
+        Configuration config = getResources().getConfiguration();
+        return (App.isNkro_enabled()
+                && config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO
                 && config.keyboard == Configuration.KEYBOARD_QWERTY);
+    }
+
+    private void initializeMachine() {
+        if (isKeyboardConnected()) {
+            setMachineType(StenoMachine.TYPE.KEYBOARD);
+        } else {
+            setMachineType(StenoMachine.TYPE.VIRTUAL);
+            if (App.isDictionaryLoaded()) unlockKeyboard();
+        }
+    }
+
+    private void initializeCandidatesView() {
+        candidates_view = getLayoutInflater().inflate(R.layout.preview, null);
+        candidates_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText(mTranslator.submitQueue());
+            }
+        });
+        preview = (TextView) candidates_view.findViewById(R.id.preview);
+        preview_overlay = (LinearLayout) candidates_view.findViewById(R.id.preview_overlay);
+        debug_text = (TextView) candidates_view.findViewById(R.id.debug);
+        // register the progress bar with the application, for dictionary loading
+        App.setProgressBar((ProgressBar) preview_overlay.findViewById(R.id.progressBar));
+        if (isKeyboardConnected()) onCreateCandidatesView();  //make sure to run this
     }
 
     private void initializePreview() {
         Log.d(TAG, "initializePreview()");
-        setCandidatesViewShown(true);
         inline_preview = prefs.getBoolean("pref_inline_preview", false);
-        if (App.isDictionaryLoaded())
-            showPreviewBar(!inline_preview);
+        if (App.isDictionaryLoaded()) {
+            if (getCurrentInputConnection()==null)
+                showPreviewBar(false);
+            else
+                showPreviewBar(!inline_preview);
+        } else {
+            showPreviewBar(true);
+        }
         if (! inline_preview) {
             if (preview!=null) preview.setText("");
             if (debug_text !=null) debug_text.setText("");
@@ -243,7 +253,18 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
                 break;
         }
-        lockIfRequired();
+        if (mTranslator.usesDictionary()) {
+            loadDictionary();
+        }
+    }
+
+    private void drawUI() {
+        showPreviewBar(!inline_preview);
+        if (isKeyboardConnected()) {
+            removeVirtualKeyboard();
+        } else {
+            launchVirtualKeyboard();
+        }
     }
 
     private void processStroke(Stroke stroke) {
@@ -336,10 +357,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
     
     private void recordStats() {
+        if (stats_strokes==0) return;
         Double stats_duration = (new Date().getTime() - stats_start)/60000d;
         Log.i(TAG,"Strokes:"+stats_strokes+" Words:"+(stats_chars/5)+" Duration:"+stats_duration);
         if (stats_strokes>0 && stats_duration>.01) Log.i(TAG,"Speed:"+((stats_chars/5)/(stats_duration)+" Ratio: 1:"+(stats_chars/stats_strokes)));
         //TODO: save to database
+        resetStats();
     }
 
     // *** NKeyRollover Keyboard ***
@@ -355,40 +378,38 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** Virtual Keyboard ***
 
     private void launchVirtualKeyboard() {
-        TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-        keyboard.setOnStrokeListener(this);
-        //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
-        keyboard.setVisibility(View.VISIBLE);
+        Log.d(TAG, "launchVirtualKeyboard()");
+        if (mKeyboard!=null) {
+            if (mKeyboard.getVisibility()==View.VISIBLE) return;
+            mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+            mKeyboard.setVisibility(View.VISIBLE);
+        }
     }
 
     private void removeVirtualKeyboard() {
-        TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
-        if (keyboard != null) {
-            //keyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
-            keyboard.setVisibility(View.GONE);
-        }
-        setCandidatesViewShown(false);//temporarily hide (until onInitializePreview())
-    }
-
-    private void lockIfRequired() {
-        if (mTranslator.usesDictionary()) {
-            loadDictionary();
+        Log.d(TAG, "removeVirtualKeyboard()");
+        //TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
+        if (mKeyboard != null) {
+            if (mKeyboard.getVisibility()==View.GONE) return;
+            mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+            mKeyboard.setVisibility(View.GONE);
         }
     }
 
     private void lockKeyboard() {
-        View overlay;
+        Log.d(TAG, "lockKeyboard()");
+        keyboard_locked=true;
+        showPreviewBar(true);
         if ((mKeyboard != null) && (App.getMachineType() == StenoMachine.TYPE.VIRTUAL)) {
-            overlay = mKeyboard.findViewById(R.id.overlay);
+            View overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay != null) overlay.setVisibility(View.VISIBLE);
         }
         if (!App.isDictionaryLoaded() && preview_overlay != null) preview_overlay.setVisibility(View.VISIBLE);
         if (mTranslator!=null) mTranslator.lock();
-        keyboard_locked=true;
-        showPreviewBar(true);
     }
 
     private void unlockKeyboard() {
+        Log.d(TAG, "unlockKeyboard()");
         if (mKeyboard != null) {
             View overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay!=null) overlay.setVisibility(View.INVISIBLE);
@@ -400,11 +421,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void showPreviewBar(boolean show) {
-        setCandidatesViewShown(true);
-        if (show) {
-            candidates_bar.setVisibility(View.VISIBLE);
-        } else {
-            candidates_bar.setVisibility(View.GONE);
+        setCandidatesViewShown(show);
+        if (mKeyboard==null) return;
+        View shadow = mKeyboard.findViewById(R.id.shadow);
+        if (shadow!=null) {
+            if (show) shadow.setVisibility(View.GONE);
+            else shadow.setVisibility(View.VISIBLE);
         }
     }
 

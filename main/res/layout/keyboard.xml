@@ -5,7 +5,16 @@
     android:layout_height="fill_parent"
     android:clickable="true"
     android:baselineAligned="false"
-    android:gravity="bottom">
+    android:gravity="bottom"
+    android:background="#00000000">
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="12dp"
+        android:id="@+id/shadow"
+        android:clickable="false"
+        android:background="@drawable/shadow"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:layout_height="180dp"

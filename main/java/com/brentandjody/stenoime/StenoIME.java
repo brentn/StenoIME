@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -116,6 +117,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 launchSettingsActivity();
             }
         });
+        if (App.isDictionaryLoaded()) unlockKeyboard();
         return mKeyboard;
     }
 
@@ -130,7 +132,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         Log.d(TAG, "onStartInput()");
         super.onStartInput(attribute, restarting);
-        if (attribute.initialSelStart < 0 && attribute.initialSelEnd < 0) { //no edit field is selected
+        if (!isTextFieldSelected(attribute)) { //no edit field is selected
             setCandidatesViewShown(false);
             removeVirtualKeyboard();
         } else {
@@ -179,6 +181,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         return dispatchKeyEvent(event);
     }
 
+    @Override
+    public boolean onEvaluateFullscreenMode() {
+        return false;
+    }
+
     // Implemented Interfaces
 
     @Override
@@ -193,6 +200,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
    }
 
     // Private methods
+
+    private boolean isTextFieldSelected(EditorInfo editorInfo) {
+        return !(editorInfo.initialSelStart < 0 && editorInfo.initialSelEnd < 0);
+    }
 
     private boolean isKeyboardConnected() {
         Configuration config = getResources().getConfiguration();
@@ -380,9 +391,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void launchVirtualKeyboard() {
         Log.d(TAG, "launchVirtualKeyboard()");
         if (mKeyboard!=null) {
+            showPreviewBar(false);
             if (mKeyboard.getVisibility()==View.VISIBLE) return;
-            mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
+            //mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up_in));
             mKeyboard.setVisibility(View.VISIBLE);
+            showPreviewBar(!inline_preview);
         }
     }
 
@@ -391,7 +404,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         if (mKeyboard != null) {
             if (mKeyboard.getVisibility()==View.GONE) return;
-            mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
+            //mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
             mKeyboard.setVisibility(View.GONE);
         }
     }
@@ -421,6 +434,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void showPreviewBar(boolean show) {
+        if (!isTextFieldSelected(getCurrentInputEditorInfo())) {
+            setCandidatesViewShown(false);
+            return;
+        }
         setCandidatesViewShown(show);
         if (mKeyboard==null) return;
         View shadow = mKeyboard.findViewById(R.id.shadow);

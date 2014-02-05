@@ -100,6 +100,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         super.onInitializeInterface();
         // create the candidates_view here (early), because we need to show progress when loading dictionary
         initializeCandidatesView();
+        App.setMachineType(StenoMachine.TYPE.VIRTUAL);
         initializeMachine();
     }
 
@@ -136,6 +137,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             setCandidatesViewShown(false);
             removeVirtualKeyboard();
         } else {
+            initializeMachine();
             initializePreview();
             if (mTranslator!= null) {
                 if (mTranslator.usesDictionary())  loadDictionary();
@@ -202,7 +204,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // Private methods
 
     private boolean isTextFieldSelected(EditorInfo editorInfo) {
-        return !(editorInfo.initialSelStart < 0 && editorInfo.initialSelEnd < 0);
+        if (editorInfo == null) return false;
+        return (editorInfo.initialSelStart >= 0 || editorInfo.initialSelEnd >= 0);
     }
 
     private boolean isKeyboardConnected() {

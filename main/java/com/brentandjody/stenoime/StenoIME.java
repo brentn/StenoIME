@@ -8,15 +8,12 @@ import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -32,6 +29,8 @@ import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
 import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
+import com.brentandjody.stenoime.performance.Database;
+import com.brentandjody.stenoime.performance.PerformanceItem;
 
 import java.util.Date;
 import java.util.Set;
@@ -66,11 +65,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private int preview_length = 0;
     private boolean redo_space;
-    
-    private int stats_strokes;
-    private int stats_chars;
-    private long stats_start;
-    private int stats_corrections;
+
+    private PerformanceItem stats = new PerformanceItem();
 
 
     @Override
@@ -242,7 +238,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void initializePreview() {
         Log.d(TAG, "initializePreview()");
-        inline_preview = prefs.getBoolean("pref_inline_preview", false);
+        inline_preview = prefs.getBoolean(App.KEY_INLINE_PREVIEW, false);
         if (App.isDictionaryLoaded()) {
             if (getCurrentInputConnection()==null)
                 showPreviewBar(false);
@@ -284,10 +280,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void processStroke(Stroke stroke) {
         if (!keyboard_locked) {
             sendText(mTranslator.translate(stroke));
-            stats_strokes++;
+            stats.addStroke();
         }
         if (stroke.isCorrection()) {
-            stats_corrections++;
+            stats.addCorrection();
         }
     }
 
@@ -325,10 +321,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
-            stats_chars -= tr.getBackspaces();
+            stats.addLetters(-tr.getBackspaces());
         }
         connection.commitText(tr.getText(), 1);
-        stats_chars += tr.getText().length();
+        stats.addLetters(tr.getText().length());
         //draw the preview
         if (inline_preview) {
             String p = tr.getPreview();
@@ -350,7 +346,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             while (! (t.length()==0 || t.equals(" "))) {
                 connection.deleteSurroundingText(1, 0);
                 t = connection.getTextBeforeCursor(1, 0).toString();
-                stats_chars --;
+                stats.addLetters(-1);
             }
         } finally {
             connection.commitText("", 1);
@@ -365,17 +361,20 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
     
     private void resetStats() {
-        stats_chars=0;
-        stats_strokes=0;
-        stats_start= new Date().getTime();
+        stats = new PerformanceItem();
     }
     
     private void recordStats() {
-        if (stats_strokes==0) return;
-        Double stats_duration = (new Date().getTime() - stats_start)/60000d;
-        Log.i(TAG,"Strokes:"+stats_strokes+" Words:"+(stats_chars/5)+" Duration:"+stats_duration);
-        if (stats_strokes>0 && stats_duration>.01) Log.i(TAG,"Speed:"+((stats_chars/5)/(stats_duration)+" Ratio: 1:"+(stats_chars/stats_strokes)));
-        //TODO: save to database
+        if (stats.strokes()==0) return;
+        Double stats_duration = (new Date().getTime() - stats.when().getTime())/60000d;
+        stats.setMinutes(stats_duration);
+        Double stats_words = stats.letters()/5d;
+        Double stats_ratio = stats_words/stats.strokes();
+        Log.i(TAG,"Strokes:"+stats.strokes()+" Words:"+(stats_words)+" Duration:"+stats_duration);
+        if (stats.strokes()>0 && stats_duration>.01) {
+            Log.i(TAG,"Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)));
+            new Database(getApplicationContext()).insert(stats);
+        }
         resetStats();
     }
 

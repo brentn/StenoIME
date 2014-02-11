@@ -1,5 +1,6 @@
 package com.brentandjody.stenoime;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
@@ -12,6 +13,7 @@ import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.util.IabHelper;
 import com.brentandjody.stenoime.util.IabResult;
 import com.brentandjody.stenoime.util.Inventory;
+import com.brentandjody.stenoime.util.Purchase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +30,18 @@ public class StenoApp extends Application {
 
     public static final String KEY_DICTIONARIES = "dictionaries";
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
+    public static final String KEY_DICTIONARY = "pref_dictionary_button";
     public static final String KEY_MACHINE_TYPE = "default_machine_type";
+    public static final String KEY_ABOUT = "about_button";
+    public static final String KEY_SUFFIX_CORRECTION = "pref_suffix_correction";
+    public static final String KEY_INLINE_PREVIEW = "pref_inline_preview";
     public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
     public static final String KEY_NKRO_ENABLED = "pref_kbd_enabled";
 
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
-    private static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
+    public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
+    private static boolean NKRO_KEYBOARD_PURCHASED = false;
+    private static final boolean NO_PURCHASES_NECESSARY=true;
 
     private Dictionary mDictionary;
     private StenoMachine mInputDevice = null;
@@ -44,9 +52,11 @@ public class StenoApp extends Application {
     private ProgressBar mProgressBar = null;
     private IabHelper iabHelper;
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
+    private IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListner;
     private String nkroPrice;
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
+    private String payload = "jOOnnqldcn20p843nKK;nNl";
 
     @Override
     public void onCreate() {
@@ -58,7 +68,7 @@ public class StenoApp extends Application {
         mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.VIRTUAL;
         iabHelper = new IabHelper(this, PUBLICKEY);
-        setupBillingListener();
+        setupBillingListeners();
         iabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 if (!result.isSuccess()) {
@@ -105,7 +115,9 @@ public class StenoApp extends Application {
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
     public boolean useWordList() { return prefs.getBoolean("pref_suffix_correction", false); }
+    public boolean isNkroKeyboardPurchased() { return NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY; }
     public boolean isNkro_enabled() {
+        if (! (NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY)) return false;
         nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
         return nkro_enabled;
     }
@@ -138,15 +150,35 @@ public class StenoApp extends Application {
 
     public boolean isDictionaryLoaded() { return (mDictionary.size() > 10); }
 
-    private void setupBillingListener() {
+    public void initiatePurchase(Activity activity, String sku) {
+        iabHelper.launchPurchaseFlow(activity, sku, 20201, mPurchaseFinishedListner, payload);
+    }
+
+    private void setupBillingListeners() {
         mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
             public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
                 if (result.isFailure()) {
                     Log.e(TAG, "Unable to connect to in-app-billing server");
                     return;
                 }
-                nkroPrice = inventory.getSkuDetails(SKU_NKRO_KEYBOARD).getPrice();
-                // update the UI
+                NKRO_KEYBOARD_PURCHASED = inventory.hasPurchase(SKU_NKRO_KEYBOARD);
+                if (! NKRO_KEYBOARD_PURCHASED)
+                    prefs.edit().putBoolean(KEY_NKRO_ENABLED, false);
+            }
+        };
+        mPurchaseFinishedListner = new IabHelper.OnIabPurchaseFinishedListener() {
+            public void onIabPurchaseFinished(IabResult result, Purchase purchase)
+            {
+                if (result.isFailure()) {
+                    Log.d(TAG, "Error purchasing: " + result);
+                    return;
+                }
+                else if (purchase.getSku().equals(SKU_NKRO_KEYBOARD)) {
+                    if (purchase.getDeveloperPayload()==payload) {
+                        NKRO_KEYBOARD_PURCHASED = true;
+                        prefs.edit().putBoolean(KEY_NKRO_ENABLED, true).commit();
+                    }
+                }
             }
         };
     }

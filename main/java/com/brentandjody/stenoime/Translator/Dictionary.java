@@ -104,6 +104,10 @@ public class Dictionary {
         return (dictionary.get(key));
     }
 
+    public String longestPrefix(String key) {
+        return dictionary.longestPrefixOf(key);
+    }
+
     public Stroke[] longestValidStroke(String outline) {
         //returns outline, if it has a valid translation
         //or the longest combination of strokes, starting from the beginning of outline, that has a valid translation

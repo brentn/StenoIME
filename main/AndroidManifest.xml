@@ -17,7 +17,7 @@
     <application android:allowBackup="true"
         android:name=".StenoApp"
         android:label="@string/app_name"
-        android:debuggable="true"
+        android:debuggable="false"
         android:icon="@drawable/ic_launcher">
 
         <!-- Declares the input method service -->

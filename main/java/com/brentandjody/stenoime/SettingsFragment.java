@@ -5,19 +5,22 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 
 import com.brentandjody.stenoime.Translator.Translator;
 
 public class SettingsFragment extends PreferenceFragment {
 
     private static final int SELECT_DICTIONARY_CODE = 4;
+    private StenoApp App;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        App = ((StenoApp) getActivity().getApplication());
         addPreferencesFromResource(R.xml.preferences);
         // about button
-        Preference about = findPreference("about_button");
+        Preference about = findPreference(StenoApp.KEY_ABOUT);
         about.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -27,8 +30,8 @@ public class SettingsFragment extends PreferenceFragment {
             }
         });
         // set translator options
-        ListPreference translator = (ListPreference) findPreference("pref_translator");
-        final Preference suffixes = findPreference("pref_suffix_correction");
+        ListPreference translator = (ListPreference) findPreference(StenoApp.KEY_TRANSLATOR_TYPE);
+        final Preference suffixes = findPreference(StenoApp.KEY_SUFFIX_CORRECTION);
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -43,7 +46,7 @@ public class SettingsFragment extends PreferenceFragment {
             }
         });
         // list dictionaries
-        Preference dict_button = findPreference("pref_dictionary_button");
+        Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
         dict_button.setSummary(getDictionaryList());
         dict_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -53,13 +56,26 @@ public class SettingsFragment extends PreferenceFragment {
                 return false;
             }
         });
+        // hardware switches
+        SwitchPreference keyboardSwitch = (SwitchPreference) findPreference(StenoApp.KEY_NKRO_ENABLED);
+        keyboardSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                if (App.isNkroKeyboardPurchased())
+                    return true;
+                else
+                ((SwitchPreference) preference).setChecked(false);
+                App.initiatePurchase(getActivity(), App.SKU_NKRO_KEYBOARD);
+                return false;
+            }
+        });
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode==SELECT_DICTIONARY_CODE) {
-            Preference dict_button = findPreference("pref_dictionary_button");
+            Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
             dict_button.setSummary(getDictionaryList());
         }
     }

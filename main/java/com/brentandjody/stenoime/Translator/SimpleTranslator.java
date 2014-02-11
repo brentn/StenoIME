@@ -252,7 +252,12 @@ public class SimpleTranslator extends Translator {
             if (lookup != null) return lookup+"s";
         }
         //otherwise
-        return stroke;
+        String prefix = mDictionary.longestPrefix(stroke);
+        if (prefix.isEmpty()) {
+            return stroke;
+        } else {
+            return prefix;
+        }
     }
 
     private HistoryItem undoStrokeFromHistory() {

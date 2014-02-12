@@ -90,7 +90,7 @@ public class Suffixes {
     }
 
     private int word_score(String word) {
-        if (word_list==null) return 999; //if not using word list
+        if (word_list==null) return WordList.NOT_FOUND; //if not using word list
         return word_list.score(word);
     }
 

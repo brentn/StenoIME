@@ -8,9 +8,12 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
 /**
  * Created by brentn on 17/01/14.
+ * Manage American English wordlist as database
  */
 public class WordList extends SQLiteAssetHelper {
-//public class WordList extends SQLiteOpenHelper {
+
+    public static final int NOT_FOUND = 999;
+
     private static final String DATABASE_NAME = "wordlist.db";
     private static final int DATABASE_VERSION = 1;
     private SQLiteDatabase db;
@@ -35,7 +38,7 @@ public class WordList extends SQLiteAssetHelper {
 
     public int score(String word) {
         String[] args = new String[] {word};
-        int result=-1;
+        int result=NOT_FOUND;
         Cursor c = db.rawQuery("SELECT value FROM words WHERE key=?", args);
         if (c.moveToFirst()) {
             result = (c.getInt(0));

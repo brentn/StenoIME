@@ -6,6 +6,7 @@ import com.brentandjody.stenoime.Translator.WordList;
 
 /**
  * Created by brentn on 18/01/14.
+ * Test the word list
  */
 public class TestWordList extends AndroidTestCase {
 
@@ -24,8 +25,8 @@ public class TestWordList extends AndroidTestCase {
     }
 
     public void testGet() throws Exception {
-        assertEquals(-1, list.score(""));
-        assertEquals(-1, list.score("ssiif"));
+        assertEquals(WordList.NOT_FOUND, list.score(""));
+        assertEquals(WordList.NOT_FOUND, list.score("ssiif"));
         assertEquals(55, list.score("christian"));
         assertEquals(10, list.score("Christian"));
         assertEquals(50, list.score("dirigible"));

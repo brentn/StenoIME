@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Queue;
 
 /* This is the main Steno Dictionary class
  * which stores a dictionary of stroke / translation pairs
@@ -105,7 +106,13 @@ public class Dictionary {
     }
 
     public String longestPrefix(String key) {
-        return dictionary.longestPrefixOf(key);
+        String prefix = key;
+        if (forceLookup(key)!=null) return key;
+        while (prefix.contains("/")) {
+            prefix = prefix.substring(0, prefix.indexOf('/'));
+            if (forceLookup(prefix) != null) return prefix;
+        }
+        return "";
     }
 
     public Stroke[] longestValidStroke(String outline) {

@@ -96,11 +96,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "adds realized ", "");
         // ambiguous (with & without queue)
-        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
+        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD ");
         checkResults(translator.translate(new Stroke("TKRESZ")), 0, "", "address ");
         checkResults(translator.translate(new Stroke("SAOE")), 0, "addressee ", "");
         // endings (with & without queue
-        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD");
+        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD ");
         checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
         checkResults(translator.translate(new Stroke("-G")), 6, "adulting ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
@@ -118,11 +118,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("*")), 14, "admitted ", "");
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT ");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("*")), 9, "", "im/PHORT ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "EUPL/PHORT");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT ");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
@@ -164,6 +164,12 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
         checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
         checkResults(translator.translate(new Stroke("U")), 9, "artistically you ", "");
+        checkResults(translator.translate(new Stroke("KWRE")), 0, "", "yes "); //KWRE+""
+        checkResults(translator.translate(new Stroke("EU")), 0, "", "yes /EU ");
+        checkResults(translator.translate(new Stroke("TKO")), 0, "yes I do ", "");
+        checkResults(translator.translate(new Stroke("A")), 0, "", "a");
+        checkResults(translator.translate(new Stroke("SRAEUL")), 0, "avail ", "");
+        checkResults(translator.translate(new Stroke("-BL")), 6, "available ", "");
     }
 
     public void testSpecialCases() throws Exception {
@@ -182,7 +188,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // special cases
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I ");
         checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am ");
-        checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "APL/PWEUG");
+        checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "am /PWEUG ");
         checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }
 

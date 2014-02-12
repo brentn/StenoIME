@@ -160,7 +160,8 @@ public class SimpleTranslator extends Translator {
                                     String tempStroke = tempQ.pop();
                                     stroke += "/"+tempStroke;
                                     TranslationResult recurse = translate_simple_stroke(tempStroke);
-                                    text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
+                                    int pos = text.length()-recurse.getBackspaces();
+                                    text = text.substring(0, pos) + recurse.getText();
                                 }
                                 if (!stroke.isEmpty()) stroke = stroke.substring(1);
                             }
@@ -212,14 +213,23 @@ public class SimpleTranslator extends Translator {
     private String lookupQueue() {
         preview_backspaces=0;
         if (strokeQ.isEmpty()) return "";
-        String lookupResult = mDictionary.forceLookup(strokesInQueue());
-        if (lookupResult==null) {
-            return strokesInQueue();
-        } else {
-            String result = mFormatter.format(lookupResult, true);
-            preview_backspaces = mFormatter.backspaces();
-            return result;
+        String stroke = strokesInQueue();
+        String key = mDictionary.longestPrefix(strokesInQueue());
+        if (key.isEmpty()) return strokesInQueue()+" "; //no prefix found
+        String result = mFormatter.format(mDictionary.forceLookup(key), true);
+        preview_backspaces += mFormatter.backspaces();
+        while (stroke.length()>key.length()) {
+            stroke = stroke.substring(key.length());
+            key = mDictionary.longestPrefix(stroke);
+            if (key.isEmpty()) {
+                key=stroke;
+                result += stroke+" ";
+            } else {
+                result += mFormatter.format(mDictionary.forceLookup(key), true);
+                preview_backspaces += mFormatter.backspaces();
+            }
         }
+        return result;
     }
 
     private TranslationResult applySuffixOrthography(TranslationResult current, String stroke) {

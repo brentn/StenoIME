@@ -1,5 +1,6 @@
 package com.brentandjody.stenoime;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -73,11 +74,16 @@ public class SettingsFragment extends PreferenceFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==SELECT_DICTIONARY_CODE) {
-            Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
-            dict_button.setSummary(getDictionaryList());
+        if (resultCode== Activity.RESULT_OK) {
+            switch (requestCode) {
+                case SELECT_DICTIONARY_CODE : {
+                    Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
+                    dict_button.setSummary(getDictionaryList());
+                    break;
+                }
+            }
         }
+
     }
 
     private String getDictionaryList() {

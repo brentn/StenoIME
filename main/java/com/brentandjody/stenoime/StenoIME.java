@@ -288,7 +288,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void launchSettingsActivity() {
-        Intent intent = new Intent(mKeyboard.getContext(), SettingsActivity.class);
+        Context context = mKeyboard.getContext();
+        Intent intent = new Intent(context, SettingsActivity.class);
         lockKeyboard();
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);

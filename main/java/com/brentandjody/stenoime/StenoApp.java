@@ -2,6 +2,7 @@ package com.brentandjody.stenoime;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.util.Log;
@@ -27,6 +28,7 @@ public class StenoApp extends Application {
 
     public static final String DELIMITER = ":";
     public static final String TAG = "Steno Keyboard";
+    public static final int PURCHASE_REQUEST_CODE = 20201;
 
     public static final String KEY_DICTIONARIES = "dictionaries";
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
@@ -41,7 +43,7 @@ public class StenoApp extends Application {
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
     private static boolean NKRO_KEYBOARD_PURCHASED = false;
-    private static final boolean NO_PURCHASES_NECESSARY=true;
+    private static final boolean NO_PURCHASES_NECESSARY=false;
 
     private Dictionary mDictionary;
     private StenoMachine mInputDevice = null;
@@ -151,7 +153,11 @@ public class StenoApp extends Application {
     public boolean isDictionaryLoaded() { return (mDictionary.size() > 10); }
 
     public void initiatePurchase(Activity activity, String sku) {
-        iabHelper.launchPurchaseFlow(activity, sku, 20201, mPurchaseFinishedListner, payload);
+        iabHelper.launchPurchaseFlow(activity, sku, PURCHASE_REQUEST_CODE, mPurchaseFinishedListner, payload);
+    }
+
+    public boolean handlePurchaseResult(int requestCode, int resultCode, Intent data) {
+        return iabHelper.handleActivityResult(requestCode, resultCode, data);
     }
 
     private void setupBillingListeners() {

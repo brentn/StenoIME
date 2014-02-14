@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
+import android.preference.SwitchPreference;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -28,7 +29,6 @@ public class StenoApp extends Application {
 
     public static final String DELIMITER = ":";
     public static final String TAG = "Steno Keyboard";
-    public static final int PURCHASE_REQUEST_CODE = 20201;
 
     public static final String KEY_DICTIONARIES = "dictionaries";
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
@@ -43,7 +43,6 @@ public class StenoApp extends Application {
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
     private static boolean NKRO_KEYBOARD_PURCHASED = false;
-    private static final boolean NO_PURCHASES_NECESSARY=false;
 
     private Dictionary mDictionary;
     private StenoMachine mInputDevice = null;
@@ -54,11 +53,12 @@ public class StenoApp extends Application {
     private ProgressBar mProgressBar = null;
     private IabHelper iabHelper;
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
-    private IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListner;
     private String nkroPrice;
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
-    private String payload = "jOOnnqldcn20p843nKK;nNl";
+
+    private static final boolean NO_PURCHASES_NECESSARY=false;
+    private static final boolean RESET_PURCHASES_FOR_TESTING =false;
 
     @Override
     public void onCreate() {
@@ -83,7 +83,6 @@ public class StenoApp extends Application {
                 iabHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
             }
         });
-
     }
 
     @Override
@@ -123,6 +122,7 @@ public class StenoApp extends Application {
         nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
         return nkro_enabled;
     }
+    public IabHelper getIabHelper() {return iabHelper;}
 
     public Dictionary getDictionary(Dictionary.OnDictionaryLoadedListener listener) {
         // if dictionary is empty, load it - otherwise just return it
@@ -152,8 +152,8 @@ public class StenoApp extends Application {
 
     public boolean isDictionaryLoaded() { return (mDictionary.size() > 10); }
 
-    public void initiatePurchase(Activity activity, String sku) {
-        iabHelper.launchPurchaseFlow(activity, sku, PURCHASE_REQUEST_CODE, mPurchaseFinishedListner, payload);
+    public void setNKROPurchased(boolean purchased) {
+        NKRO_KEYBOARD_PURCHASED = purchased;
     }
 
     public boolean handlePurchaseResult(int requestCode, int resultCode, Intent data) {
@@ -168,24 +168,23 @@ public class StenoApp extends Application {
                     return;
                 }
                 NKRO_KEYBOARD_PURCHASED = inventory.hasPurchase(SKU_NKRO_KEYBOARD);
-                if (! NKRO_KEYBOARD_PURCHASED)
-                    prefs.edit().putBoolean(KEY_NKRO_ENABLED, false);
-            }
-        };
-        mPurchaseFinishedListner = new IabHelper.OnIabPurchaseFinishedListener() {
-            public void onIabPurchaseFinished(IabResult result, Purchase purchase)
-            {
-                if (result.isFailure()) {
-                    Log.d(TAG, "Error purchasing: " + result);
-                    return;
+
+                //*************************
+                if (RESET_PURCHASES_FOR_TESTING) {
+                    iabHelper.consumeAsync(inventory.getPurchase(SKU_NKRO_KEYBOARD), null);
+                    NKRO_KEYBOARD_PURCHASED = false;
+                    Log.w(TAG, "TESTING MODE SET: Purchases removed from account");
                 }
-                else if (purchase.getSku().equals(SKU_NKRO_KEYBOARD)) {
-                    if (purchase.getDeveloperPayload()==payload) {
-                        NKRO_KEYBOARD_PURCHASED = true;
-                        prefs.edit().putBoolean(KEY_NKRO_ENABLED, true).commit();
-                    }
+                //*************************
+
+                if (NKRO_KEYBOARD_PURCHASED) {
+                    Log.d(TAG, "NKRO Keyboard is in inventory");
+                } else {
+                    Log.d(TAG, "NKRO Keyboard is NOT in inventory");
+                    prefs.edit().putBoolean(KEY_NKRO_ENABLED, false).commit();
                 }
             }
         };
+
     }
 }

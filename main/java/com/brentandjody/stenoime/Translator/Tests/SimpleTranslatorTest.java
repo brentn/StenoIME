@@ -126,6 +126,12 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "God ", "");
+        checkResults(translator.translate(new Stroke("OES")), 4, "God's ", "");
+        checkResults(translator.translate(new Stroke("TRAOU*T")), 0, "Truth ", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "God", "");
+
         // test period and subsequent capital with undo
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");

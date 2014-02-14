@@ -88,7 +88,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // null
         checkResults(translator.translate(null), 0, "", "");
         // not found (with & without queue)
-        checkResults(translator.translate(new Stroke("-T")), 0, "-T ", "");
+        checkResults(translator.translate(new Stroke("-B")), 0, "-B ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
         // deterministic (with & without queue)
@@ -129,10 +129,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "God ", "");
         checkResults(translator.translate(new Stroke("OES")), 4, "God's ", "");
         checkResults(translator.translate(new Stroke("TRAOU*T")), 0, "truth ", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "God", "");
+        checkResults(translator.translate(new Stroke("*")), 12, "God's ", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "");
 
         // test period and subsequent capital with undo
+        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "God ", "");
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
@@ -140,13 +141,13 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 9, " ", ".  "); //TODO:why the space? and following 1
         checkResults(translator.translate(new Stroke("ADZ")), 1, ".  ", "Adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 11, "immortal ", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
         checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");
         checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");
         checkResults(translator.translate(new Stroke("*")), 13, "thankful ", "");
         checkResults(translator.translate(new Stroke("*")), 9, "thank ", "");
-        checkResults(translator.translate(new Stroke("*")), 15, "immortal ", "");
+        checkResults(translator.translate(new Stroke("*")), 10, "God ", "");
         // test fingerspelling and undo
         checkResults(translator.translate(new Stroke("A*")), 0, "a ", "");
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");
@@ -170,12 +171,19 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
         checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
         checkResults(translator.translate(new Stroke("U")), 9, "artistically you ", "");
+
+        //multi-part-words
         checkResults(translator.translate(new Stroke("KWRE")), 0, "", "yes "); //KWRE+""
         checkResults(translator.translate(new Stroke("EU")), 0, "", "yes /EU ");
         checkResults(translator.translate(new Stroke("TKO")), 0, "yes I do ", "");
         checkResults(translator.translate(new Stroke("A")), 0, "", "a");
         checkResults(translator.translate(new Stroke("SRAEUL")), 0, "avail ", "");
         checkResults(translator.translate(new Stroke("-BL")), 6, "available ", "");
+        checkResults(translator.translate(new Stroke("-T")), 0, "the ", "");
+        checkResults(translator.translate(new Stroke("RE")), 0, "", "RE ");
+        checkResults(translator.translate(new Stroke("HRAEUGS")), 0, "relation ", "");
+        checkResults(translator.translate(new Stroke("A")), 0, "", "a");
+
     }
 
     public void testSpecialCases() throws Exception {

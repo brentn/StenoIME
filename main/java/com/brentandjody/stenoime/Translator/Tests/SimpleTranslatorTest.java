@@ -118,38 +118,33 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
         checkResults(translator.translate(new Stroke("*")), 14, "admitted ", "");
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT ");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "im/PHORT ");
+        checkResults(translator.translate(new Stroke("*")), 9, "", "im/PHORT");
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT ");
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT");
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "God ", "");
-        checkResults(translator.translate(new Stroke("OES")), 4, "God's ", "");
-        checkResults(translator.translate(new Stroke("TRAOU*T")), 0, "truth ", "");
-        checkResults(translator.translate(new Stroke("*")), 12, "God's ", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "God ", "");
 
         // test period and subsequent capital with undo
-        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "God ", "");
-        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
+        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ".  ");
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
         checkResults(translator.translate(new Stroke("*")), 10, "Thank ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, " ", ".  "); //TODO:why the space? and following 1
+        checkResults(translator.translate(new Stroke("*")), 9, " ", ".  "); //Space is due to period removing it
         checkResults(translator.translate(new Stroke("ADZ")), 1, ".  ", "Adds ");
         checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "God ", "");
-        checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "", "God ");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "God thank ", "");
         checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");
         checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");
         checkResults(translator.translate(new Stroke("*")), 13, "thankful ", "");
         checkResults(translator.translate(new Stroke("*")), 9, "thank ", "");
-        checkResults(translator.translate(new Stroke("*")), 10, "God ", "");
+        checkResults(translator.translate(new Stroke("*")), 10, "", "God ");
         // test fingerspelling and undo
-        checkResults(translator.translate(new Stroke("A*")), 0, "a ", "");
+        checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");
         checkResults(translator.translate(new Stroke("*")), 3, "b ", "");
@@ -172,18 +167,47 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
         checkResults(translator.translate(new Stroke("U")), 9, "artistically you ", "");
 
-        //multi-part-words
-        checkResults(translator.translate(new Stroke("KWRE")), 0, "", "yes "); //KWRE+""
-        checkResults(translator.translate(new Stroke("EU")), 0, "", "yes /EU ");
-        checkResults(translator.translate(new Stroke("TKO")), 0, "yes I do ", "");
-        checkResults(translator.translate(new Stroke("A")), 0, "", "a");
-        checkResults(translator.translate(new Stroke("SRAEUL")), 0, "avail ", "");
-        checkResults(translator.translate(new Stroke("-BL")), 6, "available ", "");
-        checkResults(translator.translate(new Stroke("-T")), 0, "the ", "");
-        checkResults(translator.translate(new Stroke("RE")), 0, "", "RE ");
-        checkResults(translator.translate(new Stroke("HRAEUGS")), 0, "relation ", "");
-        checkResults(translator.translate(new Stroke("A")), 0, "", "a");
+    }
 
+    public void testRealDictionary() throws Exception {
+        InputStream in = getContext().getAssets().open("dict.json");
+        File outFile = new File("/sdcard", "dict.json");
+        OutputStream out = new FileOutputStream(outFile);
+        copyFile(in, out);
+        in.close();
+        out.flush();
+        out.close();
+        final SimpleTranslator translator = new SimpleTranslator(getContext(), true);
+        final Dictionary dictionary = new Dictionary(getContext());
+        final CountDownLatch latch = new CountDownLatch(1);
+        dictionary.load(new String[] {"/sdcard/dict.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
+            @Override
+            public void onDictionaryLoaded() {
+                latch.countDown();
+            }
+        });
+        latch.await();
+        translator.setDictionary(dictionary);
+        // How should multi-syllable words appear as you are typing them?
+        checkResults(translator.translate(new Stroke("KWRE")), 0, "", "yes "); //KWRE+""
+        checkResults(translator.translate(new Stroke("EU")), 0, "", "yes I ");
+        checkResults(translator.translate(new Stroke("TKO")), 0, "yes I ", "do ");
+        // Word list
+        checkResults(translator.translate(new Stroke("A")), 0, "do ", "a");
+        checkResults(translator.translate(new Stroke("SRAEUL")), 0, "", "avail ");
+        checkResults(translator.translate(new Stroke("-BL")), 0, "available ", "");
+        checkResults(translator.translate(new Stroke("-T")), 0, "", "the ");
+        checkResults(translator.translate(new Stroke("RE")), 0, "", "the re");
+        checkResults(translator.translate(new Stroke("HRAEUGS")), 0, "the ", "relation ");
+        checkResults(translator.translate(new Stroke("SHEUP")), 0, "relationship ", "");
+        // Test delete spacing
+        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
+        checkResults(translator.translate(new Stroke("AES")), 0, "God ", "'s ");
+        checkResults(translator.translate(new Stroke("TRAO*UT")), 4, "God's ", "truth ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "", "God ");
+        outFile.delete();
     }
 
     public void testSpecialCases() throws Exception {
@@ -202,7 +226,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         // special cases
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I ");
         checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am ");
-        checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "am /PWEUG ");
+        checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "am big ");
         checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }
 

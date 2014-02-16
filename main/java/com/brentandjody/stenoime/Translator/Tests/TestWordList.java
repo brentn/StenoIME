@@ -31,4 +31,9 @@ public class TestWordList extends AndroidTestCase {
         assertEquals(10, list.score("Christian"));
         assertEquals(50, list.score("dirigible"));
     }
+
+    public void testScore() throws Exception {
+        assertEquals(WordList.NOT_FOUND, list.score("availible"));
+        assertEquals(10, list.score("available"));
+    }
 }

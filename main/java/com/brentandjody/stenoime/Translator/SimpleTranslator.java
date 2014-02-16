@@ -22,19 +22,16 @@ public class SimpleTranslator extends Translator {
     private Deque<String> strokeQ = new ArrayDeque<String>();
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
-    private Context context;
     private Suffixes suffixMachine;
 
 
     public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
-        this.context = context;
         suffixMachine = new Suffixes(context);
     }
 
     public SimpleTranslator(Context context, boolean useWordList) { //for testing
         mFormatter = new Formatter();
-        this.context = context;
         suffixMachine = new Suffixes(context, useWordList);
     }
 
@@ -151,8 +148,9 @@ public class SimpleTranslator extends Translator {
                                 text = fixed.getText();
                                 backspaces = fixed.getBackspaces();
                                 fixed=null;
+                            } else {
+                                history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             }
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             strokeQ.clear();
                             if (!tempQ.isEmpty()) {
                                 stroke = "";
@@ -215,15 +213,17 @@ public class SimpleTranslator extends Translator {
         if (strokeQ.isEmpty()) return "";
         String stroke = strokesInQueue();
         String key = mDictionary.longestPrefix(strokesInQueue());
+        Log.d(TAG, "lookupQueue-longestPrefix:"+key);
         if (key.isEmpty()) return strokesInQueue()+" "; //no prefix found
         String result = mFormatter.format(mDictionary.forceLookup(key), true);
         preview_backspaces += mFormatter.backspaces();
-        while (stroke.length()>key.length()) {
-            stroke = stroke.substring(key.length());
+        while (key.length()<stroke.length()) {
+            stroke = stroke.substring(key.length()+1);
+            Log.d(TAG, "lookupQueue-stroke:"+stroke);
             key = mDictionary.longestPrefix(stroke);
             if (key.isEmpty()) {
                 key=stroke;
-                result += stroke+" ";
+                result += "/"+stroke;
             } else {
                 result += mFormatter.format(mDictionary.forceLookup(key), true);
                 preview_backspaces += mFormatter.backspaces();
@@ -246,7 +246,7 @@ public class SimpleTranslator extends Translator {
     }
 
     private String trySuffixFolding(String stroke) {
-        if (stroke == null) return stroke;
+        if (stroke == null) return null;
         char last_char = stroke.charAt(stroke.length()-1);
         String lookup;
         if (last_char=='G') {

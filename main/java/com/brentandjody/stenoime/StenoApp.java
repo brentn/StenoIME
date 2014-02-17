@@ -1,11 +1,9 @@
 package com.brentandjody.stenoime;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
-import android.preference.SwitchPreference;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -15,7 +13,6 @@ import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.util.IabHelper;
 import com.brentandjody.stenoime.util.IabResult;
 import com.brentandjody.stenoime.util.Inventory;
-import com.brentandjody.stenoime.util.Purchase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +50,6 @@ public class StenoApp extends Application {
     private ProgressBar mProgressBar = null;
     private IabHelper iabHelper;
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
-    private String nkroPrice;
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
 
@@ -109,6 +105,10 @@ public class StenoApp extends Application {
         if (mMachineType==null) mMachineType= StenoMachine.TYPE.VIRTUAL;
     }
     public void setTranslatorType(Translator.TYPE t) { mTranslatorType = t; }
+    public void setNKROPurchased(boolean purchased) {
+        NKRO_KEYBOARD_PURCHASED = purchased;
+    }
+
 
     // Getters
     public StenoMachine getInputDevice() {return mInputDevice; }
@@ -151,10 +151,6 @@ public class StenoApp extends Application {
     }
 
     public boolean isDictionaryLoaded() { return (mDictionary.size() > 10); }
-
-    public void setNKROPurchased(boolean purchased) {
-        NKRO_KEYBOARD_PURCHASED = purchased;
-    }
 
     public boolean handlePurchaseResult(int requestCode, int resultCode, Intent data) {
         return iabHelper.handleActivityResult(requestCode, resultCode, data);

@@ -1,6 +1,5 @@
 package com.brentandjody.stenoime;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -44,14 +43,14 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult: request:"+requestCode+" result:"+resultCode);
         if (!App.handlePurchaseResult(requestCode, resultCode, data)) {
-            if (resultCode== Activity.RESULT_OK) {
-                switch (requestCode) {
-                    case SELECT_DICTIONARY_CODE : {
-                        Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
-                        dict_button.setSummary(getDictionaryList());
-                        break;
-                    }
+            switch (requestCode) {
+                case SELECT_DICTIONARY_CODE : {
+                    Log.d(TAG, "Dictionaries selected");
+                    Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
+                    dict_button.setSummary(getDictionaryList());
+                    break;
                 }
             }
             super.onActivityResult(requestCode, resultCode, data);
@@ -95,9 +94,13 @@ public class SettingsActivity extends PreferenceActivity {
         dict_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(SettingsActivity.this, SelectDictionaryActivity.class);
-                startActivityForResult(intent, SELECT_DICTIONARY_CODE);
-                return false;
+                if (!App.isNkroKeyboardPurchased()) {
+                    Intent intent = new Intent(SettingsActivity.this, SelectDictionaryActivity.class);
+                    startActivityForResult(intent, SELECT_DICTIONARY_CODE);
+                    return true;
+                } else {
+                    return false; //let default routine handle click
+                }
             }
         });
         // hardware switches
@@ -110,7 +113,7 @@ public class SettingsActivity extends PreferenceActivity {
                     return true;
                 } else {
                     ((SwitchPreference) preference).setChecked(false);
-                    initiatePurchase( App.SKU_NKRO_KEYBOARD);
+                    initiatePurchase( StenoApp.SKU_NKRO_KEYBOARD);
                     return false;
                 }
             }
@@ -146,7 +149,7 @@ public class SettingsActivity extends PreferenceActivity {
                     return;
                 }
                 if (purchase.getSku().equals(StenoApp.SKU_NKRO_KEYBOARD)) {
-                    if (purchase.getDeveloperPayload()==PAYLOAD) {
+                    if (purchase.getDeveloperPayload().equals(PAYLOAD)) {
                         Log.d(TAG, "NKRO Keyboard purchased");
                         App.setNKROPurchased(true);
                         //prefs.edit().putBoolean(KEY_NKRO_ENABLED, true).commit();

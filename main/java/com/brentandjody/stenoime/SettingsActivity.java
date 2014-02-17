@@ -97,7 +97,7 @@ public class SettingsActivity extends PreferenceActivity {
                 if (!App.isNkroKeyboardPurchased()) {
                     Intent intent = new Intent(SettingsActivity.this, SelectDictionaryActivity.class);
                     startActivityForResult(intent, SELECT_DICTIONARY_CODE);
-                    return true;
+                    return false;
                 } else {
                     return false; //let default routine handle click
                 }

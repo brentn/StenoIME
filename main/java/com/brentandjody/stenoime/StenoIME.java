@@ -42,6 +42,7 @@ import java.util.Set;
 public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeListener,
         StenoMachine.OnStrokeListener, Dictionary.OnDictionaryLoadedListener {
 
+    private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
 
@@ -190,6 +191,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onStroke(Set<String> keys) {
         Stroke stroke = new Stroke(keys);
         processStroke(stroke);
+        Intent intent = new Intent(STENO_STROKE);
+        sendBroadcast(intent);
     }
 
     @Override

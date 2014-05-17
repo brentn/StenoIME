@@ -33,7 +33,7 @@ public class LookupTable {
     }
 
     public Queue<String> lookup(String english) {
-        if (!loaded) return null;
+        if (!loaded || english.length() == 0) return null;
         return mDictionary.get(english);
     }
 

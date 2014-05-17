@@ -22,7 +22,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.brentandjody.stenoime.Input.NKeyRolloverMachine;
 import com.brentandjody.stenoime.Input.StenoMachine;
@@ -49,6 +48,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
     private static final boolean ENABLE_HARDWARE = false;
+    private static final String STENO_STROKE = "STENO_STROKE";
 
     private StenoApp App;
     private SharedPreferences prefs;
@@ -172,6 +172,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onStroke(Set<String> keys) {
         Stroke stroke = new Stroke(keys);
         processStroke(stroke);
+        Intent intent = new Intent(STENO_STROKE);
+        sendBroadcast(intent);
     }
 
     @Override

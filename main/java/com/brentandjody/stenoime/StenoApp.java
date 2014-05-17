@@ -53,7 +53,7 @@ public class StenoApp extends Application {
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
 
-    private static final boolean NO_PURCHASES_NECESSARY=false;
+    private static final boolean NO_PURCHASES_NECESSARY=true;
     private static final boolean RESET_PURCHASES_FOR_TESTING =false;
 
     @Override

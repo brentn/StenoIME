@@ -3,12 +3,14 @@ package com.brentandjody.stenoime;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -31,6 +33,7 @@ import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.performance.Database;
 import com.brentandjody.stenoime.performance.PerformanceItem;
+import com.brentandjody.stenoime.tools.BriefNotifier;
 
 import java.util.Date;
 import java.util.Set;
@@ -45,6 +48,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
     private static final String TAG = "StenoIME";
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
+    public static final String ACTION_LOG_LISTENER = "com.brentandjody.LOG_LISTENER";
+    public static final String LOG_STROKES = "log_strokes";
+    public static final String LOG_TRANSLATION = "log_translation";
 
     private static boolean TXBOLT_CONNECTED=false;
 
@@ -54,6 +60,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean keyboard_locked=false;
     private boolean configuration_changed;
     private Translator mTranslator;
+    private BriefNotifier briefNotifier;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
     //layout vars
@@ -80,6 +87,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         configuration_changed=false;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         resetStats();
+        briefNotifier = new BriefNotifier(App.getDictionaryNames());
         //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
@@ -143,6 +151,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             drawUI();
         }
         initializeTranslator(); //this has to come after drawing everything else (to show the progressbar)
+        LocalBroadcastManager.getInstance(this).registerReceiver(briefNotifier, new IntentFilter(ACTION_LOG_LISTENER));
     }
 
     @Override
@@ -282,11 +291,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void processStroke(Stroke stroke) {
         if (!keyboard_locked) {
-            sendText(mTranslator.translate(stroke));
-            stats.addStroke();
-        }
-        if (stroke.isCorrection()) {
-            stats.addCorrection();
+            TranslationResult translation = mTranslator.translate(stroke);
+            sendText(translation);
+            if (stroke.isCorrection()) {
+                stats.addCorrection();
+            } else {
+                stats.addStroke();
+            }
         }
     }
 

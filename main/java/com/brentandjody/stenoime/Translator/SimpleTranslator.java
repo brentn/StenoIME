@@ -1,7 +1,13 @@
 package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
+import android.support.v4.content.LocalBroadcastManager;
+import android.content.Intent;
 import android.util.Log;
+
+import com.brentandjody.stenoime.StenoApp;
+import com.brentandjody.stenoime.StenoIME;
+import com.brentandjody.stenoime.tools.BriefNotifier;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -23,9 +29,11 @@ public class SimpleTranslator extends Translator {
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
     private Suffixes suffixMachine;
+    private Context context;
 
 
     public SimpleTranslator(Context context) {
+        this.context = context;
         mFormatter = new Formatter();
         suffixMachine = new Suffixes(context);
     }
@@ -120,7 +128,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                        addHistoryItem(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                         strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
@@ -128,7 +136,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                        addHistoryItem(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                         strokeQ.clear();
                     } else {  // process strokes in queue
                         Stack<String> tempQ = new Stack<String>();
@@ -143,13 +151,13 @@ public class SimpleTranslator extends Translator {
                             if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
                             if (mFormatter.wasSuffix()) {
-                                history.push(new HistoryItem(0,"","",0,null)); //dummy item
+                                addHistoryItem(new HistoryItem(0,"","",0,null)); //dummy item
                                 TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, "", ""), strokesInQueue());
                                 text = fixed.getText();
                                 backspaces = fixed.getBackspaces();
                                 fixed=null;
                             } else {
-                                history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                                addHistoryItem(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             }
                             strokeQ.clear();
                             if (!tempQ.isEmpty()) {
@@ -170,7 +178,7 @@ public class SimpleTranslator extends Translator {
                             state = mFormatter.getState();
                             text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                            addHistoryItem(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             strokeQ.clear();
                         }
                     }
@@ -235,13 +243,13 @@ public class SimpleTranslator extends Translator {
     private TranslationResult applySuffixOrthography(TranslationResult current, String stroke) {
         String suffix = current.getText();
         if (history.isEmpty()) return current;
-        history.pop(); //this was the current suffix, so ignore it;
+        removeHistoryItem(); //this was the current suffix, so ignore it;
         if (history.isEmpty()) return current;
-        HistoryItem item = history.pop();
+        HistoryItem item = removeHistoryItem();
         String word = item.text();
         mFormatter.restoreState(item.getState());
         String result = suffixMachine.bestMatch(word, suffix);
-        history.push(new HistoryItem(result.length(), item.stroke() + "/" + stroke, result, item.backspaces(), item.getState()));
+        addHistoryItem(new HistoryItem(result.length(), item.stroke() + "/" + stroke, result, item.backspaces(), item.getState()));
         return new TranslationResult(item.length(), result , "","");
     }
 
@@ -270,12 +278,24 @@ public class SimpleTranslator extends Translator {
         }
     }
 
+    private void addHistoryItem(HistoryItem historyItem) {
+        history.push(historyItem);
+        broadcastLog("Translation", historyItem);
+    }
+
+    private HistoryItem removeHistoryItem() {
+        HistoryItem historyItem = history.pop();
+        broadcastLog("*Translation", historyItem);
+        return historyItem;
+    }
+
     private HistoryItem undoStrokeFromHistory() {
         HistoryItem result = new HistoryItem(0, "", "", 0, null);
-        HistoryItem hItem = history.pop();
+        HistoryItem hItem = removeHistoryItem();
         int num_spaces=hItem.backspaces();
         result.setStroke(spaces(num_spaces));
         result.setLength(hItem.length());
+        result.setText(hItem.text());
         String hStroke = hItem.stroke();
         if (hStroke.contains("/")) {
             mFormatter.restoreState(hItem.getState());
@@ -284,7 +304,7 @@ public class SimpleTranslator extends Translator {
             Collections.addAll(strokeQ, hStroke.split("/"));
         } else { // replay prior stroke (in case it was ambiguous)
             if (!history.isEmpty()) {
-                hItem = history.pop();
+                hItem = removeHistoryItem();
                 mFormatter.restoreState(hItem.getState());
                 result.setStroke(spaces(hItem.backspaces()));
                 result.increaseLength(hItem.length()-num_spaces);
@@ -295,6 +315,15 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
+    private void broadcastLog(String action, HistoryItem historyItem) {
+        Intent intent = new Intent(StenoIME.ACTION_LOG_LISTENER);
+        int strokes = historyItem.stroke().split("/").length;
+        if (action.equals("*Translation")) strokes = -strokes;
+        intent.putExtra(StenoIME.LOG_STROKES, strokes);
+        intent.putExtra(StenoIME.LOG_TRANSLATION, historyItem.text());
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
 
     private void addToQueue(String input) {
         Collections.addAll(strokeQ, input.split("/"));
@@ -327,6 +356,7 @@ public class SimpleTranslator extends Translator {
         public void setStroke(String stroke) {
             this.stroke = stroke;
         }
+        public void setText(String text) {this.text = text;}
 
         public void increaseLength(int amount) {
             this.length += amount;

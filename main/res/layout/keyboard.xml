@@ -12,9 +12,10 @@
         android:layout_width="fill_parent"
         android:clickable="false"
         android:longClickable="false"
-        android:focusable="false">
+        android:focusable="false"
+        android:id="@+id/keyboard_container">
 
-        <com.brentandjody.Input.TouchLayer
+        <com.brentandjody.stenoime.Input.TouchLayer
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -156,7 +157,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="..."
-                                        android:id="@+id/settings"
+                                        android:id="@+id/settings_button"
                                         android:layout_gravity="center_horizontal|top" />
                                 </FrameLayout>
 
@@ -247,11 +248,11 @@
 
                     </LinearLayout>
 
-                    <FrameLayout
+                    <Space
                         android:layout_width="fill_parent"
                         android:layout_height="68dp"
                         android:id="@+id/gutter"
-                        android:focusable="true"></FrameLayout>
+                        android:focusable="true"/>
 
                     <LinearLayout
                         android:orientation="horizontal"
@@ -315,10 +316,10 @@
                             android:layout_weight="5"
                             android:id="@+id/thumbs">
 
-                            <FrameLayout
+                            <Space
                                 android:layout_width="fill_parent"
                                 android:layout_height="0dp"
-                                android:layout_weight="1"></FrameLayout>
+                                android:layout_weight="1"/>
 
                             <LinearLayout
                                 android:orientation="horizontal"
@@ -504,7 +505,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-        </com.brentandjody.Input.TouchLayer>
+        </com.brentandjody.stenoime.Input.TouchLayer>
 
         <FrameLayout
             android:layout_width="fill_parent"

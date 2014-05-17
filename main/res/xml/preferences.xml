@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <ListPreference
-        android:title="Type of Translator"
-        android:key="translator_type"
-        android:defaultValue="0"
-        android:entries="@array/translator_names"
-        android:entryValues="@array/translator_values" />
+    <Preference android:key="about_button"
+        android:title="About stenography..."/>
+
+    <PreferenceCategory android:title="@string/translator">
+        <ListPreference android:key="pref_translator"
+            android:title="@string/translator_type"
+            android:entries="@array/translator_names"
+            android:entryValues="@array/translator_values"
+            android:defaultValue="1"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/formatter">
+        <SwitchPreference android:key="pref_inline_preview"
+            android:title="@string/inline_preview"
+            android:summaryOn="Ambiguous (preview) words will be shown after regular text.\n"
+            android:summaryOff="Ambiguous words will be shown above the keyboard.\n"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Dictionary">
+        <Preference android:key="pref_dictionary_button"
+            android:title="Edit Dictionaries"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Hardware">
+        <SwitchPreference android:key="pref_kbd_enabled"
+            android:title="Enable NKRO Keyboard"
+            android:defaultValue="false"
+            android:enabled="false"/>
+    </PreferenceCategory>
 
 </PreferenceScreen>

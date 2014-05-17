@@ -5,31 +5,57 @@
 
     <ImageView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="12dp"
         android:id="@+id/shadow"
         android:clickable="false"
-        android:background="@drawable/shadow" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/shadow"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/preview"
-        android:textColor="@android:color/holo_blue_light"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:clickable="false"
-        android:background="@android:color/background_dark" />
+        android:background="@drawable/shadow"
+        android:layout_alignParentStart="false" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/preview"
+        android:id="@+id/text"
+        android:background="@android:color/black"
+        android:layout_below="@+id/shadow">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:id="@+id/preview"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:password="false"
+            android:phoneNumber="false"
+            android:singleLine="false"
+            android:textColor="@android:color/holo_blue_light"
+            android:layout_weight="1"
+            android:layout_marginLeft="20dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/debug"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@android:color/holo_blue_light"
+            android:clickable="false"
+            android:id="@+id/debug"
+            android:gravity="right"
+            android:layout_weight="1"
+            android:layout_marginRight="20dp"
+            android:textIsSelectable="true"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/text"
         android:clickable="false"
         android:id="@+id/preview_overlay"
-        android:visibility="visible"
+        android:visibility="invisible"
         android:layout_marginBottom="5dp">
 
         <TextView

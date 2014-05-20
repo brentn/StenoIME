@@ -192,6 +192,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Stroke stroke = new Stroke(keys);
         processStroke(stroke);
         Intent intent = new Intent(STENO_STROKE);
+        intent.putExtra("stroke", stroke.rtfcre());
         sendBroadcast(intent);
     }
 

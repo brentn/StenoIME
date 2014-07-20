@@ -1,5 +1,6 @@
 package com.brentandjody.stenoime;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -155,6 +157,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         setCandidatesViewShown(false);
         removeVirtualKeyboard();
+        sendNotification();
     }
 
     @Override
@@ -370,17 +373,32 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
     
     private void recordStats() {
-        if (stats.strokes()==0) return;
-        Double stats_duration = (new Date().getTime() - stats.when().getTime())/60000d;
+        if (stats.strokes() == 0) return;
+        Double stats_duration = (new Date().getTime() - stats.when().getTime()) / 60000d;
         stats.setMinutes(stats_duration);
-        Double stats_words = stats.letters()/5d;
-        Double stats_ratio = stats_words/stats.strokes();
-        Log.i(TAG,"Strokes:"+stats.strokes()+" Words:"+(stats_words)+" Duration:"+stats_duration);
-        if (stats.strokes()>0 && stats_duration>.01) {
-            Log.i(TAG,"Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)));
+        Double stats_words = stats.letters() / 5d;
+        Double stats_ratio = stats_words / stats.strokes();
+        Log.i(TAG, "Strokes:" + stats.strokes() + " Words:" + (stats_words) + " Duration:" + stats_duration);
+        if (stats.strokes() > 0 && stats_duration > .01) {
+            Log.i(TAG, "Speed:" + ((stats.letters() / 5d) / (stats_duration) + " Ratio: 1:" + (stats_ratio)));
             new Database(getApplicationContext()).insert(stats);
         }
         resetStats();
+    }
+
+    private void sendNotification() {
+        Double stats_duration = (new Date().getTime() - stats.when().getTime()) / 60000d;
+        Double stats_words = stats.letters() / 5d;
+        Double stats_ratio = stats_words / stats.strokes();
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_stat_stenoime)
+                .setContentTitle("Steno Performance")
+                .setContentText("Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)));
+        int mNotificationId = 001;
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (stats_duration > 1 && stats_words > 10 && stats.strokes()>1)
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     // *** NKeyRollover Keyboard ***

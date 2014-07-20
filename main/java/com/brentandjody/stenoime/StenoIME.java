@@ -43,7 +43,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         StenoMachine.OnStrokeListener, Dictionary.OnDictionaryLoadedListener {
 
     private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
-    private static final String TAG = "StenoIME";
+    private static final String TAG = StenoIME.class.getSimpleName();
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
 
     private static boolean TXBOLT_CONNECTED=false;

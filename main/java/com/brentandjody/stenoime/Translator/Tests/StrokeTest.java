@@ -4,6 +4,7 @@ import android.test.AndroidTestCase;
 
 import com.brentandjody.stenoime.Translator.Stroke;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -45,6 +46,28 @@ public class StrokeTest extends AndroidTestCase {
         assertEquals("*", s.rtfcre());
         assertEquals("*Stroke(* : 1024)", s.toString());
         assertTrue(s.isCorrection());
+        //Check some digits
+        s = new Stroke ("S");
+        assertEquals("Stroke(S : 2)", s.toString());
+        s = new Stroke("#S");
+        assertEquals("1", s.rtfcre());
+        assertEquals("Stroke(1 : 3)", s.toString());
+        assertFalse(s.isCorrection());
+        s = new Stroke("#T-T");
+        assertEquals("29", s.rtfcre());
+        assertEquals("Stroke(29 : 524293)", s.toString());
+        s = new Stroke("ST-BG");
+        assertEquals("Stroke(ST-BG : 327686)", s.toString());
+        s = new Stroke("#ST-BG");
+        assertEquals(s.getKeySet(), new ArrayList<String>() {{
+            add("#");
+            add("S-");
+            add("T-");
+            add("-B");
+            add("-G");
+        }});
+        assertEquals("12-BG", s.rtfcre());
+        assertEquals("Stroke(12-BG : 327687)", s.toString());
     }
 
     public void testCombine() throws Exception {

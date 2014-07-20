@@ -166,7 +166,12 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
         checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
         checkResults(translator.translate(new Stroke("U")), 9, "artistically you ", "");
-
+        //Numbers
+        checkResults(translator.translate(new Stroke("#S")), 0, "1 ", "");
+        checkResults(translator.translate(new Stroke("#S-T")), 1, "19 ", "");
+        checkResults(translator.translate(new Stroke("*")), 4, "1 ", "");
+        checkResults(translator.translate(new Stroke("#TO")), 1, "20 ", "");
+        checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
     }
 
     public void testRealDictionary() throws Exception {

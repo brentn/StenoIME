@@ -114,9 +114,13 @@ public class SimpleTranslator extends Translator {
                 }
             } else {
                 strokeQ.add(stroke);
-                lookupResult = mDictionary.lookup(strokesInQueue());
+                if (isNumeric(stroke)) {
+                    lookupResult = "{&"+stroke+"}";
+                } else {
+                    lookupResult = mDictionary.lookup(strokesInQueue());
+                }
                 if (found(lookupResult)) {
-                    if (! ambiguous(lookupResult)) {
+                    if (!ambiguous(lookupResult)) {
                         state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
                         backspaces = mFormatter.backspaces();
@@ -124,7 +128,7 @@ public class SimpleTranslator extends Translator {
                         strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
-                    if (strokeQ.size()==1) {
+                    if (strokeQ.size() == 1) {
                         state = mFormatter.getState();
                         text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                         backspaces = mFormatter.backspaces();
@@ -140,14 +144,14 @@ public class SimpleTranslator extends Translator {
                         if (found(lookupResult)) {
                             state = mFormatter.getState();
                             text = mFormatter.format(lookupResult);
-                            if (text.isEmpty()) text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+                            if (text.isEmpty())
+                                text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
                             if (mFormatter.wasSuffix()) {
-                                history.push(new HistoryItem(0,"","",0,null)); //dummy item
+                                history.push(new HistoryItem(0, "", "", 0, null)); //dummy item
                                 TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, "", ""), strokesInQueue());
                                 text = fixed.getText();
                                 backspaces = fixed.getBackspaces();
-                                fixed=null;
                             } else {
                                 history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                             }
@@ -156,9 +160,9 @@ public class SimpleTranslator extends Translator {
                                 stroke = "";
                                 while (!tempQ.isEmpty()) { //recursively replay strokes
                                     String tempStroke = tempQ.pop();
-                                    stroke += "/"+tempStroke;
+                                    stroke += "/" + tempStroke;
                                     TranslationResult recurse = translate_simple_stroke(tempStroke);
-                                    int pos = text.length()-recurse.getBackspaces();
+                                    int pos = text.length() - recurse.getBackspaces();
                                     text = text.substring(0, pos) + recurse.getText();
                                 }
                                 if (!stroke.isEmpty()) stroke = stroke.substring(1);
@@ -198,6 +202,14 @@ public class SimpleTranslator extends Translator {
 
     private boolean found(String s) {return (s != null); }
     private boolean ambiguous(String s) { return s.equals("");}
+
+    private boolean isNumeric(String s) {
+        if (s==null || s.length()==0) return false;
+        for (char c : s.toCharArray()) {
+            if ("0123456789".indexOf(c)==-1) return false;
+        }
+        return true;
+    }
 
     private String strokesInQueue() {
         if (strokeQ.isEmpty()) return "";

@@ -394,11 +394,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_stenoime)
                 .setContentTitle("Steno Performance")
-                .setContentText("Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)));
+                .setContentText("Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)+" Accuracy: ?%"));
         int mNotificationId = 001;
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (stats_duration > 1 && stats_words > 10 && stats.strokes()>1)
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     // *** NKeyRollover Keyboard ***

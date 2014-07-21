@@ -129,6 +129,10 @@ public class Dictionary {
         return Stroke.separate(stroke);
     }
 
+    public Iterable<String> allKeys() {
+        return dictionary.keys();
+    }
+
     private boolean outlineContainsStroke(String outline, String stroke) {
         //ensures stroke does not contain "partial" strokes  from outline
         return ((outline+"/").contains(stroke+"/"));

@@ -4,6 +4,7 @@ import android.test.AndroidTestCase;
 import android.util.Log;
 import android.widget.ProgressBar;
 
+import com.brentandjody.stenoime.Translator.Definition;
 import com.brentandjody.stenoime.Translator.Dictionary;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;

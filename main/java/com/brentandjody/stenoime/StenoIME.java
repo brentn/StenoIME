@@ -398,12 +398,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void sendNotification() {
         Double stats_duration = (new Date().getTime() - stats.when().getTime()) / 60000d;
         Double stats_words = stats.letters() / 5d;
-        Double stats_ratio = stats_words / stats.strokes();
+        Double stats_speed = Math.round(stats_words * 10.0/ stats_duration) / 10.0;
+        Double stats_ratio = Math.round(stats.strokes() * 100.0/ stats_words) / 100.0;
+        Double stats_accuracy = Math.round(stats.strokes()*1000.0/stats.corrections()) / 10.0;
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_stenoime)
                 .setContentTitle("Steno Performance")
-                .setContentText("Speed:"+((stats.letters()/5d)/(stats_duration)+" Ratio: 1:"+(stats_ratio)+" Accuracy: ?%"));
+                .setContentText("Speed:"+(stats_speed+" Ratio: 1:"+(stats_ratio)+" Accuracy: "+stats_accuracy+"%"));
         int mNotificationId = 001;
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(mNotificationId, mBuilder.build());

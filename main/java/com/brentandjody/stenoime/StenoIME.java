@@ -400,7 +400,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Double stats_words = stats.letters() / 5d;
         Double stats_speed = Math.round(stats_words * 10.0/ stats_duration) / 10.0;
         Double stats_ratio = Math.round(stats.strokes() * 100.0/ stats_words) / 100.0;
-        Double stats_accuracy = Math.round(stats.strokes()*1000.0/stats.corrections()) / 10.0;
+        long stats_accuracy = 100-Math.round(stats.corrections()*100.0/stats.strokes());
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_stenoime)

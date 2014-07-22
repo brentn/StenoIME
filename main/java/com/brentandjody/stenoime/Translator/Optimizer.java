@@ -1,6 +1,11 @@
 package com.brentandjody.stenoime.Translator;
 
+import android.app.NotificationManager;
+import android.content.Context;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.brentandjody.stenoime.R;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,9 +19,12 @@ public class Optimizer {
     private TST<String> thesaurus = new TST<String>();
     private static final String TAG = Optimizer.class.getSimpleName();
     private List<Candidate> candidates = new ArrayList<Candidate>();
+    private String last_optimized_stroke = null;
+    private Context context;
 
-    public Optimizer(Dictionary dictionary) {
+    public Optimizer(Context context, Dictionary dictionary) {
         String translation, existing_stroke;
+        this.context = context;
         if (dictionary.isLoading()) {
             //wait for the dictionary to be loaded first
             final CountDownLatch latch = new CountDownLatch(1);
@@ -41,33 +49,48 @@ public class Optimizer {
         }
     }
 
-    public String optimize (String stroke, int backspaces, String translation) {
+    public String analyze (String stroke, int backspaces, String translation) {
         //return value is only for testing
-        String better_stroke;
+        last_optimized_stroke=null;
         Candidate candidate;
         Iterator<Candidate> iterator = candidates.iterator();
         while (iterator.hasNext()) {
             candidate = iterator.next();
             candidate.append(stroke, backspaces, translation);
             if (thesaurus.nodeExists(candidate.getTranslation().trim())) {
-                better_stroke = findBetterStroke(candidate);
+                findBetterStroke(candidate);
             } else {
                 iterator.remove();
             }
         }
         candidate = new Candidate(stroke, translation);
-        better_stroke = findBetterStroke(candidate);
+        findBetterStroke(candidate);
         candidates.add(candidate);
         Log.v(TAG, "CANDIDATES");
         for (Candidate c : candidates) {
             Log.v(TAG, c.getStroke()+": "+c.getTranslation());
         }
-        return better_stroke;
+        return last_optimized_stroke;
     }
 
-    private String findBetterStroke(Candidate candidate) {
+    private void findBetterStroke(Candidate candidate) {
         //return any clearly better stroke, or null
-        return findBetterStroke(candidate.getStroke(), candidate.getTranslation());
+        String better_stroke = findBetterStroke(candidate.getStroke(), candidate.getTranslation());
+        if (better_stroke != null) {
+            int original_strokes = countStrokes(candidate.getStroke());
+            int improved_strokes = countStrokes(better_stroke);
+            int stroke_savings = original_strokes-improved_strokes;
+            last_optimized_stroke = better_stroke;
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(context)
+                            .setSmallIcon(R.drawable.ic_stat_stenoime)
+                            .setContentTitle("Better Stroke Found")
+                            .setContentText(better_stroke+" : "+candidate.getTranslation().trim()+" saves you "+stroke_savings+" strokes.");
+            int mNotificationId = 002;
+            NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
+        }
     }
 
     public String findBetterStroke(String stroke, String translation) {

@@ -34,6 +34,25 @@ public class TSTTest extends AndroidTestCase {
         assertFalse(dictionary.contains("beta"));
     }
 
+    public void testNodeExists() throws Exception {
+        assertFalse(dictionary.contains("z"));
+        assertFalse(dictionary.nodeExists("z"));
+        dictionary.put("z", "z");
+        assertTrue(dictionary.contains("z"));
+        assertTrue(dictionary.nodeExists("z"));
+        assertFalse(dictionary.contains("x"));
+        assertFalse(dictionary.nodeExists("x"));
+        dictionary.put("xyz", "xyz");
+        assertFalse(dictionary.contains("x"));
+        assertTrue(dictionary.nodeExists("x"));
+        assertFalse(dictionary.contains("xy"));
+        assertTrue(dictionary.nodeExists("xy"));
+        assertTrue(dictionary.contains("xyz"));
+        assertTrue(dictionary.nodeExists("xyz"));
+        assertFalse(dictionary.contains("yz"));
+        assertFalse(dictionary.nodeExists("yz"));
+    }
+
     public void testPutAndGet() throws Exception {
         assertNull(dictionary.get("alpha"));
         dictionary.put("alpha", "A");

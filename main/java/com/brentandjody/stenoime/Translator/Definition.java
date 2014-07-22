@@ -4,7 +4,7 @@ package com.brentandjody.stenoime.Translator;
 /**
  * Created by brent on  13/11/13.
  * This is the main translation class
- * and represents a group of strokes, and the translation they represents
+ * and represents a group of strokeCount, and the translation they represents
  */
 public class Definition {
 

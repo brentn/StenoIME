@@ -117,7 +117,7 @@ public class Dictionary {
 
     public Stroke[] longestValidStroke(String outline) {
         //returns outline, if it has a valid translation
-        //or the longest combination of strokes, starting from the beginning of outline, that has a valid translation
+        //or the longest combination of strokeCount, starting from the beginning of outline, that has a valid translation
         //or null
         String stroke = dictionary.longestPrefixOf(outline);
         while ((stroke.contains("/")) && (! outlineContainsStroke(outline, stroke))) {
@@ -134,7 +134,7 @@ public class Dictionary {
     }
 
     private boolean outlineContainsStroke(String outline, String stroke) {
-        //ensures stroke does not contain "partial" strokes  from outline
+        //ensures stroke does not contain "partial" strokeCount  from outline
         return ((outline+"/").contains(stroke+"/"));
     }
 

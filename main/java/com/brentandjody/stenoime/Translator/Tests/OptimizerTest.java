@@ -5,6 +5,7 @@ import android.widget.ProgressBar;
 
 import com.brentandjody.stenoime.Translator.Definition;
 import com.brentandjody.stenoime.Translator.Dictionary;
+import com.brentandjody.stenoime.Translator.Optimizer;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
 
@@ -49,22 +50,20 @@ public class OptimizerTest extends AndroidTestCase {
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[]{"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
-        dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
-            @Override
-            public void onDictionaryLoaded() {
-                latch.countDown();
-            }
-        });
-        latch.await();
-        translator.setDictionary(dictionary);
-        translator.translate(new Stroke("A*"));
-        assertEquals(translator.FindShorterStroke(), null);
-        translator.translate(new Stroke("TK*"));
-        assertEquals(translator.FindShorterStroke(), null);
-        translator.translate(new Stroke("TK*"));
-        assertEquals(translator.FindShorterStroke(), null);
-        translator.translate(new Stroke("S*"));
-        assertEquals(translator.FindShorterStroke(), new Definition("ADZ", "adds"));
+        Optimizer optimizer = new Optimizer(dictionary);
+        //These two are equal length, and should not optimize
+        assertNull(optimizer.optimize("AD/SRAPB/TAPBLG", 0, "advantage "));
+        assertNull(optimizer.optimize("AD/SRAPBT/APBLG", 0, "advantage "));
+        //This one has a shorter stroke
+        assertEquals(optimizer.optimize("AD/SRAPB/TAEU/SKWROUS", 0, "advantageous "), "AD/SRAPBGS");
+        //Fingerspelling
+        assertNull(optimizer.optimize("*A", 0, "a "));
+        assertNull(optimizer.optimize("*TK", 1, "d "));
+        assertNull(optimizer.optimize("*SR", 1, "v "));
+        assertNull(optimizer.optimize("*A", 1, "a "));
+        assertNull(optimizer.optimize("*TPH", 1, "n "));
+        assertNull(optimizer.optimize("*KR", 1, "c "));
+        assertEquals(optimizer.optimize("*-E", 1, "e "), "AD/SRAPBS");
     }
 
 

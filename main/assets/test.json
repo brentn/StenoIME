@@ -411,5 +411,11 @@
 "-T/RAE/SEFRPB": "the research",
 "-T/RE/PWUB/HREUBG": "the republic",
 "-T/RE/SULT": "the result",
-"U": "you"
+"U": "you",
+"*A": "&a",
+"*KR": "&c",
+"*TK": "&d",
+"*-E": "*e",
+"*TPH": "&n",
+"*SR": "&v"
 }

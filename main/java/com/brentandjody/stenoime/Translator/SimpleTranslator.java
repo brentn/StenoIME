@@ -134,7 +134,7 @@ public class SimpleTranslator extends Translator {
                         backspaces = mFormatter.backspaces();
                         history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
                         strokeQ.clear();
-                    } else {  // process strokes in queue
+                    } else {  // process strokeCount in queue
                         Stack<String> tempQ = new Stack<String>();
                         while (!(found(lookupResult) || strokeQ.isEmpty())) {
                             tempQ.push(strokeQ.removeLast());
@@ -158,7 +158,7 @@ public class SimpleTranslator extends Translator {
                             strokeQ.clear();
                             if (!tempQ.isEmpty()) {
                                 stroke = "";
-                                while (!tempQ.isEmpty()) { //recursively replay strokes
+                                while (!tempQ.isEmpty()) { //recursively replay strokeCount
                                     String tempStroke = tempQ.pop();
                                     stroke += "/" + tempStroke;
                                     TranslationResult recurse = translate_simple_stroke(tempStroke);

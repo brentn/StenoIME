@@ -104,7 +104,7 @@ public class Optimizer {
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
                         .setContentTitle("Better Stroke Found")
-                        .setContentInfo("(-"+Integer.toString(stroke_savings)+" strokes)")
+                        .setContentInfo((optimizations.size()>1?"("+(optimizations.size()-1)+" more)":""))
                         .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() );
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle("Better Strokes:");

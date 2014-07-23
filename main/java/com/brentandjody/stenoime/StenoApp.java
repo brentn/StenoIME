@@ -139,7 +139,9 @@ public class StenoApp extends Application {
             mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
 
         } else {
-            listener.onDictionaryLoaded(); //fire loadedListener to unlock keyboard if dictionary is already loaded.
+            if (listener != null) {
+                listener.onDictionaryLoaded(); //fire loadedListener to unlock keyboard if dictionary is already loaded.
+            }
         }
         return mDictionary;
     }

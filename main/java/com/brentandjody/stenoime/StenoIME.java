@@ -26,7 +26,6 @@ import com.brentandjody.stenoime.Input.StenoMachine;
 import com.brentandjody.stenoime.Input.TXBoltMachine;
 import com.brentandjody.stenoime.Input.TouchLayer;
 import com.brentandjody.stenoime.Translator.Dictionary;
-import com.brentandjody.stenoime.Translator.Optimizer;
 import com.brentandjody.stenoime.Translator.RawStrokeTranslator;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
@@ -48,7 +47,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
     private static final String TAG = StenoIME.class.getSimpleName();
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
-    private static final Boolean OPTIMIZER_REPORT=true;
 
     private static boolean TXBOLT_CONNECTED=false;
 
@@ -58,7 +56,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean keyboard_locked=false;
     private boolean configuration_changed;
     private Translator mTranslator;
-    private Optimizer mOptimizer;
     private long last_notification_time;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
@@ -205,7 +202,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDictionaryLoaded() {
         unlockKeyboard();
-        if (OPTIMIZER_REPORT) mOptimizer = new Optimizer(App);
     }
 
     // Private methods
@@ -269,16 +265,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "initializeTranslator()");
         switch (App.getTranslatorType()) {
             case RawStrokes: mTranslator = new RawStrokeTranslator();
-                mOptimizer = null;
                 break;
             case SimpleDictionary:
                 mTranslator = new SimpleTranslator(getApplicationContext());
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
                 break;
         }
-        if (mTranslator.usesDictionary()) {
-            loadDictionary();
-        }
+//        if (mTranslator.usesDictionary()) {
+//            loadDictionary();
+//        }
     }
 
     private void drawUI() {
@@ -294,8 +289,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (!keyboard_locked) {
             TranslationResult t = mTranslator.translate(stroke);
             sendText(t);
-            if (mOptimizer != null)
-                mOptimizer.analyze(stroke.rtfcre(), t.getBackspaces(), t.getText());
             stats.addStroke();
             sendNotification();
         }

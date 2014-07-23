@@ -88,6 +88,15 @@ public class SettingsActivity extends PreferenceActivity {
                 return false;
             }
         });
+        SwitchPreference optimizer = (SwitchPreference) findPreference(StenoApp.KEY_OPTIMIZER_ENABLED);
+        optimizer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                boolean setting = ((SwitchPreference) preference).isChecked();
+                App.setOptimizerEnabled(setting);
+                return true;
+            }
+        });
         // list dictionaries
         Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
         dict_button.setSummary(getDictionaryList());

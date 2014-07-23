@@ -16,6 +16,11 @@
             android:summaryOn="More accurate suffixes, but slower"
             android:summaryOff="Generate suffixes based on rules"
             android:defaultValue="true" />
+        <SwitchPreference android:key="pref_optimizer_enabled"
+            android:title="Provide Stroke Suggestions"
+            android:summaryOn="Notify when a shorter stroke is found (uses more memory)"
+            android:summaryOff="Do not provide stroke suggestions (uses less memory)"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/formatter">

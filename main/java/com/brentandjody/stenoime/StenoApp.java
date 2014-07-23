@@ -36,6 +36,7 @@ public class StenoApp extends Application {
     public static final String KEY_INLINE_PREVIEW = "pref_inline_preview";
     public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
     public static final String KEY_NKRO_ENABLED = "pref_kbd_enabled";
+    public static final String KEY_OPTIMIZER_ENABLED = "pref_optimizer_enabled";
 
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
@@ -52,6 +53,7 @@ public class StenoApp extends Application {
     private IabHelper.QueryInventoryFinishedListener mQueryFinishedListener;
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
+    private boolean optimizer_enabled = false;
 
     private static final boolean NO_PURCHASES_NECESSARY=true;
     private static final boolean RESET_PURCHASES_FOR_TESTING =false;
@@ -62,6 +64,7 @@ public class StenoApp extends Application {
         prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = new Dictionary(getApplicationContext());
         nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
+        optimizer_enabled = prefs.getBoolean(KEY_OPTIMIZER_ENABLED, false);
         int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
         mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.VIRTUAL;
@@ -108,7 +111,7 @@ public class StenoApp extends Application {
     public void setNKROPurchased(boolean purchased) {
         NKRO_KEYBOARD_PURCHASED = purchased;
     }
-
+    public void setOptimizerEnabled(boolean setting) {optimizer_enabled = setting; }
 
     // Getters
     public StenoMachine getInputDevice() {return mInputDevice; }
@@ -122,6 +125,7 @@ public class StenoApp extends Application {
         nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
         return nkro_enabled;
     }
+    public boolean isOptimizerEnabled() {return optimizer_enabled;}
     public IabHelper getIabHelper() {return iabHelper;}
 
     public Dictionary getDictionary(Dictionary.OnDictionaryLoadedListener listener) {
@@ -134,6 +138,8 @@ public class StenoApp extends Application {
             mProgressBar.setProgress(0);
             mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
 
+        } else {
+            listener.onDictionaryLoaded(); //fire loadedListener to unlock keyboard if dictionary is already loaded.
         }
         return mDictionary;
     }

@@ -3,6 +3,8 @@ package com.brentandjody.stenoime.Translator;
 import android.content.Context;
 import android.util.Log;
 
+import com.brentandjody.stenoime.StenoApp;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,15 +21,22 @@ public class SimpleTranslator extends Translator {
     private boolean locked = false;
     private Dictionary mDictionary;
     private Formatter mFormatter;
+    private Optimizer mOptimizer = null;
     private Deque<String> strokeQ = new ArrayDeque<String>();
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
     private Suffixes suffixMachine;
+    private boolean use_optimizer;
 
 
     public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
         suffixMachine = new Suffixes(context);
+        use_optimizer = ((StenoApp) context).isOptimizerEnabled();
+        if (use_optimizer) {
+            Log.d(TAG, "Optimizer created");
+            mOptimizer = new Optimizer(context);
+        }
     }
 
     public SimpleTranslator(Context context, boolean useWordList) { //for testing
@@ -93,6 +102,7 @@ public class SimpleTranslator extends Translator {
                         HistoryItem reset = undoStrokeFromHistory();
                         backspaces = reset.length();
                         text = reset.stroke();
+                        mOptimizer.analyze("*", backspaces, text);
                         if (!strokeQ.isEmpty()) {
                             //replay the queue
                             stroke="";
@@ -124,7 +134,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(lookupResult);
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                        addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                         strokeQ.clear();
                     } // else stroke is already added to queue
                 } else {
@@ -132,7 +142,7 @@ public class SimpleTranslator extends Translator {
                         state = mFormatter.getState();
                         text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                         backspaces = mFormatter.backspaces();
-                        history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                        addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                         strokeQ.clear();
                     } else {  // process strokes in queue
                         Stack<String> tempQ = new Stack<String>();
@@ -153,7 +163,7 @@ public class SimpleTranslator extends Translator {
                                 text = fixed.getText();
                                 backspaces = fixed.getBackspaces();
                             } else {
-                                history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                                addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                             }
                             strokeQ.clear();
                             if (!tempQ.isEmpty()) {
@@ -174,7 +184,7 @@ public class SimpleTranslator extends Translator {
                             state = mFormatter.getState();
                             text = mFormatter.format(trySuffixFolding(strokesInQueue()));
                             backspaces = mFormatter.backspaces();
-                            history.push(new HistoryItem(text.length(), strokesInQueue(), text, backspaces, state));
+                            addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                             strokeQ.clear();
                         }
                     }
@@ -280,6 +290,12 @@ public class SimpleTranslator extends Translator {
         } else {
             return prefix;
         }
+    }
+
+    private void addToHistory(int length, String stroke, String text, int bs, Formatter.State state) {
+        HistoryItem item = new HistoryItem(length, stroke, text, bs, state);
+        history.push(item);
+        mOptimizer.analyze(stroke, bs, text);
     }
 
     private HistoryItem undoStrokeFromHistory() {

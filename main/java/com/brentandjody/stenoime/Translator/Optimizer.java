@@ -24,23 +24,28 @@ public class Optimizer {
     private List<Candidate> candidates = new ArrayList<Candidate>();
     private String last_optimized_stroke = null;
     private Context context;
+    private Dictionary mDictionary;
+    private boolean loading=false;
     private boolean loaded=false;
     private List<Optimization> optimizations = new LinkedList<Optimization>();
 
     public Optimizer(Context context) {
         this.context = context;
-        Dictionary dictionary = ((StenoApp) context).getDictionary(null);
-        new BackgroundLoader().execute(dictionary);
+        mDictionary = ((StenoApp) context).getDictionary(null);
     }
 
     public Optimizer(Context context, Dictionary dictionary) {
         this.context = context;
-        new BackgroundLoader().execute(dictionary);
+        mDictionary = dictionary;
     }
 
     public boolean isLoaded() {return loaded;}
-
+    
     public String analyze (String stroke, int backspaces, String translation) {
+        if (!loaded) {
+            initiateLoad();
+            return null;
+        }
         //return value is only for testing
         last_optimized_stroke=null;
         Candidate candidate;
@@ -64,6 +69,17 @@ public class Optimizer {
         return last_optimized_stroke;
     }
 
+    private void initiateLoad() {
+        if (!mDictionary.isLoading()) {
+            if (!loading) {
+                loading = true;
+                new BackgroundLoader().execute(mDictionary);
+            }
+        } else {
+            Log.d(TAG, "...waiting for dictionary to load");
+        }
+    }
+
     private void findBetterStroke(Candidate candidate) {
         //return any clearly better stroke, or null
         String better_stroke = findBetterStroke(candidate.getStroke(), candidate.getTranslation());
@@ -71,7 +87,8 @@ public class Optimizer {
             int original_strokes = countStrokes(candidate.getStroke());
             int improved_strokes = countStrokes(better_stroke);
             int stroke_savings = original_strokes-improved_strokes;
-            if (stroke_savings > 1) {
+            if (stroke_savings > 0) {
+                Log.v(TAG, "Found better stroke: "+candidate.getStroke()+" -> "+better_stroke+" ("+candidate.getTranslation()+")");
                 last_optimized_stroke = better_stroke;
                 Optimization optimization = new Optimization(better_stroke, candidate.getTranslation());
                 addOptimization(optimization);
@@ -82,6 +99,7 @@ public class Optimizer {
     }
 
     private void sendNotification(Optimization optimization, int stroke_savings) {
+        Log.d(TAG, "Found better stroke: "+optimization.getStroke()+" : "+optimization.getTranslation());
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
@@ -139,8 +157,8 @@ public class Optimizer {
     }
 
     private class Candidate {
-        String stroke;
-        String translation;
+        private String stroke;
+        private String translation;
 
         public Candidate(String stroke, String translation) {
             this.stroke = stroke;
@@ -180,12 +198,13 @@ public class Optimizer {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             loaded=true;
+            loading=false;
         }
     }
 
     private class Optimization {
-        private String stroke;
-        private String translation;
+        private final String stroke;
+        private final String translation;
         private int occurences=1;
 
         public Optimization(String stroke, String translation) {

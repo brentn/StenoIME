@@ -135,8 +135,11 @@ public class StenoApp extends Application {
         // if dictionary is empty, load it - otherwise just return it
         // if listener is null, don't reset it (use last registered listener)
         if ((!isDictionaryLoaded()) && (!mDictionary.isLoading()) ) {
-            if (listener!= null)
+            if (listener != null) {
                 mDictionary.setOnDictionaryLoadedListener(listener);
+            } else {
+                Log.w(TAG, "Dictionary callback is null");
+            }
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mProgressBar.setProgress(0);
             mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);

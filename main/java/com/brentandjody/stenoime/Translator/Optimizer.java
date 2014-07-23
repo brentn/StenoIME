@@ -9,9 +9,10 @@ import android.util.Log;
 import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ public class Optimizer {
     private Dictionary mDictionary;
     private boolean loading=false;
     private boolean loaded=false;
-    private List<Optimization> optimizations = new LinkedList<Optimization>();
+    private Deque<Optimization> optimizations = new ArrayDeque<Optimization>();
 
     public Optimizer(Context context) {
         this.context = context;
@@ -119,13 +120,16 @@ public class Optimizer {
     }
 
     private void addOptimization(Optimization new_opt) {
-        for (Optimization opt : optimizations) {
+        Iterator<Optimization> iter = optimizations.iterator();
+        Optimization opt;
+        while (iter.hasNext()) {
+            opt = iter.next();
             if (opt.equals(new_opt)) {
-                opt.increment();
-                return;
+                new_opt.increment(opt.getOccurences());
+                iter.remove();
             }
         }
-        optimizations.add(new_opt);
+        optimizations.addFirst(new_opt);
     }
 
     public String findBetterStroke(String stroke, String translation) {
@@ -214,6 +218,7 @@ public class Optimizer {
 
         public String getStroke() {return stroke;}
         public String getTranslation() {return translation;}
+        public int getOccurences() {return occurences;}
 
         public boolean equals(Optimization that) {
             return this.stroke.equals(that.getStroke())
@@ -221,6 +226,7 @@ public class Optimizer {
         }
 
         public void increment() {occurences++;}
+        public void increment(int initial_occurences) {occurences=initial_occurences+1;}
     }
 
 }

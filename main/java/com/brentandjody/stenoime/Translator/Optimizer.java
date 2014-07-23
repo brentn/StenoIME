@@ -2,18 +2,21 @@ package com.brentandjody.stenoime.Translator;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.brentandjody.stenoime.R;
+import com.brentandjody.stenoime.StenoApp;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by brent on 21/07/14.
+ * Class to report on shorter strokes for what is being typed
+ * including fingerspelling
  */
 public class Optimizer {
     private TST<String> thesaurus = new TST<String>();
@@ -21,33 +24,21 @@ public class Optimizer {
     private List<Candidate> candidates = new ArrayList<Candidate>();
     private String last_optimized_stroke = null;
     private Context context;
+    private boolean loaded=false;
+    private List<Optimization> optimizations = new LinkedList<Optimization>();
+
+    public Optimizer(Context context) {
+        this.context = context;
+        Dictionary dictionary = ((StenoApp) context).getDictionary(null);
+        new BackgroundLoader().execute(dictionary);
+    }
 
     public Optimizer(Context context, Dictionary dictionary) {
-        String translation, existing_stroke;
         this.context = context;
-        if (dictionary.isLoading()) {
-            //wait for the dictionary to be loaded first
-            final CountDownLatch latch = new CountDownLatch(1);
-            dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
-                @Override
-                public void onDictionaryLoaded() {
-                    latch.countDown();
-                }
-            });
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Interrupted before dictonary loaded.");
-            }
-        }
-        for (String stroke : dictionary.allKeys()) {
-            translation = dictionary.forceLookup(stroke);
-            if (translation != null) {
-                existing_stroke = thesaurus.get(translation);
-                thesaurus.put(translation, shorterOf(existing_stroke, stroke));
-            }
-        }
+        new BackgroundLoader().execute(dictionary);
     }
+
+    public boolean isLoaded() {return loaded;}
 
     public String analyze (String stroke, int backspaces, String translation) {
         //return value is only for testing
@@ -80,20 +71,47 @@ public class Optimizer {
             int original_strokes = countStrokes(candidate.getStroke());
             int improved_strokes = countStrokes(better_stroke);
             int stroke_savings = original_strokes-improved_strokes;
-            last_optimized_stroke = better_stroke;
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.drawable.ic_stat_stenoime)
-                            .setContentTitle("Better Stroke Found")
-                            .setContentText(better_stroke+" : "+candidate.getTranslation().trim()+" saves you "+stroke_savings+" strokes.");
-            int mNotificationId = 002;
-            NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+            if (stroke_savings > 1) {
+                last_optimized_stroke = better_stroke;
+                Optimization optimization = new Optimization(better_stroke, candidate.getTranslation());
+                addOptimization(optimization);
+                sendNotification(optimization, stroke_savings);
+            }
 
         }
     }
 
+    private void sendNotification(Optimization optimization, int stroke_savings) {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_stat_stenoime)
+                        .setContentTitle("Better Stroke Found")
+                        .setContentInfo("(-"+Integer.toString(stroke_savings)+" strokes)")
+                        .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() );
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle("Better Strokes:");
+        for (Optimization opt : optimizations) {
+            inboxStyle.addLine(opt.getStroke() + " : " + opt.getTranslation()
+                    + " ("+opt.occurences+(opt.occurences==1?" time)":" times)"));
+        }
+        mBuilder.setStyle(inboxStyle);
+        int mNotificationId = 2;
+        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+    }
+
+    private void addOptimization(Optimization new_opt) {
+        for (Optimization opt : optimizations) {
+            if (opt.equals(new_opt)) {
+                opt.increment();
+                return;
+            }
+        }
+        optimizations.add(new_opt);
+    }
+
     public String findBetterStroke(String stroke, String translation) {
+        if (translation==null || translation.length()==0) return null;
         //return any clearly better stroke, or null
         String bestStroke = thesaurus.get(translation.trim());
         if (bestStroke == null) return null;
@@ -135,9 +153,55 @@ public class Optimizer {
         public void append(String stroke, int backspaces, String translation) {
             this.stroke += "/"+stroke;
             int end = this.translation.length();
-            if (backspaces > 0)
+            if (end > 0 && backspaces > 0 && backspaces<end)
                 this.translation=this.translation.substring(0, (end-backspaces));
             this.translation+=translation;
         }
     }
+
+    private class BackgroundLoader extends AsyncTask<Dictionary, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(Dictionary... dictionary) {
+            String translation, existing_stroke;
+            Log.d(TAG, "Building thesaurus");
+            for (String stroke : dictionary[0].allKeys()) {
+                translation = dictionary[0].forceLookup(stroke);
+                if (translation != null) {
+                    existing_stroke = thesaurus.get(translation);
+                    thesaurus.put(translation, shorterOf(existing_stroke, stroke));
+                }
+            }
+            Log.d(TAG, "Thesaurus build complete");
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loaded=true;
+        }
+    }
+
+    private class Optimization {
+        private String stroke;
+        private String translation;
+        private int occurences=1;
+
+        public Optimization(String stroke, String translation) {
+            this.stroke = stroke;
+            this.translation = translation;
+        }
+
+        public String getStroke() {return stroke;}
+        public String getTranslation() {return translation;}
+
+        public boolean equals(Optimization that) {
+            return this.stroke.equals(that.getStroke())
+                    && this.translation.equals(that.getTranslation());
+        }
+
+        public void increment() {occurences++;}
+    }
+
 }

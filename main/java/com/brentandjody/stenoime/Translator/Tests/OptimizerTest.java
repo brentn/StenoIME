@@ -3,11 +3,9 @@ package com.brentandjody.stenoime.Translator.Tests;
 import android.test.AndroidTestCase;
 import android.widget.ProgressBar;
 
-import com.brentandjody.stenoime.Translator.Definition;
 import com.brentandjody.stenoime.Translator.Dictionary;
 import com.brentandjody.stenoime.Translator.Optimizer;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
-import com.brentandjody.stenoime.Translator.Stroke;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,11 +44,11 @@ public class OptimizerTest extends AndroidTestCase {
     }
 
     public void testBetterStroke() throws Exception {
-        final SimpleTranslator translator = new SimpleTranslator(getContext(), true);
         final Dictionary dictionary = new Dictionary(getContext());
-        final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[]{"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
         Optimizer optimizer = new Optimizer(getContext(), dictionary);
+        while (! optimizer.isLoaded()) {
+        }
         //These two are equal length, and should not optimize
         assertNull(optimizer.analyze("AD/SRAPB/TAPBLG", 0, "advantage "));
         assertNull(optimizer.analyze("AD/SRAPBT/APBLG", 0, "advantage "));

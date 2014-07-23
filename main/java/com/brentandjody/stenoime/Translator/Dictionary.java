@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Queue;
 
 /* This is the main Steno Dictionary class
  * which stores a dictionary of stroke / translation pairs
@@ -221,6 +220,7 @@ public class Dictionary {
         @Override
         protected void onPostExecute(Integer result) {
             super.onPostExecute(result);
+            Log.d(TAG, "Dictionary loaded");
             int size = safeLongToInt(result);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt(StenoApp.KEY_DICTIONARY_SIZE, size);

@@ -48,7 +48,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
     private static final String TAG = StenoIME.class.getSimpleName();
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
-    private static final Boolean USE_OPTIMIZER=false;
+    private static final Boolean OPTIMIZER_REPORT=true;
 
     private static boolean TXBOLT_CONNECTED=false;
 
@@ -59,6 +59,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean configuration_changed;
     private Translator mTranslator;
     private Optimizer mOptimizer;
+    private long last_notification_time;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
     //layout vars
@@ -166,7 +167,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onUnbindInput() {
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
-        sendNotification();
         recordStats();
     }
 
@@ -205,7 +205,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDictionaryLoaded() {
         unlockKeyboard();
-   }
+        if (OPTIMIZER_REPORT) mOptimizer = new Optimizer(App);
+    }
 
     // Private methods
 
@@ -273,12 +274,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             case SimpleDictionary:
                 mTranslator = new SimpleTranslator(getApplicationContext());
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
-                if (USE_OPTIMIZER) mOptimizer = new Optimizer(this, App.getDictionary(this));
                 break;
         }
-//        if (mTranslator.usesDictionary()) {
-//            loadDictionary();
-//        }
+        if (mTranslator.usesDictionary()) {
+            loadDictionary();
+        }
     }
 
     private void drawUI() {
@@ -297,6 +297,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             if (mOptimizer != null)
                 mOptimizer.analyze(stroke.rtfcre(), t.getBackspaces(), t.getText());
             stats.addStroke();
+            sendNotification();
         }
         if (stroke.isCorrection()) {
             stats.addCorrection();
@@ -396,19 +397,24 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendNotification() {
-        Double stats_duration = (new Date().getTime() - stats.when().getTime()) / 60000d;
-        Double stats_words = stats.letters() / 5d;
-        Double stats_speed = Math.round(stats_words * 10.0/ stats_duration) / 10.0;
-        Double stats_ratio = Math.round(stats.strokes() * 100.0/ stats_words) / 100.0;
-        long stats_accuracy = 100-Math.round(stats.corrections()*100.0/stats.strokes());
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_stat_stenoime)
-                .setContentTitle("Steno Performance")
-                .setContentText("Speed:"+(stats_speed+" Ratio: 1:"+(stats_ratio)+" Accuracy: "+stats_accuracy+"%"));
-        int mNotificationId = 001;
-        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        long time = new Date().getTime();
+        //don't notify more than every 2 seconds
+        if (time-last_notification_time > 2000) {
+            last_notification_time=time;
+            Double minutes = (new Date().getTime() - stats.when().getTime()) / 60000d;
+            Double words = stats.letters() / 5d;
+            Double speed = Math.round(words * 10.0 / minutes) / 10.0;
+            Double strokes_per_word = Math.round(stats.strokes() * 100.0 / words) / 100.0;
+            long stats_accuracy = 100 - Math.round(stats.corrections() * 100.0 / stats.strokes());
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(this)
+                            .setSmallIcon(R.drawable.ic_stat_stenoime)
+                            .setContentTitle("Steno Performance")
+                            .setContentText("WPM:" + (speed + " Strokes/word:" + (strokes_per_word) + " Accuracy: " + stats_accuracy + "%"));
+            int mNotificationId = 1;
+            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        }
     }
 
     // *** NKeyRollover Keyboard ***

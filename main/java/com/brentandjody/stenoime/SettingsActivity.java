@@ -74,7 +74,6 @@ public class SettingsActivity extends PreferenceActivity {
         });
         // set translator options
         ListPreference translator = (ListPreference) findPreference(StenoApp.KEY_TRANSLATOR_TYPE);
-        final Preference suffixes = findPreference(StenoApp.KEY_SUFFIX_CORRECTION);
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -84,7 +83,6 @@ public class SettingsActivity extends PreferenceActivity {
                 translator.setSummary(translator.getEntry());
                 Translator.TYPE tType = Translator.TYPE.values()[Integer.parseInt(newValue.toString())];
                 App.setTranslatorType(tType);
-                suffixes.setEnabled(tType == Translator.TYPE.SimpleDictionary);
                 return false;
             }
         });

@@ -11,14 +11,9 @@
             android:entries="@array/translator_names"
             android:entryValues="@array/translator_values"
             android:defaultValue="1"/>
-        <SwitchPreference android:key="pref_suffix_correction"
-            android:title="Use Word List"
-            android:summaryOn="More accurate suffixes, but slower"
-            android:summaryOff="Generate suffixes based on rules"
-            android:defaultValue="true" />
         <SwitchPreference android:key="pref_optimizer_enabled"
             android:title="Provide Stroke Suggestions"
-            android:summaryOn="Notify when a shorter stroke is found (uses more memory)"
+            android:summaryOn="Notify when a shorter stroke is found (uses much more memory)"
             android:summaryOff="Do not provide stroke suggestions (uses less memory)"
             android:defaultValue="false"/>
     </PreferenceCategory>

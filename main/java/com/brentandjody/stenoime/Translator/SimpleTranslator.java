@@ -102,7 +102,8 @@ public class SimpleTranslator extends Translator {
                         HistoryItem reset = undoStrokeFromHistory();
                         backspaces = reset.length();
                         text = reset.stroke();
-                        mOptimizer.analyze("*", backspaces, text);
+                        if (mOptimizer != null)
+                            mOptimizer.analyze("*", backspaces, text);
                         if (!strokeQ.isEmpty()) {
                             //replay the queue
                             stroke="";
@@ -295,7 +296,8 @@ public class SimpleTranslator extends Translator {
     private void addToHistory(int length, String stroke, String text, int bs, Formatter.State state) {
         HistoryItem item = new HistoryItem(length, stroke, text, bs, state);
         history.push(item);
-        mOptimizer.analyze(stroke, bs, text);
+        if (mOptimizer!=null)
+            mOptimizer.analyze(stroke, bs, text);
     }
 
     private HistoryItem undoStrokeFromHistory() {

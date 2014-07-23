@@ -390,23 +390,25 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendNotification() {
-        long time = new Date().getTime();
-        //don't notify more than every 2 seconds
-        if (time-last_notification_time > 2000) {
-            last_notification_time=time;
-            Double minutes = (new Date().getTime() - stats.when().getTime()) / 60000d;
-            Double words = stats.letters() / 5d;
-            Double speed = Math.round(words * 10.0 / minutes) / 10.0;
-            Double strokes_per_word = Math.round(stats.strokes() * 100.0 / words) / 100.0;
-            long stats_accuracy = 100 - Math.round(stats.corrections() * 100.0 / stats.strokes());
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(this)
-                            .setSmallIcon(R.drawable.ic_stat_stenoime)
-                            .setContentTitle("Steno Performance")
-                            .setContentText("WPM:" + (speed + " Strokes/word:" + (strokes_per_word) + " Accuracy: " + stats_accuracy + "%"));
-            int mNotificationId = 1;
-            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        if (App.showPerformanceNotifications()) {
+            long time = new Date().getTime();
+            //don't notify more than every 2 seconds
+            if (time - last_notification_time > 2000) {
+                last_notification_time = time;
+                Double minutes = (new Date().getTime() - stats.when().getTime()) / 60000d;
+                Double words = stats.letters() / 5d;
+                Double speed = Math.round(words * 10.0 / minutes) / 10.0;
+                Double strokes_per_word = Math.round(stats.strokes() * 100.0 / words) / 100.0;
+                long stats_accuracy = 100 - Math.round(stats.corrections() * 100.0 / stats.strokes());
+                NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(this)
+                                .setSmallIcon(R.drawable.ic_stat_stenoime)
+                                .setContentTitle("Steno Performance")
+                                .setContentText("WPM:" + (speed + " Strokes/word:" + (strokes_per_word) + " Accuracy: " + stats_accuracy + "%"));
+                int mNotificationId = 1;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
+            }
         }
     }
 

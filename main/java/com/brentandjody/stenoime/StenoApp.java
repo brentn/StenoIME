@@ -32,11 +32,13 @@ public class StenoApp extends Application {
     public static final String KEY_DICTIONARY = "pref_dictionary_button";
     public static final String KEY_MACHINE_TYPE = "default_machine_type";
     public static final String KEY_ABOUT = "about_button";
-    public static final String KEY_SUFFIX_CORRECTION = "pref_suffix_correction";
     public static final String KEY_INLINE_PREVIEW = "pref_inline_preview";
     public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
     public static final String KEY_NKRO_ENABLED = "pref_kbd_enabled";
     public static final String KEY_OPTIMIZER_ENABLED = "pref_optimizer_enabled";
+
+    private static final boolean USE_WORD_LIST = true;
+    private static final boolean SHOW_PERFORMANCE_NOTIFICATIONS = true;
 
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
@@ -118,7 +120,8 @@ public class StenoApp extends Application {
     public UsbDevice getUsbDevice() { return mUsbDevice; }
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
-    public boolean useWordList() { return prefs.getBoolean("pref_suffix_correction", false); }
+    public boolean useWordList() { return USE_WORD_LIST; }
+    public boolean showPerformanceNotifications() {return SHOW_PERFORMANCE_NOTIFICATIONS;}
     public boolean isNkroKeyboardPurchased() { return NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY; }
     public boolean isNkro_enabled() {
         if (! (NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY)) return false;

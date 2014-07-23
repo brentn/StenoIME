@@ -129,7 +129,7 @@ public class Optimizer {
     }
 
     public String findBetterStroke(String stroke, String translation) {
-        if (translation==null || translation.length()==0) return null;
+        if (translation==null || translation.trim().length()==0) return null;
         //return any clearly better stroke, or null
         String bestStroke = thesaurus.get(translation.trim());
         if (bestStroke == null) return null;

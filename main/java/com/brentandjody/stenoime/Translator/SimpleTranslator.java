@@ -48,6 +48,13 @@ public class SimpleTranslator extends Translator {
         mDictionary = dictionary;
     }
 
+    public void releaseOptimizer() {
+        if (mOptimizer!=null) {
+            mOptimizer.release();
+            mOptimizer=null;
+        }
+    }
+
     @Override
     public boolean usesDictionary() {
         return true;

@@ -1,8 +1,10 @@
 package com.brentandjody.stenoime;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -13,9 +15,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -115,7 +122,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         mKeyboard.findViewById(R.id.settings_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchSettingsActivity();
+                showSpecialKeysDialog();
             }
         });
         if (App.isDictionaryLoaded()) unlockKeyboard();
@@ -164,6 +171,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onUnbindInput() {
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
+        if (mTranslator!=null && mTranslator instanceof SimpleTranslator) {
+            ((SimpleTranslator) mTranslator).releaseOptimizer();
+        }
         recordStats();
     }
 
@@ -205,6 +215,56 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     // Private methods
+
+    private void showSpecialKeysDialog() {
+        final AlertDialog alert;
+        LayoutInflater inflater = getLayoutInflater();
+        View dialog_view = inflater.inflate(R.layout.specialkeys, null);
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialog_view)
+                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+        alert = builder.create();
+        Window window = alert.getWindow();
+        WindowManager.LayoutParams lp = window.getAttributes();
+        lp.token = mKeyboard.getWindowToken();
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
+        lp.verticalMargin = 0.2f;
+        window.setAttributes(lp);
+        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+
+        Button submit_button = (Button) dialog_view.findViewById(R.id.submit_button);
+        submit_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+
+                StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
+            }
+        });
+        Button settings_button = (Button) dialog_view.findViewById(R.id.settings_button);
+        settings_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                launchSettingsActivity();
+            }
+        });
+        Button switch_input_button = (Button) dialog_view.findViewById(R.id.switch_input_button);
+        switch_input_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
+            }
+        });
+        alert.show();
+    }
 
     private boolean isTextFieldSelected(EditorInfo editorInfo) {
         if (editorInfo == null) return false;

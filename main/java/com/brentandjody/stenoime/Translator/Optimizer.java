@@ -41,6 +41,11 @@ public class Optimizer {
     }
 
     public boolean isLoaded() {return loaded;}
+
+    public void release() {
+        thesaurus = null;
+        loaded=false;
+    }
     
     public String analyze (String stroke, int backspaces, String translation) {
         if (!loaded) {

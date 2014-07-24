@@ -43,7 +43,7 @@
                     android:orientation="vertical"
                     android:layout_width="0dp"
                     android:layout_height="fill_parent"
-                    android:layout_weight=".7"
+                    android:layout_weight="1"
                     android:id="@+id/left_bank">
 
                     <TextView
@@ -476,7 +476,7 @@
                     android:layout_width="0dp"
                     android:layout_height="fill_parent"
                     android:id="@+id/right_bank"
-                    android:layout_weight=".7">
+                    android:layout_weight="1">
 
                     <TextView
                         android:layout_width="fill_parent"

@@ -30,4 +30,5 @@
     theory you have learned.</p>
     <p>The default dictionary is taken from the <i>Plover</i> project, and is built on a synthesis of  NYCI and StenEd theories.
 </p>]]></string>
+    <string name="optimizer">Stroke Suggestions</string>
 </resources>

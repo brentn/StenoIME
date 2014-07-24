@@ -12,7 +12,7 @@
             android:entryValues="@array/translator_values"
             android:defaultValue="1"/>
         <SwitchPreference android:key="pref_optimizer_enabled"
-            android:title="Provide Stroke Suggestions"
+            android:title="@string/optimizer"
             android:summaryOn="Notify when a shorter stroke is found (uses much more memory)"
             android:summaryOff="Do not provide stroke suggestions (uses less memory)"
             android:defaultValue="false"/>

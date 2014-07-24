@@ -45,6 +45,14 @@ public class Optimizer {
     public void release() {
         thesaurus = null;
         loaded=false;
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_stat_stenoime)
+                        .setContentTitle("Out of Memory")
+                        .setContentText("Unloading "+context.getResources().getString(R.string.optimizer)+ "table.");
+        int mNotificationId = 3;
+        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
     
     public String analyze (String stroke, int backspaces, String translation) {
@@ -195,8 +203,14 @@ public class Optimizer {
             for (String stroke : dictionary[0].allKeys()) {
                 translation = dictionary[0].forceLookup(stroke);
                 if (translation != null) {
-                    existing_stroke = thesaurus.get(translation);
-                    thesaurus.put(translation, shorterOf(existing_stroke, stroke));
+                    if (! translation.contains("{")) {
+                        existing_stroke = thesaurus.get(translation);
+                        if (existing_stroke != null) {
+                            thesaurus.put(translation, existing_stroke + " or " + stroke);
+                        } else {
+                            thesaurus.put(translation, stroke);
+                        }
+                    }
                 }
             }
             Log.d(TAG, "Thesaurus build complete");

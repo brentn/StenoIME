@@ -51,7 +51,6 @@ public class SimpleTranslator extends Translator {
     public void releaseOptimizer() {
         if (mOptimizer!=null) {
             mOptimizer.release();
-            mOptimizer=null;
         }
     }
 

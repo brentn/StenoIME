@@ -109,8 +109,10 @@ public class SimpleTranslator extends Translator {
                         HistoryItem reset = undoStrokeFromHistory();
                         backspaces = reset.length();
                         text = reset.stroke();
-                        if (mOptimizer != null)
-                            mOptimizer.analyze("*", backspaces, text);
+//                        if (mOptimizer != null) {
+//                            Log.d(TAG, "Optimizing Undo Stroke: bs=" + backspaces + ", text=" + text);
+//                            mOptimizer.analyze("*", backspaces, text);
+//                        }
                         if (!strokeQ.isEmpty()) {
                             //replay the queue
                             stroke="";

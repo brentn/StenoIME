@@ -125,7 +125,11 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 showSpecialKeysDialog();
             }
         });
-        if (App.isDictionaryLoaded()) unlockKeyboard();
+        if (App.isDictionaryLoaded()) {
+            unlockKeyboard();
+        } else {
+            App.getDictionary(this);
+        }
         return mKeyboard;
     }
 
@@ -202,11 +206,19 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     @Override
     public void onStroke(Set<String> keys) {
-        Stroke stroke = new Stroke(keys);
-        processStroke(stroke);
-        Intent intent = new Intent(STENO_STROKE);
-        intent.putExtra("stroke", stroke.rtfcre());
-        sendBroadcast(intent);
+        try {
+            Stroke stroke = new Stroke(keys);
+            processStroke(stroke);
+            Intent intent = new Intent(STENO_STROKE);
+            intent.putExtra("stroke", stroke.rtfcre());
+            sendBroadcast(intent);
+        } catch (OutOfMemoryError e) {
+            Log.w(TAG, "Out of Memory error Caught in OnStroke().");
+            if (mTranslator instanceof SimpleTranslator) {
+                Log.w(TAG, "Releasing optimizer.");
+                ((SimpleTranslator) mTranslator).releaseOptimizer();
+            }
+        }
     }
 
     @Override
@@ -222,13 +234,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         View dialog_view = inflater.inflate(R.layout.specialkeys, null);
         
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(dialog_view)
-                .setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                });
+        builder.setView(dialog_view);
         alert = builder.create();
         Window window = alert.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
@@ -263,7 +269,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
             }
         });
+        Button close_button = (Button) dialog_view.findViewById(R.id.close_button);
+        close_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+            }
+        });
         alert.show();
+
     }
 
     private boolean isTextFieldSelected(EditorInfo editorInfo) {
@@ -475,9 +489,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** NKeyRollover Keyboard ***
 
     private boolean dispatchKeyEvent(KeyEvent event) {
-        StenoMachine inputDevice = App.getInputDevice();
-        if (inputDevice instanceof NKeyRolloverMachine) {
-            ((NKeyRolloverMachine) inputDevice).handleKeys(event);
+        try {
+            StenoMachine inputDevice = App.getInputDevice();
+            if (inputDevice instanceof NKeyRolloverMachine) {
+                ((NKeyRolloverMachine) inputDevice).handleKeys(event);
+            }
+        } catch (OutOfMemoryError e) {
+            Log.w(TAG, "Out of Memory error Caught in dispatchKeyEvent().");
+            if (mTranslator instanceof SimpleTranslator) {
+                Log.w(TAG, "Releasing optimizer.");
+                ((SimpleTranslator) mTranslator).releaseOptimizer();
+            }
         }
         return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
     }

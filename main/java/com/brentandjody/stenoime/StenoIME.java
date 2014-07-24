@@ -329,6 +329,48 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                     sendChar('*');
                 }
             });
+            dialog_view.findViewById(R.id.key_openbracket).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('(');
+                }
+            });
+            dialog_view.findViewById(R.id.key_closebracket).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar(')');
+                }
+            });
+            dialog_view.findViewById(R.id.key_singlequote).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar("'".charAt(0));
+                }
+            });
+            dialog_view.findViewById(R.id.key_doublequote).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('"');
+                }
+            });
+            dialog_view.findViewById(R.id.key_slash).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('/');
+                }
+            });
+            dialog_view.findViewById(R.id.key_question).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('?');
+                }
+            });
             Button close_button = (Button) dialog_view.findViewById(R.id.close_button);
             close_button.setOnClickListener(new View.OnClickListener() {
                 @Override

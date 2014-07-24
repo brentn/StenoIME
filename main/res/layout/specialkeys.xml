@@ -32,109 +32,202 @@
             android:gravity="right"
             android:paddingBottom="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="!"
-                android:id="@+id/key_exclamation"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:padding="7dp"
-                android:minWidth="30dp"
-                android:layout_marginLeft="2px" />
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="\@"
-                android:id="@+id/key_at"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="#"
-                android:id="@+id/key_hash"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:padding="7dp"
-                android:minWidth="30dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="!"
+                        android:id="@+id/key_exclamation"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:padding="7dp"
+                        android:minWidth="30dp"
+                        android:layout_marginLeft="2px" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="$"
-                android:id="@+id/key_dollars"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="\@"
+                        android:id="@+id/key_at"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="%"
-                android:id="@+id/key_percent"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="#"
+                        android:id="@+id/key_hash"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:padding="7dp"
+                        android:minWidth="30dp"
+                        android:layout_marginLeft="2px" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="^"
-                android:id="@+id/key_carat"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="$"
+                        android:id="@+id/key_dollars"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="&amp;"
-                android:id="@+id/key_ampersand"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="%"
+                        android:id="@+id/key_percent"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="*"
-                android:id="@+id/key_asterisk"
-                android:background="@drawable/top_key"
-                android:textColor="#FFF"
-                android:layout_marginRight="2px"
-                android:minWidth="30dp"
-                android:padding="7dp"
-                android:layout_marginLeft="2px" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="^"
+                        android:id="@+id/key_carat"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="&amp;"
+                        android:id="@+id/key_ampersand"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="*"
+                        android:id="@+id/key_asterisk"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="("
+                        android:id="@+id/key_openbracket"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text=")"
+                        android:id="@+id/key_closebracket"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="'"
+                        android:id="@+id/key_singlequote"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text='"'
+                        android:id="@+id/key_doublequote"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="/"
+                        android:id="@+id/key_slash"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="\?"
+                        android:id="@+id/key_question"
+                        android:background="@drawable/top_key"
+                        android:textColor="#FFF"
+                        android:layout_marginRight="2px"
+                        android:minWidth="30dp"
+                        android:padding="7dp"
+                        android:layout_marginLeft="2px" />
+                </TableRow>
+            </TableLayout>
 
             <Space
                 android:layout_width="0px"
@@ -149,7 +242,8 @@
                 android:text="Submit"
                 android:id="@+id/submit_button"
                 android:background="@drawable/top_key"
-                android:textColor="#FFF" />
+                android:textColor="#FFF"
+                android:layout_gravity="center_vertical" />
 
         </TableRow>
 

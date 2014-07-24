@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -176,7 +175,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
         if (mTranslator!=null && mTranslator instanceof SimpleTranslator) {
-            ((SimpleTranslator) mTranslator).releaseOptimizer();
+            ((SimpleTranslator) mTranslator).releaseOptimizerSilently();
         }
         recordStats();
     }
@@ -254,7 +253,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
-
                     StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
                 }
             });
@@ -272,6 +270,63 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 public void onClick(View view) {
                     alert.dismiss();
                     ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
+                }
+            });
+
+            dialog_view.findViewById(R.id.key_exclamation).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('!');
+                }
+            });
+            dialog_view.findViewById(R.id.key_at).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('@');
+                }
+            });
+            dialog_view.findViewById(R.id.key_hash).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('#');
+                }
+            });
+            dialog_view.findViewById(R.id.key_dollars).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('$');
+                }
+            });
+            dialog_view.findViewById(R.id.key_percent).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('%');
+                }
+            });
+            dialog_view.findViewById(R.id.key_carat).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('^');
+                }
+            });
+            dialog_view.findViewById(R.id.key_ampersand).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('&');
+                }
+            });
+            dialog_view.findViewById(R.id.key_asterisk).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    alert.dismiss();
+                    sendChar('*');
                 }
             });
             Button close_button = (Button) dialog_view.findViewById(R.id.close_button);
@@ -393,6 +448,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             App.getDictionary(this);
         } else {
             unlockKeyboard();
+        }
+    }
+
+    private void sendChar(char c) {
+        InputConnection connection = getCurrentInputConnection();
+        if (connection != null) {
+            connection.commitText(String.valueOf(c), 1);
         }
     }
 

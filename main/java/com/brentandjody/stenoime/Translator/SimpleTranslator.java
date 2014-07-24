@@ -50,9 +50,15 @@ public class SimpleTranslator extends Translator {
         mDictionary = dictionary;
     }
 
-    public void releaseOptimizer() {
+    public void releaseOptimizerSilently() {
         if (mOptimizer!=null) {
             mOptimizer.release();
+        }
+    }
+
+    public void releaseOptimizer() {
+        if (mOptimizer!=null) {
+            mOptimizer.releaseAndNotify();
         }
     }
 

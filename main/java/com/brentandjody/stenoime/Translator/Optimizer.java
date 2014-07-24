@@ -45,11 +45,15 @@ public class Optimizer {
     public void release() {
         thesaurus = null;
         loaded=false;
+    }
+
+    public void releaseAndNotify() {
+        release();
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
                         .setContentTitle("Out of Memory")
-                        .setContentText("Unloading "+context.getResources().getString(R.string.optimizer)+ "table.");
+                        .setContentText("Unloading "+context.getResources().getString(R.string.optimizer)+ " table.");
         int mNotificationId = 3;
         NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
         mNotifyMgr.notify(mNotificationId, mBuilder.build());

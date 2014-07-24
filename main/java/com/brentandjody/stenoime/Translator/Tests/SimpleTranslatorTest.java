@@ -55,7 +55,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     public void testLockAndUnlock() throws Exception {
         final SimpleTranslator translator = new SimpleTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
-        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, 10);
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
@@ -77,7 +77,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator(getContext(), true);
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -186,7 +186,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator(getContext(), true);
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/dict.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/dict.json"}, null, 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {
@@ -220,7 +220,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         final SimpleTranslator translator = new SimpleTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[] {"/sdcard/test.json"}, null, 10);
         dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
             @Override
             public void onDictionaryLoaded() {

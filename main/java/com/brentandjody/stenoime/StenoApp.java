@@ -120,6 +120,7 @@ public class StenoApp extends Application {
     public UsbDevice getUsbDevice() { return mUsbDevice; }
     public StenoMachine.TYPE getMachineType() { return mMachineType; }
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
+    public ProgressBar getProgressBar() {return mProgressBar; }
     public boolean useWordList() { return USE_WORD_LIST; }
     public boolean showPerformanceNotifications() {return SHOW_PERFORMANCE_NOTIFICATIONS;}
     public boolean isNkroKeyboardPurchased() { return NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY; }
@@ -142,7 +143,7 @@ public class StenoApp extends Application {
             }
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mProgressBar.setProgress(0);
-            mDictionary.load(getDictionaryNames(), getAssets(), mProgressBar, size);
+            mDictionary.load(getDictionaryNames(), getAssets(), size);
 
         } else {
             if (listener != null) {

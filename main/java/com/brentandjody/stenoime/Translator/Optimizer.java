@@ -205,11 +205,7 @@ public class Optimizer {
                 if (translation != null) {
                     if (! translation.contains("{")) {
                         existing_stroke = thesaurus.get(translation);
-                        if (existing_stroke != null) {
-                            thesaurus.put(translation, existing_stroke + " or " + stroke);
-                        } else {
-                            thesaurus.put(translation, stroke);
-                        }
+                        thesaurus.put(translation, shorterOf(existing_stroke, stroke));
                     }
                 }
             }

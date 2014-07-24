@@ -32,10 +32,12 @@ public class SimpleTranslator extends Translator {
     public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
         suffixMachine = new Suffixes(context);
-        use_optimizer = ((StenoApp) context).isOptimizerEnabled();
-        if (use_optimizer) {
-            Log.d(TAG, "Optimizer created");
-            mOptimizer = new Optimizer(context);
+        if (context instanceof StenoApp) {
+            use_optimizer = ((StenoApp) context).isOptimizerEnabled();
+            if (use_optimizer) {
+                Log.d(TAG, "Optimizer created");
+                mOptimizer = new Optimizer(context);
+            }
         }
     }
 

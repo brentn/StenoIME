@@ -45,9 +45,10 @@ public class OptimizerTest extends AndroidTestCase {
 
     public void testBetterStroke() throws Exception {
         final Dictionary dictionary = new Dictionary(getContext());
-        dictionary.load(new String[]{"/sdcard/test.json"}, null, new ProgressBar(getContext()), 10);
+        dictionary.load(new String[]{"/sdcard/test.json"}, null, 10);
         Optimizer optimizer = new Optimizer(getContext(), dictionary);
         while (! optimizer.isLoaded()) {
+            optimizer.analyze("AD/SR", 0, "bob");
         }
         //These two are equal length, and should not optimize
         assertNull(optimizer.analyze("AD/SRAPB/TAPBLG", 0, "advantage "));

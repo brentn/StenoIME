@@ -6,6 +6,7 @@ import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 
 import com.brentandjody.stenoime.StenoApp;
@@ -53,7 +54,7 @@ public class Dictionary {
     }
 
 
-    public void load(String[] filenames, AssetManager assetManager, ProgressBar progressBar, int size) {
+    public void load(String[] filenames, AssetManager assetManager, int size) {
         // assume filenames is not empty or null
         Log.d(TAG, "loading dictionary");
         for (String filename : filenames) {
@@ -74,7 +75,7 @@ public class Dictionary {
             }
         }
         loading = true;
-        new JsonLoader(assetManager, progressBar, size).execute(filenames);
+        new JsonLoader(assetManager, size).execute(filenames);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -143,9 +144,8 @@ public class Dictionary {
         private ProgressBar progressBar;
         private AssetManager assetManager;
 
-        public JsonLoader(AssetManager am, ProgressBar progress, int size) {
+        public JsonLoader(AssetManager am, int size) {
             assetManager = am;
-            progressBar = progress;
             total_size = size;
         }
 
@@ -153,7 +153,6 @@ public class Dictionary {
             loaded = 0;
             int update_interval = total_size/100;
             if (update_interval == 0) update_interval=1;
-            progressBar.setProgress(0);
             String line, stroke, translation;
             String[] fields;
             //if no personal dictionaries are defined, load the default
@@ -213,8 +212,15 @@ public class Dictionary {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressBar.setMax(total_size);
-            progressBar.setProgress(0);
+            if (context instanceof StenoApp) {
+                progressBar = ((StenoApp) context).getProgressBar();
+                if (progressBar != null) {
+                    View progress = (View) progressBar.getParent();
+                    if (progress != null) progress.setVisibility(View.VISIBLE);
+                    progressBar.setMax(total_size);
+                    progressBar.setProgress(0);
+                }
+            }
         }
 
         @Override
@@ -228,12 +234,27 @@ public class Dictionary {
             loading = false;
             if (onDictionaryLoadedListener != null)
                 onDictionaryLoadedListener.onDictionaryLoaded();
+            if (progressBar != null) {
+                View progress = (View) progressBar.getParent();
+                if (progress != null) progress.setVisibility(View.GONE);
+            }
+
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            progressBar.setProgress(values[0]);
+            if (progressBar != null) {
+                progressBar.setProgress(values[0]);
+            } else {
+                if (context instanceof StenoApp) {
+                    progressBar = ((StenoApp) context).getProgressBar();
+                    if (progressBar != null) {
+                        progressBar.setMax(total_size);
+                        progressBar.setProgress(values[0]);
+                    }
+                }
+            }
         }
 
     }

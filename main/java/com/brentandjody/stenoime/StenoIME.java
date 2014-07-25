@@ -242,6 +242,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setView(dialog_view);
             alert = builder.create();
+            alert.setCancelable(false);
             Window window = alert.getWindow();
             WindowManager.LayoutParams lp = window.getAttributes();
             lp.token = mKeyboard.getWindowToken();

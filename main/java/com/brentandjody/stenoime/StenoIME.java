@@ -148,8 +148,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             initializeMachine();
             initializePreview();
             if (mTranslator!= null) {
-                if (mTranslator.usesDictionary())  loadDictionary();
-                if (!restarting) mTranslator.reset(); // clear stroke history
+                if (mTranslator.usesDictionary())
+                    loadDictionary();
+                if (!restarting)
+                    mTranslator.reset(); // clear stroke history
             }
             drawUI();
         }
@@ -217,6 +219,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     @Override
     public void onDictionaryLoaded() {
+        Log.d(TAG, "onDictionaryLoaded Listener fired");
         unlockKeyboard();
     }
 
@@ -415,11 +418,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void initializeMachine() {
+        Log.d(TAG, "initializeMachine()");
         if (isKeyboardConnected()) {
             setMachineType(StenoMachine.TYPE.KEYBOARD);
         } else {
             setMachineType(StenoMachine.TYPE.VIRTUAL);
-            if (App.isDictionaryLoaded()) unlockKeyboard();
+            if (App.isDictionaryLoaded())
+                unlockKeyboard();
         }
     }
 
@@ -473,7 +478,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void drawUI() {
-        showPreviewBar(!inline_preview);
+        showPreviewBar(App.getDictionary(this).isLoading() || !inline_preview);
         if (isKeyboardConnected()) {
             removeVirtualKeyboard();
         } else {

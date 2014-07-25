@@ -16,7 +16,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/text"
-        android:background="#5b5b5b"
+        android:background="#222"
         android:layout_below="@+id/shadow2"
         android:baselineAligned="true">
 

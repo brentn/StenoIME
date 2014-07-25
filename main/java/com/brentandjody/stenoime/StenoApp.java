@@ -144,10 +144,6 @@ public class StenoApp extends Application {
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mDictionary.load(getDictionaryNames(), getAssets(), size);
 
-        } else {
-            if (listener != null) {
-                listener.onDictionaryLoaded(); //fire loadedListener to unlock keyboard if dictionary is already loaded.
-            }
         }
         return mDictionary;
     }
@@ -166,7 +162,9 @@ public class StenoApp extends Application {
         return data.split(DELIMITER);
     }
 
-    public boolean isDictionaryLoaded() { return (mDictionary.size() > 10); }
+    public boolean isDictionaryLoaded() {
+        return (mDictionary!=null && (!mDictionary.isLoading()) && mDictionary.size() > 10);
+    }
 
     public boolean handlePurchaseResult(int requestCode, int resultCode, Intent data) {
         return iabHelper.handleActivityResult(requestCode, resultCode, data);

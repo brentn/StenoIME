@@ -521,10 +521,10 @@
         <FrameLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:background="@android:color/darker_gray"
+            android:background="#222"
             android:clickable="true"
             android:id="@+id/overlay"
-            android:alpha=".8"
+            android:alpha=".9"
             android:visibility="visible">
 
         </FrameLayout>

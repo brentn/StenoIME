@@ -142,7 +142,6 @@ public class StenoApp extends Application {
                 Log.w(TAG, "Dictionary callback is null");
             }
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
-            mProgressBar.setProgress(0);
             mDictionary.load(getDictionaryNames(), getAssets(), size);
 
         } else {
@@ -154,6 +153,8 @@ public class StenoApp extends Application {
     }
 
     public void unloadDictionary() {
+        Log.d(TAG, "Unloading Dictionary");
+        mDictionary.clear();
         mDictionary = new Dictionary(getApplicationContext());
     }
 

@@ -43,7 +43,8 @@ public class Optimizer {
     public boolean isLoaded() {return loaded;}
 
     public void release() {
-        thesaurus = null;
+        Log.d(TAG, "Unloading thesaurus");
+        thesaurus = new TST<String>();
         loaded=false;
     }
 

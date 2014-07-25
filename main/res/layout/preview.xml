@@ -52,12 +52,12 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:layout_alignBottom="@+id/text"
         android:clickable="false"
         android:id="@+id/preview_overlay"
-        android:visibility="gone"
-        android:layout_marginBottom="5dp">
+        android:visibility="visible"
+        android:layout_alignParentEnd="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
             android:clickable="false"
             android:layout_alignParentEnd="true"
             android:textColor="@android:color/holo_blue_dark"
-            android:layout_marginLeft="10dp"/>
+            android:layout_marginLeft="10dp" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleHorizontal"

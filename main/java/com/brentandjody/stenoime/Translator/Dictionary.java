@@ -147,6 +147,7 @@ public class Dictionary {
         public JsonLoader(AssetManager am, int size) {
             assetManager = am;
             total_size = size;
+            progressBar = ((StenoApp)context).getProgressBar();
         }
 
         protected Integer doInBackground(String... filenames) {
@@ -234,6 +235,8 @@ public class Dictionary {
             loading = false;
             if (onDictionaryLoadedListener != null)
                 onDictionaryLoadedListener.onDictionaryLoaded();
+            if (progressBar==null)
+                progressBar=((StenoApp)context).getProgressBar();
             if (progressBar != null) {
                 View progress = (View) progressBar.getParent();
                 if (progress != null) progress.setVisibility(View.GONE);

@@ -85,6 +85,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         super.onCreate();
         //initialize global stuff
         App = ((StenoApp) getApplication());
+        loadDictionary();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         configuration_changed=false;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
@@ -108,6 +109,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         initializeCandidatesView();
         App.setMachineType(StenoMachine.TYPE.VIRTUAL);
         initializeMachine();
+        initializeTranslator();
     }
 
     @Override
@@ -124,11 +126,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 showSpecialKeysDialog();
             }
         });
-        if (App.isDictionaryLoaded()) {
-            unlockKeyboard();
-        } else {
-            App.getDictionary(this);
-        }
+        loadDictionary();
         return mKeyboard;
     }
 
@@ -155,7 +153,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
             drawUI();
         }
-        initializeTranslator(); //this has to come after drawing everything else (to show the progressbar)
     }
 
     @Override
@@ -184,6 +181,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onDestroy() {
         super.onDestroy();
 //TXBOLT:        unregisterReceiver(mUsbReceiver);
+        App.unloadDictionary();
         mKeyboard=null;
     }
 
@@ -236,6 +234,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         try {
             LayoutInflater inflater = getLayoutInflater();
             View dialog_view = inflater.inflate(R.layout.specialkeys, null);
+            lockKeyboard();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setView(dialog_view);
@@ -253,6 +252,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
                 }
             });
@@ -261,6 +261,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     launchSettingsActivity();
                 }
             });
@@ -269,6 +270,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
                 }
             });
@@ -277,6 +279,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('!');
                 }
             });
@@ -284,6 +287,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('@');
                 }
             });
@@ -291,6 +295,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('#');
                 }
             });
@@ -298,6 +303,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('$');
                 }
             });
@@ -305,6 +311,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('%');
                 }
             });
@@ -312,6 +319,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('^');
                 }
             });
@@ -319,6 +327,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('&');
                 }
             });
@@ -326,6 +335,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('*');
                 }
             });
@@ -333,6 +343,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('(');
                 }
             });
@@ -340,6 +351,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar(')');
                 }
             });
@@ -347,6 +359,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar("'".charAt(0));
                 }
             });
@@ -354,6 +367,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('"');
                 }
             });
@@ -361,6 +375,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('/');
                 }
             });
@@ -368,6 +383,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                     sendChar('?');
                 }
             });
@@ -376,6 +392,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 @Override
                 public void onClick(View view) {
                     alert.dismiss();
+                    unlockKeyboard();
                 }
             });
             alert.show();
@@ -569,7 +586,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Double stats_ratio = stats_words / stats.strokes();
         Log.i(TAG, "Strokes:" + stats.strokes() + " Words:" + (stats_words) + " Duration:" + stats_duration);
         if (stats.strokes() > 0 && stats_duration > .01) {
-            Log.i(TAG, "Speed:" + ((stats.letters() / 5d) / (stats_duration) + " Ratio: 1:" + (stats_ratio)));
+            Log.i(TAG, "Speed:" + ((stats.letters() / 5d) / (stats_duration) + " Ratio:" + (stats_ratio)));
             new Database(getApplicationContext()).insert(stats);
         }
         resetStats();
@@ -585,7 +602,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 Double words = stats.letters() / 5.0;
                 Double speed = Math.round(words * 10.0 / minutes) / 10.0;
                 Double strokes_per_word = Math.round(stats.strokes() * 100.0 / words) / 100.0;
-                long accuracy = 100 - Math.round(stats.corrections() * 100.0 / stats.strokes());
+                Double accuracy = 100 - Math.round(stats.corrections() * 1000.0 / stats.strokes())/10.0;
                 NotificationCompat.Builder mBuilder =
                         new NotificationCompat.Builder(this)
                                 .setSmallIcon(R.drawable.ic_stat_stenoime)

@@ -1,11 +1,15 @@
 package com.brentandjody.stenoime.Input;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.brentandjody.stenoime.R;
+import com.brentandjody.stenoime.StenoIME;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -28,6 +33,9 @@ import java.util.Set;
 public class TouchLayer extends RelativeLayout {
 
     private static final int NUMBER_OF_FINGERS=2;
+    private static final boolean ENABLE_ZOOM =false;
+    private static final int ZOOM_OFFSET=150;
+    private static final int ZOOM_SIZE=150;
     private static FrameLayout LOADING_SPINNER;
     private static Paint PAINT;
 
@@ -35,6 +43,9 @@ public class TouchLayer extends RelativeLayout {
     private boolean loading;
     private Path[] paths = new Path[NUMBER_OF_FINGERS];
     private int[] fingerIds = new int[NUMBER_OF_FINGERS];
+    private float[] zoomX = new float[NUMBER_OF_FINGERS];
+    private float[] zoomY = new float[NUMBER_OF_FINGERS];
+    private boolean[] zooming = new boolean[NUMBER_OF_FINGERS];
 
     public TouchLayer(Context context) {
         super(context);
@@ -75,7 +86,7 @@ public class TouchLayer extends RelativeLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (LOADING_SPINNER == null) return;
+        if (LOADING_SPINNER==null) return;
         if (loading)
             LOADING_SPINNER.setVisibility(VISIBLE);
         else {
@@ -88,6 +99,28 @@ public class TouchLayer extends RelativeLayout {
         super.dispatchDraw(canvas);
         for (int i=0; i<NUMBER_OF_FINGERS; i++) {
             canvas.drawPath(paths[i], PAINT);
+        }
+        Bitmap kbImage = ((StenoIME)getContext()).getKbImage();
+        if (kbImage != null && ENABLE_ZOOM) {
+            Shader shader = new BitmapShader(kbImage, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+            Paint image = new Paint();
+            image.setShader(shader);
+            Paint white = new Paint();
+            white.setStrokeWidth(1);
+            white.setColor(Color.WHITE);
+            Matrix matrix = new Matrix();
+            for (int i = 0; i < NUMBER_OF_FINGERS; i++) {
+                if (zooming[i]) {
+                    matrix.reset();
+                    matrix.postScale(2f, 2f, zoomX[i], zoomY[i]);
+                    image.getShader().setLocalMatrix(matrix);
+                    canvas.drawCircle(zoomX[i], zoomY[i], ZOOM_SIZE, white);
+                    canvas.drawCircle(zoomX[i], zoomY[i], ZOOM_SIZE-1, image);
+                    int RADIUS = ZOOM_SIZE/2;
+                    canvas.drawLine(zoomX[i]-RADIUS,zoomY[i], zoomX[i]+RADIUS,zoomY[i], white);
+                    canvas.drawLine(zoomX[i],zoomY[i]-RADIUS, zoomX[i],zoomY[i]+RADIUS, white);
+                }
+            }
         }
     }
 
@@ -105,11 +138,20 @@ public class TouchLayer extends RelativeLayout {
                 paths[i].reset();
                 paths[i].moveTo(x, y);
                 toggleKeyAt(x, y);
+                zooming[i] = true;
+                zoomX[i]=x;
+                zoomY[i]=y;
+                this.invalidate();
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 selectKeys(event);
-                invalidate();
+                i = event.getActionIndex();
+                if (i >= NUMBER_OF_FINGERS) break;
+                zooming[i] = true;
+                zoomX[i]=event.getX(i);
+                zoomY[i]=event.getY(i);
+                this.invalidate();
                 break;
             }
             case MotionEvent.ACTION_UP: case MotionEvent.ACTION_POINTER_UP: {
@@ -129,6 +171,8 @@ public class TouchLayer extends RelativeLayout {
                         invalidate();
                     }
                 }
+                zooming[i]=false;
+                this.invalidate();
                 break;
             }
         }
@@ -173,6 +217,7 @@ public class TouchLayer extends RelativeLayout {
         setWillNotDraw(false);
         for (int x=0; x<NUMBER_OF_FINGERS; x++) {
             paths[x] = new Path();
+            zooming[x] = false;
         }
         PAINT = new Paint();
         if (getResources() != null)

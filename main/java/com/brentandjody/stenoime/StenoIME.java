@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
@@ -63,6 +64,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean configuration_changed;
     private Translator mTranslator;
     private long last_notification_time;
+    private Bitmap kbImage = null;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
     //layout vars
@@ -127,6 +129,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         });
         loadDictionary();
+        mKeyboard.setDrawingCacheEnabled(true);
         return mKeyboard;
     }
 
@@ -199,6 +202,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public boolean onEvaluateFullscreenMode() {
         return false;
+    }
+
+    public Bitmap getKbImage() {
+        if (mKeyboard!=null)
+            kbImage = mKeyboard.getDrawingCache();
+        return kbImage;
     }
 
     // Implemented Interfaces

@@ -81,10 +81,6 @@ public class Optimizer {
         candidate = new Candidate(stroke, translation);
         findBetterStroke(candidate);
         candidates.add(candidate);
-        Log.v(TAG, "CANDIDATES");
-        for (Candidate c : candidates) {
-            Log.v(TAG, c.getStroke()+": "+c.getTranslation());
-        }
         return last_optimized_stroke;
     }
 
@@ -107,7 +103,6 @@ public class Optimizer {
             int improved_strokes = countStrokes(better_stroke);
             int stroke_savings = original_strokes-improved_strokes;
             if (stroke_savings > 0) {
-                Log.v(TAG, "Found better stroke: "+candidate.getStroke()+" -> "+better_stroke+" ("+candidate.getTranslation()+")");
                 last_optimized_stroke = better_stroke;
                 Optimization optimization = new Optimization(better_stroke, candidate.getTranslation());
                 addOptimization(optimization);
@@ -118,7 +113,6 @@ public class Optimizer {
     }
 
     private void sendNotification(Optimization optimization, int stroke_savings) {
-        Log.d(TAG, "Found better stroke: "+optimization.getStroke()+" : "+optimization.getTranslation());
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
@@ -214,13 +208,13 @@ public class Optimizer {
                     }
                 }
             }
-            Log.d(TAG, "Thesaurus build complete");
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            Log.d(TAG, "Thesaurus build complete");
             loaded=true;
             loading=false;
         }

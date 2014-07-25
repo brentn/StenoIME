@@ -214,7 +214,7 @@ public class SimpleTranslator extends Translator {
                 backspaces = fixed.getBackspaces();
             }
         }
-        Log.d(TAG, "text:" + text + " preview:" + preview_text);
+        //Log.d(TAG, "text:" + text + " preview:" + preview_text);
         return new TranslationResult(backspaces, text, preview_text, "");
     }
 
@@ -252,13 +252,13 @@ public class SimpleTranslator extends Translator {
         if (strokeQ.isEmpty()) return "";
         String stroke = strokesInQueue();
         String key = mDictionary.longestPrefix(strokesInQueue());
-        Log.d(TAG, "lookupQueue-longestPrefix:"+key);
+        //Log.d(TAG, "lookupQueue-longestPrefix:"+key);
         if (key.isEmpty()) return strokesInQueue()+" "; //no prefix found
         String result = mFormatter.format(mDictionary.forceLookup(key), true);
         preview_backspaces += mFormatter.backspaces();
         while (key.length()<stroke.length()) {
             stroke = stroke.substring(key.length()+1);
-            Log.d(TAG, "lookupQueue-stroke:"+stroke);
+            //Log.d(TAG, "lookupQueue-stroke:"+stroke);
             key = mDictionary.longestPrefix(stroke);
             if (key.isEmpty()) {
                 key=stroke;

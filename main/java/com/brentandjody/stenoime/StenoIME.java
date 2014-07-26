@@ -145,6 +145,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             removeVirtualKeyboard();
         } else {
             initializeMachine();
+            initializeTranslator();
             initializePreview();
             if (mTranslator!= null) {
                 if (mTranslator.usesDictionary())
@@ -480,11 +481,20 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void initializeTranslator() {
         Log.d(TAG, "initializeTranslator()");
         switch (App.getTranslatorType()) {
-            case RawStrokes: mTranslator = new RawStrokeTranslator();
+            case RawStrokes:
+                if (mTranslator!=null && mTranslator.usesDictionary()) {//if old translator used dictionary, unload it
+                    Log.d(TAG, "Unloading unused dictionary");
+                    App.unloadDictionary();
+                }
+                if (! (mTranslator instanceof RawStrokeTranslator)) {
+                    mTranslator = new RawStrokeTranslator();
+                }
                 break;
             case SimpleDictionary:
-                mTranslator = new SimpleTranslator(getApplicationContext());
-                ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
+                if (! (mTranslator instanceof SimpleTranslator)) {
+                    mTranslator = new SimpleTranslator(getApplicationContext());
+                }
+                ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));
                 break;
         }
     }

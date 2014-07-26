@@ -20,7 +20,7 @@ import com.brentandjody.stenoime.util.Purchase;
  */
 public class SettingsActivity extends PreferenceActivity {
 
-    private static final String TAG = "StenoIME";
+    private static final String TAG = SettingsActivity.class.getSimpleName();
     private static final int SELECT_DICTIONARY_CODE = 4;
     private static final int PURCHASE_REQUEST_CODE = 20201;
     private static final String PAYLOAD = "jOOnnqldcn20p843nKK;nNl";
@@ -79,14 +79,16 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 ListPreference translator = (ListPreference) preference;
-                translator.setValue(newValue.toString());
                 translator.setSummary(translator.getEntry());
                 Translator.TYPE tType = Translator.TYPE.values()[Integer.parseInt(newValue.toString())];
                 App.setTranslatorType(tType);
-                return false;
+                Log.d(TAG, "Setting translator type:"+tType);
+                findPreference(StenoApp.KEY_OPTIMIZER_ENABLED).setEnabled(!newValue.equals("0"));
+                return true;
             }
         });
         SwitchPreference optimizer = (SwitchPreference) findPreference(StenoApp.KEY_OPTIMIZER_ENABLED);
+        optimizer.setEnabled(!(translator.getValue().equals("0")));
         optimizer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

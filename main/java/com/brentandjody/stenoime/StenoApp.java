@@ -25,7 +25,7 @@ import java.util.List;
 public class StenoApp extends Application {
 
     public static final String DELIMITER = ":";
-    public static final String TAG = "Steno Keyboard";
+    public static final String TAG = StenoApp.class.getSimpleName();
 
     public static final String KEY_DICTIONARIES = "dictionaries";
     public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
@@ -136,22 +136,24 @@ public class StenoApp extends Application {
         // if dictionary is empty, load it - otherwise just return it
         // if listener is null, don't reset it (use last registered listener)
         if ((!isDictionaryLoaded()) && (!mDictionary.isLoading()) ) {
-            if (listener != null) {
-                mDictionary.setOnDictionaryLoadedListener(listener);
-            } else {
-                Log.w(TAG, "Dictionary callback is null");
-            }
             int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
             mDictionary.load(getDictionaryNames(), getAssets(), size);
-
         }
+        if (listener != null) {
+            mDictionary.setOnDictionaryLoadedListener(listener);
+        } else {
+            Log.w(TAG, "Dictionary callback is null");
+        }
+
         return mDictionary;
     }
 
     public void unloadDictionary() {
-        Log.d(TAG, "Unloading Dictionary");
-        mDictionary.clear();
-        mDictionary = new Dictionary(getApplicationContext());
+        if (mDictionary!=null) {
+            Log.d(TAG, "Unloading Dictionary");
+            mDictionary.clear();
+            mDictionary = new Dictionary(getApplicationContext());
+        }
     }
 
     public String[] getDictionaryNames() {

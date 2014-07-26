@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -115,8 +116,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public View onCreateInputView() {
         Log.d(TAG, "onCreateInputView()");
         super.onCreateInputView();
-        mKeyboard = new LinearLayout(this);
-        mKeyboard.addView(getLayoutInflater().inflate(R.layout.keyboard, null));
+        LayoutInflater inflater = getLayoutInflater();
+        mKeyboard = (LinearLayout) inflater.inflate(R.layout.keyboard, null);
         TouchLayer touchLayer = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         touchLayer.setOnStrokeListener(this);
         mKeyboard.findViewById(R.id.settings_button).setOnClickListener(new View.OnClickListener() {
@@ -204,14 +205,17 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public Bitmap getKeyboardImage() {
         Bitmap result = null;
         if (mKeyboard != null) {
-            mKeyboard.setDrawingCacheEnabled(true);
-            if (mKeyboard.getDrawingCache() != null) {
-                Log.d(TAG, "Refreshing zoom image");
-                result = Bitmap.createBitmap(mKeyboard.getDrawingCache());
-            } else {
-                Log.d(TAG, "Drawing cache is null");
+            ViewGroup parent = (ViewGroup) mKeyboard.getParent();
+            if (parent!=null) {
+                parent.setDrawingCacheEnabled(true);
+                if (parent.getDrawingCache() != null) {
+                    Log.d(TAG, "Refreshing zoom image");
+                    result = Bitmap.createBitmap(parent.getDrawingCache());
+                } else {
+                    Log.d(TAG, "Drawing cache is null");
+                }
+                parent.setDrawingCacheEnabled(false);
             }
-            mKeyboard.setDrawingCacheEnabled(false);
         }
         return result;
     }
@@ -462,7 +466,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void initializePreview() {
         Log.d(TAG, "initializePreview()");
-        inline_preview = prefs.getBoolean(App.KEY_INLINE_PREVIEW, false);
+        inline_preview = prefs.getBoolean(getString(R.string.key_inline_preview), false);
         if (App.isDictionaryLoaded()) {
             if (getCurrentInputConnection()==null)
                 showPreviewBar(false);
@@ -672,7 +676,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void removeVirtualKeyboard() {
         Log.d(TAG, "removeVirtualKeyboard()");
-        //TouchLayer keyboard = (TouchLayer) mKeyboard.findViewById(R.id.keyboard);
         if (mKeyboard != null) {
             if (mKeyboard.getVisibility()==View.GONE) return;
             //mKeyboard.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_down_out));
@@ -725,7 +728,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (t==null) t= StenoMachine.TYPE.VIRTUAL;
         if (App.getMachineType()==t) return; //short circuit
         App.setMachineType(t);
-        saveIntPreference(StenoApp.KEY_MACHINE_TYPE, App.getMachineType().ordinal());
+        saveIntPreference(getString(R.string.key_machine_type), App.getMachineType().ordinal());
         switch (App.getMachineType()) {
             case VIRTUAL:
                 App.setInputDevice(null);

@@ -48,7 +48,7 @@ public class SettingsActivity extends PreferenceActivity {
             switch (requestCode) {
                 case SELECT_DICTIONARY_CODE : {
                     Log.d(TAG, "Dictionaries selected");
-                    Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
+                    Preference dict_button = findPreference(getString(R.string.pref_dictionary_button));
                     dict_button.setSummary(getDictionaryList());
                     break;
                 }
@@ -63,7 +63,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     private void initializeControls() {
         // about button
-        Preference about = findPreference(StenoApp.KEY_ABOUT);
+        Preference about = findPreference(getString(R.string.key_about_button));
         about.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -73,7 +73,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // set translator options
-        ListPreference translator = (ListPreference) findPreference(StenoApp.KEY_TRANSLATOR_TYPE);
+        ListPreference translator = (ListPreference) findPreference(getString(R.string.translator_type));
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -83,11 +83,11 @@ public class SettingsActivity extends PreferenceActivity {
                 Translator.TYPE tType = Translator.TYPE.values()[Integer.parseInt(newValue.toString())];
                 App.setTranslatorType(tType);
                 Log.d(TAG, "Setting translator type:"+tType);
-                findPreference(StenoApp.KEY_OPTIMIZER_ENABLED).setEnabled(!newValue.equals("0"));
+                findPreference(getResources().getString(R.string.pref_optimizer_enabled)).setEnabled(!newValue.equals("0"));
                 return true;
             }
         });
-        SwitchPreference optimizer = (SwitchPreference) findPreference(StenoApp.KEY_OPTIMIZER_ENABLED);
+        SwitchPreference optimizer = (SwitchPreference) findPreference(getResources().getString(R.string.pref_optimizer_enabled));
         optimizer.setEnabled(!(translator.getValue().equals("0")));
         optimizer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -98,7 +98,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // list dictionaries
-        Preference dict_button = findPreference(StenoApp.KEY_DICTIONARY);
+        Preference dict_button = findPreference(getString(R.string.pref_dictionary_button));
         dict_button.setSummary(getDictionaryList());
         dict_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -109,7 +109,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // hardware switches
-        keyboardSwitch = (SwitchPreference) findPreference(StenoApp.KEY_NKRO_ENABLED);
+        keyboardSwitch = (SwitchPreference) findPreference(getString(R.string.enable_nkro_keyboard));
         assert keyboardSwitch != null;
         keyboardSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override

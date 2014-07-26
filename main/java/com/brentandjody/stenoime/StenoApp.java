@@ -27,16 +27,6 @@ public class StenoApp extends Application {
     public static final String DELIMITER = ":";
     public static final String TAG = StenoApp.class.getSimpleName();
 
-    public static final String KEY_DICTIONARIES = "dictionaries";
-    public static final String KEY_DICTIONARY_SIZE = "dictionary_size";
-    public static final String KEY_DICTIONARY = "pref_dictionary_button";
-    public static final String KEY_MACHINE_TYPE = "default_machine_type";
-    public static final String KEY_ABOUT = "about_button";
-    public static final String KEY_INLINE_PREVIEW = "pref_inline_preview";
-    public static final String KEY_TRANSLATOR_TYPE = "pref_translator";
-    public static final String KEY_NKRO_ENABLED = "pref_kbd_enabled";
-    public static final String KEY_OPTIMIZER_ENABLED = "pref_optimizer_enabled";
-
     private static final boolean USE_WORD_LIST = true;
     private static final boolean SHOW_PERFORMANCE_NOTIFICATIONS = true;
 
@@ -65,9 +55,9 @@ public class StenoApp extends Application {
         super.onCreate();
         prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(this);
         mDictionary = new Dictionary(getApplicationContext());
-        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
-        optimizer_enabled = prefs.getBoolean(KEY_OPTIMIZER_ENABLED, false);
-        int val = Integer.parseInt(prefs.getString(StenoApp.KEY_TRANSLATOR_TYPE, "1"));
+        nkro_enabled = prefs.getBoolean(getString(R.string.pref_kbd_enabled), false);
+        optimizer_enabled = prefs.getBoolean(getString(R.string.pref_optimizer_enabled), false);
+        int val = Integer.parseInt(prefs.getString(getString(R.string.pref_translator), "1"));
         mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.VIRTUAL;
         iabHelper = new IabHelper(this, PUBLICKEY);
@@ -99,7 +89,7 @@ public class StenoApp extends Application {
     public void setUsbDevice(UsbDevice ud) { mUsbDevice = ud; }
     public void setProgressBar(ProgressBar pb) { mProgressBar = pb; }
     public void setMachineType(StenoMachine.TYPE t) {
-        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
+        nkro_enabled = prefs.getBoolean(getString(R.string.pref_kbd_enabled), false);
         switch (t) {
             case VIRTUAL: mMachineType = t;
                 break;
@@ -126,7 +116,7 @@ public class StenoApp extends Application {
     public boolean isNkroKeyboardPurchased() { return NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY; }
     public boolean isNkro_enabled() {
         if (! (NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY)) return false;
-        nkro_enabled = prefs.getBoolean(KEY_NKRO_ENABLED, false);
+        nkro_enabled = prefs.getBoolean(getString(R.string.pref_kbd_enabled), false);
         return nkro_enabled;
     }
     public boolean isOptimizerEnabled() {return optimizer_enabled;}
@@ -136,7 +126,7 @@ public class StenoApp extends Application {
         // if dictionary is empty, load it - otherwise just return it
         // if listener is null, don't reset it (use last registered listener)
         if ((!isDictionaryLoaded()) && (!mDictionary.isLoading()) ) {
-            int size = prefs.getInt(KEY_DICTIONARY_SIZE, 100000);
+            int size = prefs.getInt(getString(R.string.key_dictionary_size), 100000);
             mDictionary.load(getDictionaryNames(), getAssets(), size);
         }
         if (listener != null) {
@@ -157,7 +147,7 @@ public class StenoApp extends Application {
     }
 
     public String[] getDictionaryNames() {
-        String data = prefs.getString(KEY_DICTIONARIES, "");
+        String data = prefs.getString(getString(R.string.key_dictionaries), "");
         if (data.isEmpty()) {
             return new String[0];
         }
@@ -193,7 +183,7 @@ public class StenoApp extends Application {
                     Log.d(TAG, "NKRO Keyboard is in inventory");
                 } else {
                     Log.d(TAG, "NKRO Keyboard is NOT in inventory");
-                    prefs.edit().putBoolean(KEY_NKRO_ENABLED, false).commit();
+                    prefs.edit().putBoolean(getString(R.string.pref_kbd_enabled), false).commit();
                 }
             }
         };

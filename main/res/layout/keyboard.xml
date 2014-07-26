@@ -6,7 +6,8 @@
     android:clickable="true"
     android:baselineAligned="true"
     android:gravity="bottom"
-    android:background="@android:color/transparent">
+    android:background="@android:color/transparent"
+    android:id="@+id/IME">
 
     <ImageView
         android:layout_width="fill_parent"

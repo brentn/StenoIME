@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
 
 import java.io.BufferedReader;
@@ -230,7 +231,7 @@ public class Dictionary {
             Log.d(TAG, "Dictionary loaded");
             int size = safeLongToInt(result);
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt(StenoApp.KEY_DICTIONARY_SIZE, size);
+            editor.putInt(context.getString(R.string.key_dictionary_size), size);
             editor.commit();
             loading = false;
             if (onDictionaryLoadedListener != null)

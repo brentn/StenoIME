@@ -1,6 +1,7 @@
 package com.brentandjody.stenoime.Input;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -10,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Shader;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,9 +35,8 @@ import java.util.Set;
 public class TouchLayer extends RelativeLayout {
 
     private static final int NUMBER_OF_FINGERS=2;
-    private static final boolean ENABLE_ZOOM =true;
-    private static final int ZOOM_OFFSET=200;
     private static final int ZOOM_SIZE=150;
+    private static  boolean ENABLE_ZOOM =false;
     private static FrameLayout LOADING_SPINNER;
     private static Paint PAINT;
 
@@ -54,16 +55,22 @@ public class TouchLayer extends RelativeLayout {
 
     public TouchLayer(Context context) {
         super(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
     public TouchLayer(Context context, AttributeSet attrs) {
         super(context, attrs);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
     public TouchLayer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
@@ -228,6 +235,7 @@ public class TouchLayer extends RelativeLayout {
         white.setColor(Color.WHITE);
         white.setStrokeWidth(1);
         matrix = new Matrix();
+
         setWillNotDraw(false);
         for (int x=0; x<NUMBER_OF_FINGERS; x++) {
             paths[x] = new Path();

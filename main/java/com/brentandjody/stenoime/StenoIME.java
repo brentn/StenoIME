@@ -64,7 +64,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean configuration_changed;
     private Translator mTranslator;
     private long last_notification_time;
-    private Bitmap kbImage = null;
     //TXBOLT:private PendingIntent mPermissionIntent;
 
     //layout vars
@@ -80,14 +79,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private PerformanceItem stats = new PerformanceItem();
 
-
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
         super.onCreate();
         //initialize global stuff
         App = ((StenoApp) getApplication());
-        loadDictionary();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         configuration_changed=false;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
@@ -129,7 +126,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         });
         loadDictionary();
-        mKeyboard.setDrawingCacheEnabled(true);
         return mKeyboard;
     }
 
@@ -204,10 +200,19 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         return false;
     }
 
-    public Bitmap getKbImage() {
-        if (mKeyboard!=null)
-            kbImage = mKeyboard.getDrawingCache();
-        return kbImage;
+    public Bitmap getKeyboardImage() {
+        Bitmap result = null;
+        if (mKeyboard != null) {
+            mKeyboard.setDrawingCacheEnabled(true);
+            if (mKeyboard.getDrawingCache() != null) {
+                Log.d(TAG, "Refreshing zoom image");
+                result = Bitmap.createBitmap(mKeyboard.getDrawingCache());
+            } else {
+                Log.d(TAG, "Drawing cache is null");
+            }
+            mKeyboard.setDrawingCacheEnabled(false);
+        }
+        return result;
     }
 
     // Implemented Interfaces
@@ -482,9 +487,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(this));
                 break;
         }
-//        if (mTranslator.usesDictionary()) {
-//            loadDictionary();
-//        }
     }
 
     private void drawUI() {
@@ -517,7 +519,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void loadDictionary() {
-        if (!App.isDictionaryLoaded()) {
+        if (!App.isDictionaryLoaded() && mTranslator!=null && mTranslator.usesDictionary()) {
             lockKeyboard();
             App.getDictionary(this);
         } else {

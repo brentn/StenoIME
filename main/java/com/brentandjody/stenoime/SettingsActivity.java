@@ -73,7 +73,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // set translator options
-        ListPreference translator = (ListPreference) findPreference(getString(R.string.translator_type));
+        ListPreference translator = (ListPreference) findPreference(getString(R.string.pref_translator));
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -109,7 +109,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // hardware switches
-        keyboardSwitch = (SwitchPreference) findPreference(getString(R.string.enable_nkro_keyboard));
+        keyboardSwitch = (SwitchPreference) findPreference(getString(R.string.pref_kbd_enabled));
         assert keyboardSwitch != null;
         keyboardSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override

@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.graphics.Shader;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -35,7 +36,7 @@ import java.util.Set;
 public class TouchLayer extends RelativeLayout {
 
     private static final int NUMBER_OF_FINGERS=2;
-    private static final int ZOOM_SIZE=150;
+    private static final int ZOOM_SIZE=200;
     private static  boolean ENABLE_ZOOM =false;
     private static FrameLayout LOADING_SPINNER;
     private static Paint PAINT;
@@ -55,22 +56,16 @@ public class TouchLayer extends RelativeLayout {
 
     public TouchLayer(Context context) {
         super(context);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
     public TouchLayer(Context context, AttributeSet attrs) {
         super(context, attrs);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
     public TouchLayer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
         initialize();
     }
 
@@ -136,6 +131,8 @@ public class TouchLayer extends RelativeLayout {
         int i;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: case MotionEvent.ACTION_POINTER_DOWN: {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+                ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
                 i = event.getActionIndex();
                 if (i >= NUMBER_OF_FINGERS) break;
                 x = event.getX(i);
@@ -153,11 +150,15 @@ public class TouchLayer extends RelativeLayout {
             }
             case MotionEvent.ACTION_MOVE: {
                 selectKeys(event);
-                i = event.getActionIndex();
-                if (i >= NUMBER_OF_FINGERS) break;
-                zooming[i] = true;
-                zoomX[i]=event.getX(i);
-                zoomY[i]=event.getY(i);
+                for (i=0;i<event.getPointerCount();i++) {
+                    for (int n = 0; n < NUMBER_OF_FINGERS; n++) {
+                        if (event.getPointerId(i) == fingerIds[n]) {
+                            zooming[n] = true;
+                            zoomX[n] = event.getX(i);
+                            zoomY[n] = event.getY(i);
+                        }
+                    }
+                }
                 this.invalidate();
                 break;
             }
@@ -175,12 +176,10 @@ public class TouchLayer extends RelativeLayout {
                 for (int n=0; n<NUMBER_OF_FINGERS; n++) {
                     if (event.getPointerId(i) == fingerIds[n]) {
                         paths[n].reset();
-                        invalidate();
+                        zooming[n]=false;
                     }
                 }
-                zooming[i]=false;
                 this.invalidate();
-                getScreenshot();
                 break;
             }
         }

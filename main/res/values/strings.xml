@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">StenoIME</string>
     <string name="app_title">Steno Keyboard</string>
     <string name="loading_dictionary">Loading Dictionary</string>
@@ -10,7 +12,8 @@
     <string name="translator">Translator</string>
     <string name="formatter">Formatter</string>
     <string name="inline_preview">Inline preview</string>
-        <string name="about_text"><![CDATA[<p><strong><i>Machine Stenography</i></strong> (court reporting) uses a <i>chording</i>
+    <string name="about_text">
+<![CDATA[<p><strong><i>Machine Stenography</i></strong> (court reporting) uses a <i>chording</i>
     keyboard to provide the ability to type text at speeds that exceed that of human speech.
     Unfortunately it takes quite a bit of work to learn, and until recently, expensive hardware/software to get started.</p>
     <p>Plover (<a href=http://stenoknight.com/wiki/Getting_Started>http://stenoknight.com/wiki/Getting_Started</a>) is an open-source project
@@ -29,7 +32,8 @@
     many different stenographic theories - so if you have already learned some machine stenography, you will want a dictionary built on the
     theory you have learned.</p>
     <p>The default dictionary is taken from the <i>Plover</i> project, and is built on a synthesis of  NYCI and StenEd theories.
-</p>]]></string>
+</p>]]>
+    </string>
     <string name="optimizer">Stroke Suggestions</string>
     <string name="keyboard_magnifier">Keyboard Magnifier</string>
     <string name="pref_zoom_enabled">pref_zoom_enabled</string>
@@ -51,4 +55,8 @@
     <string name="key_dictionary_size">dictionary_size</string>
     <string name="key_inline_preview">pref_inline_preview</string>
     <string name="key_machine_type">default_machine_type</string>
+    <string name="title_activity_suggestions">Better Strokes</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
 </resources>

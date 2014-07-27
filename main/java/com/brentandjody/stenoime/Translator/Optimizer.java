@@ -1,14 +1,18 @@
 package com.brentandjody.stenoime.Translator;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
+import com.brentandjody.stenoime.SuggestionsActivity;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -56,7 +60,7 @@ public class Optimizer {
                         .setContentTitle("Out of Memory")
                         .setContentText("Unloading "+context.getResources().getString(R.string.optimizer)+ " table.");
         int mNotificationId = 3;
-        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
     
@@ -106,19 +110,27 @@ public class Optimizer {
                 last_optimized_stroke = better_stroke;
                 Optimization optimization = new Optimization(better_stroke, candidate.getTranslation());
                 addOptimization(optimization);
-                sendNotification(optimization, stroke_savings);
+                sendNotification(optimization);
             }
 
         }
     }
 
-    private void sendNotification(Optimization optimization, int stroke_savings) {
+    private void sendNotification(Optimization optimization) {
+        Intent suggestionIntent = new Intent(context, SuggestionsActivity.class);
+        ArrayList<String> values = new ArrayList<String>();
+        for (Optimization opt:optimizations) {
+            values.add(opt.toString());
+        }
+        suggestionIntent.putExtra("optimizations", values);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, suggestionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
                         .setContentTitle("Better Stroke Found")
                         .setContentInfo((optimizations.size()>1?"("+(optimizations.size()-1)+" more)":""))
-                        .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() );
+                        .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() )
+                        .setContentIntent(pendingIntent);
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle("Better Strokes:");
         for (Optimization opt : optimizations) {
@@ -220,7 +232,7 @@ public class Optimizer {
         }
     }
 
-    private class Optimization {
+    public class Optimization implements Serializable {
         private final String stroke;
         private final String translation;
         private int occurences=1;
@@ -241,6 +253,11 @@ public class Optimizer {
 
         public void increment() {occurences++;}
         public void increment(int initial_occurences) {occurences=initial_occurences+1;}
+
+        @Override
+        public String toString() {
+            return stroke+" :  "+translation+"  ("+occurences+" times)";
+        }
     }
 
 }

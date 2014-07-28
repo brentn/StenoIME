@@ -6,7 +6,18 @@
     android:orientation="vertical" >
 
 
-        <ListView
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"
+        android:text="@string/title_activity_suggestions"
+        android:id="@+id/textView"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:textColor="@android:color/holo_blue_dark" />
+
+    <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@android:id/list" />

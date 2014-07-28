@@ -108,6 +108,12 @@ public class Formatter {
         return new State(capitalization, glue, suffix);
     }
 
+    public void resetState() {
+        capitalization=null;
+        glue=false;
+        suffix=false;
+    }
+
     public void restoreState(State state) {
         capitalization = state.getCapitalization();
         glue = state.hasGlue();

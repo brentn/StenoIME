@@ -51,7 +51,8 @@
             android:theme="@style/SettingsTheme" />
         <activity
             android:name=".SuggestionsActivity"
-            android:label="@string/title_activity_suggestions" >
+            android:label="@string/title_activity_suggestions"
+            android:theme="@android:style/Theme.Holo.Dialog.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>

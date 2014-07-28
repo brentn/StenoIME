@@ -220,9 +220,23 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public TranslationResult submitQueue() {
-        String queue = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+        String text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+        addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
         strokeQ.clear();
-        return new TranslationResult(0, queue, "", "");
+        mFormatter.resetState();
+        return new TranslationResult(0, text, "", "");
+    }
+
+    public TranslationResult insertIntoHistory(String text) {
+        TranslationResult result;
+        if (strokeQ.size()>0) {
+            TranslationResult queueContents=submitQueue();
+            result = new TranslationResult(queueContents.getBackspaces(), queueContents.getText()+text, "", "");
+        } else {
+            result = new TranslationResult(0, text, "", "");
+        }
+        addToHistory(text.length(), "", text, 0, mFormatter.getState());
+        return result;
     }
 
     public int preview_backspaces() { return preview_backspaces; }

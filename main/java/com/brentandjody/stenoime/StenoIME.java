@@ -2,6 +2,7 @@ package com.brentandjody.stenoime;
 
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +43,7 @@ import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.performance.Database;
 import com.brentandjody.stenoime.performance.PerformanceItem;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
 
@@ -55,6 +57,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private static final String STENO_STROKE = "com.brentandjody.STENO_STROKE";
     private static final String TAG = StenoIME.class.getSimpleName();
     private static final String ACTION_USB_PERMISSION = "com.brentandjody.USB_PERMISSION";
+    private static final int PERFORMANCE_NOTIFICATION_ID = 3998;
+    private static final String RESET_STATS = "reset_stats";
 
     private static boolean TXBOLT_CONNECTED=false;
 
@@ -64,7 +68,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean keyboard_locked=false;
     private boolean configuration_changed;
     private Translator mTranslator;
-    private long last_notification_time;
+    private long last_notification_time=new Date().getTime();
     //TXBOLT:private PendingIntent mPermissionIntent;
 
     //layout vars
@@ -141,6 +145,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         Log.d(TAG, "onStartInput()");
         super.onStartInput(attribute, restarting);
+
         if (!isTextFieldSelected(attribute)) { //no edit field is selected
             setCandidatesViewShown(false);
             removeVirtualKeyboard();
@@ -168,6 +173,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         setCandidatesViewShown(false);
         removeVirtualKeyboard();
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        Log.d(TAG, "onRebind()");
+        super.onRebind(intent);
+        if (intent.getBooleanExtra(RESET_STATS, false)) {
+            resetStats();
+        }
     }
 
     @Override
@@ -541,9 +555,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendChar(char c) {
-        InputConnection connection = getCurrentInputConnection();
-        if (connection != null) {
-            connection.commitText(String.valueOf(c), 1);
+        if (mTranslator instanceof SimpleTranslator) {
+            sendText(((SimpleTranslator) mTranslator).insertIntoHistory(String.valueOf(c)));
+        } else {
+            sendText(new TranslationResult(0, String.valueOf(c), "", ""));
         }
     }
 
@@ -605,7 +620,10 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
     
     private void resetStats() {
+        Log.d(TAG, "resetStats()");
         stats = new PerformanceItem();
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(PERFORMANCE_NOTIFICATION_ID);
     }
     
     private void recordStats() {
@@ -626,8 +644,16 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         if (App.showPerformanceNotifications()) {
             if (stats.strokes()>10 && stats.letters()>10) {
                 long time = new Date().getTime();
+                //reset speed stats if it's been over 2 mins since last keystroke
+                if (time - last_notification_time > 120000) {
+                    resetStats();
+                }
                 //don't notify more than every 2 seconds
                 if (time - last_notification_time > 2000) {
+                    Intent suggestionIntent = new Intent(getApplicationContext(), StenoIME.class);
+                    suggestionIntent.putExtra(RESET_STATS, true);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, suggestionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
                     last_notification_time = time;
                     Double minutes = (new Date().getTime() - stats.when().getTime()) / 60000d;
                     Double words = stats.letters() / 5.0;
@@ -638,8 +664,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                             new NotificationCompat.Builder(this)
                                     .setSmallIcon(R.drawable.ic_stat_stenoime)
                                     .setContentTitle("Steno Performance")
-                                    .setContentText(speed + "wpm at " + accuracy + "% (" + strokes_per_word + " strokes/word)");
-                    int mNotificationId = 1;
+                                    .setContentText(speed + "wpm at " + accuracy + "% (" + strokes_per_word + " strokes/word)")
+                                    .setContentIntent(pendingIntent);
+                    int mNotificationId = PERFORMANCE_NOTIFICATION_ID;
                     NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     mNotifyMgr.notify(mNotificationId, mBuilder.build());
                 }
@@ -742,6 +769,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 if (mKeyboard!=null) removeVirtualKeyboard();
                 if (candidates_view==null) onCreateCandidatesView();
                 registerMachine(new NKeyRolloverMachine());
+                resetStats();
                 break;
 //TXBOLT:            case TXBOLT:
 //                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();

@@ -221,19 +221,19 @@ public class DictionaryTest extends AndroidTestCase {
         assertEquals("adjudicate", dictionary.forceLookup("AD/SKWRAOUD/KAEUT"));
     }
 
-    public void testLongestValidStroke() throws Exception {
-        Dictionary dictionary = new Dictionary(getContext());
-        final CountDownLatch latch = new CountDownLatch(1);
-        dictionary.load(new String[] {"/sdcard/test.json"}, null, 0);
-        dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
-            @Override
-            public void onDictionaryLoaded() {
-                latch.countDown();
-            }
-        });
-        latch.await();
-        assertTrue(Arrays.equals(Stroke.separate("AD/SREPB/KHUR"), dictionary.longestValidStroke("AD/SREPB/KHUR/OU")));
-    }
+//    public void testLongestValidStroke() throws Exception {
+//        Dictionary dictionary = new Dictionary(getContext());
+//        final CountDownLatch latch = new CountDownLatch(1);
+//        dictionary.load(new String[] {"/sdcard/test.json"}, null, 0);
+//        dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
+//            @Override
+//            public void onDictionaryLoaded() {
+//                latch.countDown();
+//            }
+//        });
+//        latch.await();
+//        assertTrue(Arrays.equals(Stroke.separate("AD/SREPB/KHUR"), dictionary.longestValidStroke("AD/SREPB/KHUR/OU")));
+//    }
 
 
 }

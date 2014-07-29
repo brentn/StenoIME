@@ -1,8 +1,12 @@
 package com.brentandjody.stenoime.Translator;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -11,6 +15,7 @@ import android.widget.ProgressBar;
 
 import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
+import com.brentandjody.stenoime.data.DictionaryDBHelper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +25,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import com.brentandjody.stenoime.data.DictionaryContract.DictionaryEntry;
+import com.brentandjody.stenoime.performance.Database;
 
 /* This is the main Steno Dictionary class
  * which stores a dictionary of stroke / translation pairs
@@ -30,8 +40,14 @@ public class Dictionary {
 
     private static final String[] SUPPORTED_DICTIONARY_TYPES = {".json"};
     private static final String TAG = "StenoIME";
+    private static final String LOOKUP = "SELECT " + DictionaryEntry.COLUMN_TRANSLATION +
+            " FROM " + DictionaryEntry.TABLE_NAME +
+            " WHERE " + DictionaryEntry.COLUMN_STROKE ;
+    private static final String ALL_STROKES = "SELECT " + DictionaryEntry.COLUMN_STROKE +
+            " FROM " + DictionaryEntry.TABLE_NAME;
 
-    private TST<String> dictionary;
+
+    private SQLiteDatabase dictionary;
     private final Context context;
     private boolean loading = false;
     private SharedPreferences prefs;
@@ -39,7 +55,7 @@ public class Dictionary {
     public Dictionary(Context c) {
         context = c;
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        dictionary = new TST<String>();
+        dictionary = new DictionaryDBHelper(context).getReadableDatabase();
     }
 
     public boolean isLoading() {
@@ -47,11 +63,16 @@ public class Dictionary {
     }
 
     public void clear() {
-        dictionary = new TST<String>();
+        SQLiteDatabase db = new DictionaryDBHelper(context).getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXSTS " + DictionaryEntry.TABLE_NAME);
+        db.close();
     }
 
     public int size() {
-        return dictionary.size();
+        Cursor cursor = dictionary.rawQuery("SELECT Count(*) FROM " + DictionaryEntry.TABLE_NAME, null);
+        int result = cursor.getCount();
+        cursor.close();
+        return result;
     }
 
 
@@ -90,20 +111,31 @@ public class Dictionary {
     public String lookup(String key) {
         // return null if not found
         // and empty string if the result is ambiguous
-        if (isLoading()) {
-            Log.w("Lookup", "Called while dictionary loading");
+        String result = forceLookup(key);
+        Cursor cursor = dictionary.rawQuery(LOOKUP+" LIKE ?", new String[] {key+"/%"});
+        if (cursor.moveToFirst()) {
+            result = "";
         }
-        if (key.isEmpty()) return null;
-        if (((Collection) dictionary.prefixMatch(key+"/")).size() > 0) return ""; //ambiguous
-        return dictionary.get(key);
+        cursor.close();
+        return result;
     }
 
     public String forceLookup(String key) {
         //return the english translation for this key (even if ambiguous)
         //or null if not found found
         // (this is the same as lookup, except it doesn't return "" for ambiguous entries
-        if (key == null || key.isEmpty()) return null;
-        return (dictionary.get(key));
+        if (key.isEmpty()) return null;
+        String result=null;
+        if (isLoading()) {
+            Log.w("Lookup", "Called while dictionary loading");
+        }
+        if (key.isEmpty()) return null;
+        Cursor cursor = dictionary.rawQuery(LOOKUP+"=?", new String[] {key});
+        if (cursor.moveToFirst()) {
+            result = cursor.getString(cursor.getColumnIndex(DictionaryEntry.COLUMN_TRANSLATION));
+        }
+        cursor.close();
+        return result;
     }
 
     public String longestPrefix(String key) {
@@ -116,27 +148,13 @@ public class Dictionary {
         return "";
     }
 
-    public Stroke[] longestValidStroke(String outline) {
-        //returns outline, if it has a valid translation
-        //or the longest combination of strokeCount, starting from the beginning of outline, that has a valid translation
-        //or null
-        String stroke = dictionary.longestPrefixOf(outline);
-        while ((stroke.contains("/")) && (! outlineContainsStroke(outline, stroke))) {
-            //remove the last stroke and try again
-            String newOutline = stroke.substring(0,stroke.lastIndexOf('/')-1);
-            stroke = dictionary.longestPrefixOf(newOutline);
-        }
-        if (! outlineContainsStroke(outline, stroke)) return null;
-        return Stroke.separate(stroke);
-    }
-
     public Iterable<String> allKeys() {
-        return dictionary.keys();
-    }
-
-    private boolean outlineContainsStroke(String outline, String stroke) {
-        //ensures stroke does not contain "partial" strokeCount  from outline
-        return ((outline+"/").contains(stroke+"/"));
+        Queue<String> result = new LinkedList<String>();
+        Cursor cursor = dictionary.rawQuery(ALL_STROKES, null);
+        while(cursor.moveToNext()) {
+            result.add(cursor.getString(cursor.getColumnIndex(DictionaryEntry.COLUMN_STROKE)));
+        }
+        return result;
     }
 
     private class JsonLoader extends AsyncTask<String, Integer, Integer> {
@@ -155,6 +173,8 @@ public class Dictionary {
 
         protected Integer doInBackground(String... filenames) {
             loaded = 0;
+            SQLiteDatabase db=new DictionaryDBHelper(context).getWritableDatabase();
+            ContentValues values = new ContentValues();
             int update_interval = total_size/100;
             if (update_interval == 0) update_interval=1;
             String line, stroke, translation;
@@ -168,9 +188,9 @@ public class Dictionary {
                     while ((line = lines.readLine()) != null) {
                         fields = line.split("\"");
                         if ((fields.length > 3) && (fields[3].length() > 0)) {
-                            stroke = fields[1];
-                            translation = fields[3];
-                            dictionary.put(stroke, translation);
+                            values.put(DictionaryEntry.COLUMN_STROKE, fields[1]);
+                            values.put(DictionaryEntry.COLUMN_TRANSLATION, fields[3]);
+                            db.insertWithOnConflict(DictionaryEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                             loaded++;
                             if (loaded%update_interval==0) {
                                 onProgressUpdate(loaded);
@@ -194,9 +214,9 @@ public class Dictionary {
                         while ((line = lines.readLine()) != null) {
                             fields = line.split("\"");
                             if ((fields.length >= 3) && (fields[3].length() > 0)) {
-                                stroke = fields[1];
-                                translation = fields[3];
-                                dictionary.put(stroke, translation);
+                                values.put(DictionaryEntry.COLUMN_STROKE, fields[1]);
+                                values.put(DictionaryEntry.COLUMN_TRANSLATION, fields[3]);
+                                db.insertWithOnConflict(DictionaryEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                                 loaded++;
                                 if (loaded%update_interval==0) {
                                     onProgressUpdate(loaded);
@@ -207,6 +227,8 @@ public class Dictionary {
                         reader.close();
                     } catch (IOException e) {
                         System.err.println("Dictionary File: " + filename + " could not be found");
+                    } finally {
+                        db.close();
                     }
                 }
             }

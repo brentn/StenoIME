@@ -289,6 +289,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 public void onClick(View view) {
                     alert.dismiss();
                     unlockKeyboard();
+                    if (mTranslator instanceof SimpleTranslator) {
+                        sendText(((SimpleTranslator) mTranslator).submitQueue());
+                    }
                     StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
                 }
             });

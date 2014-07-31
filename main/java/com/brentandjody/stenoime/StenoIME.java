@@ -155,8 +155,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             if (mTranslator!= null) {
                 if (mTranslator.usesDictionary())
                     loadDictionary();
-                mTranslator.onStart(getApplicationContext());
-                mTranslator.reset(); // clear stroke history
+                mTranslator.start();
             }
             drawUI();
         }
@@ -170,7 +169,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             configuration_changed=false;
             return;
         }
-        mTranslator.onStop();
+        mTranslator.pause();
         setCandidatesViewShown(false);
         removeVirtualKeyboard();
     }
@@ -196,7 +195,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         super.onDestroy();
 //TXBOLT:        unregisterReceiver(mUsbReceiver);
         if (mTranslator!=null) {
-            mTranslator.onStop();
+            mTranslator.stop();
         }
         App.unloadDictionary();
         mKeyboard=null;
@@ -249,9 +248,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onDictionaryLoaded() {
         Log.d(TAG, "onDictionaryLoaded Listener fired");
         unlockKeyboard();
-        if (mTranslator!=null && mTranslator instanceof SimpleTranslator) {
-            ((SimpleTranslator)mTranslator).initializeOptimizer();
-        }
+        mTranslator.onDictionaryLoaded();
     }
 
     // Private methods
@@ -490,7 +487,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         switch (App.getTranslatorType()) {
             case RawStrokes:
                 if (mTranslator==null || (! (mTranslator instanceof RawStrokeTranslator))) { //if changing types
-                    mTranslator.onStop();
+                    mTranslator.stop();
                     if (mTranslator.usesDictionary()) {
                         App.unloadDictionary();
                     }

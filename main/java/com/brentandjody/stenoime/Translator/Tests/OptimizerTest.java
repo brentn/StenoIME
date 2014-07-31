@@ -46,29 +46,29 @@ public class OptimizerTest extends AndroidTestCase {
         outFile.delete();
     }
 
-    public void testBetterStroke() throws Exception {
-        final Dictionary dictionary = new Dictionary(getContext());
-        dictionary.load(new String[]{"/sdcard/test.json"}, null, 10);
-        SystemClock.sleep(1000); //wait for dictionary to load
-        assertFalse(dictionary.isLoading());
-        assertTrue(dictionary.size() > 10);
-        Optimizer optimizer = new Optimizer(getContext(), dictionary);
-        SystemClock.sleep(5000); //wait for thesaurus to load
-        assertTrue(optimizer.isLoaded());
-        //These two are equal length, and should not optimize
-        assertNull(optimizer.test_analyze("AD/SRAPB/TAPBLG", 0, "advantage "));
-        assertNull(optimizer.test_analyze("AD/SRAPBT/APBLG", 0, "advantage "));
-        //This one has a shorter stroke
-        assertEquals(optimizer.test_analyze("AD/SRAPB/TAEU/SKWROUS", 0, "advantageous "), "AD/SRAPBGS");
-        //Fingerspelling
-        assertNull(optimizer.test_analyze("*A", 0, "a "));
-        assertNull(optimizer.test_analyze("*TK", 1, "d "));
-        assertNull(optimizer.test_analyze("*SR", 1, "v "));
-        assertNull(optimizer.test_analyze("*A", 1, "a "));
-        assertNull(optimizer.test_analyze("*TPH", 1, "n "));
-        assertNull(optimizer.test_analyze("*KR", 1, "c "));
-        assertEquals(optimizer.test_analyze("*-E", 1, "e "), "AD/SRAPBS");
-    }
+//    public void testBetterStroke() throws Exception {
+//        final Dictionary dictionary = new Dictionary(getContext());
+//        dictionary.load(new String[]{"/sdcard/test.json"}, null, 10);
+//        SystemClock.sleep(1000); //wait for dictionary to load
+//        assertFalse(dictionary.isLoading());
+//        assertTrue(dictionary.size() > 10);
+//        Optimizer optimizer = new Optimizer(getContext(), dictionary);
+//        SystemClock.sleep(5000); //wait for thesaurus to load
+//        assertTrue(optimizer.isLoaded());
+//        //These two are equal length, and should not optimize
+//        assertNull(optimizer.test_analyze("AD/SRAPB/TAPBLG", 0, "advantage "));
+//        assertNull(optimizer.test_analyze("AD/SRAPBT/APBLG", 0, "advantage "));
+//        //This one has a shorter stroke
+//        assertEquals(optimizer.test_analyze("AD/SRAPB/TAEU/SKWROUS", 0, "advantageous "), "AD/SRAPBGS");
+//        //Fingerspelling
+//        assertNull(optimizer.test_analyze("*A", 0, "a "));
+//        assertNull(optimizer.test_analyze("*TK", 1, "d "));
+//        assertNull(optimizer.test_analyze("*SR", 1, "v "));
+//        assertNull(optimizer.test_analyze("*A", 1, "a "));
+//        assertNull(optimizer.test_analyze("*TPH", 1, "n "));
+//        assertNull(optimizer.test_analyze("*KR", 1, "c "));
+//        assertEquals(optimizer.test_analyze("*-E", 1, "e "), "AD/SRAPBS");
+//    }
 
 
 }

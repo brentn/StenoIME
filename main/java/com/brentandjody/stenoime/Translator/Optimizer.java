@@ -2,170 +2,112 @@ package com.brentandjody.stenoime.Translator;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
 import com.brentandjody.stenoime.SuggestionsActivity;
+import com.brentandjody.stenoime.data.DBContract.DictionaryEntry;
+import com.brentandjody.stenoime.data.LookupTableHelper;
 
-import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
-
-import com.brentandjody.stenoime.data.DictionaryContract.DictionaryEntry;
-import com.brentandjody.stenoime.data.DictionaryDBHelper;
 
 /**
  * Class to report on shorter strokes for what is being typed
  * including fingerspelling
  */
+
 public class Optimizer {
+    private static final String TAG = Optimizer.class.getSimpleName();
     private static final String SELECT_STROKE = "SELECT " + DictionaryEntry.COLUMN_STROKE +
             " FROM " + DictionaryEntry.TABLE_NAME +
-            " WHERE " + DictionaryEntry.COLUMN_TRANSLATION;
+            " WHERE " + DictionaryEntry.COLUMN_TRANSLATION ;
+    private static final String INSERT = "INSERT OR ABORT INTO " + DictionaryEntry.TABLE_NAME +
+            " (" + DictionaryEntry.COLUMN_STROKE + ", " +
+            DictionaryEntry.COLUMN_TRANSLATION + ") VALUES ( ?, ?);";
+    private static final String UPDATE = "UPDATE " + DictionaryEntry.TABLE_NAME +
+            " SET " + DictionaryEntry.COLUMN_STROKE + " = ?" +
+            " WHERE " + DictionaryEntry.COLUMN_TRANSLATION + " = ?;";
+    private static final String PURGE = "DELETE FROM " + DictionaryEntry.TABLE_NAME + ";";
 
-    private SQLiteDatabase reverseLookupTable;
-    private static final String TAG = Optimizer.class.getSimpleName();
-    private String last_optimized_stroke = null;
-    private Context context;
-    private Dictionary mDictionary;
-    private boolean loading=false;
-    private boolean loaded=false;
-    private Deque<Optimization> optimizations = new ArrayDeque<Optimization>();
-    private Analyzer mAnalyzer = new Analyzer();
-    private boolean running;
+    private final Context mContext;
+    private SQLiteDatabase mLookupTable=null;
+    private Queue<Candidate> input = new LinkedList<Candidate>();
+    private Deque<Candidate> optimizations = new ArrayDeque<Candidate>();
+    private boolean loading, running;
 
     public Optimizer(Context context) {
-        mDictionary = ((StenoApp) context).getDictionary(null);
-        initialize(context);
-    }
-
-    public Optimizer(Context context, Dictionary dictionary) {
-        mDictionary = dictionary;
-        initialize(context);
-    }
-
-    private void initialize(Context context) {
-        this.context = context;
-        reverseLookupTable = new DictionaryDBHelper(context).getReadableDatabase();
-        loadReverseLookupTable();
-        mAnalyzer.execute();
-        running=true;
-    }
-
-    public void onStop() {
+        Log.d(TAG, "Optimizer created");
+        mContext=context;
         running=false;
     }
 
-    public void release() {
-        SQLiteDatabase db = new DictionaryDBHelper(context).getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXSTS " + DictionaryEntry.TABLE_NAME);
-        db.close();
-        loaded=false;
+    public void pause() {
     }
 
-    public boolean isLoaded() {return loaded;}
-
-    public void analyze (String stroke, int backspaces, String translation) {
-        loadReverseLookupTable();
-        mAnalyzer.enqueue(new Candidate(stroke, translation, backspaces));
+    public void stop() {
+        loading=false;
+        running=false;
+        mLookupTable=null;
+        input.clear();
+        Log.d(TAG, "Optimizer destroyed");
     }
 
-    public String test_analyze(String stroke, int backspaces, String translation) {
-        last_optimized_stroke=null;
-        analyze(stroke, backspaces, translation);
-        SystemClock.sleep(100); //wait for analysis
-        return last_optimized_stroke;
+    public boolean isRunning() {return running;}
+
+    public void refreshLookupTable() {
+        assert(((StenoApp)mContext).isDictionaryLoaded());
+        new BackgroundLoader().execute(((StenoApp) mContext).getDictionary(null));
     }
 
-    public void loadReverseLookupTable() {
-        Log.d(TAG, "loadReverseLookupTable()");
-        if (!mDictionary.isLoading()) {
-            if (!loaded && !loading) {
-                ThesaurusLoader loader = new ThesaurusLoader();
-                loader.execute(mDictionary);
-            } else {
-                if (loading) {
-                    Log.d(TAG, "Reverse lookup table load in process");
-                }
-            }
-        } else {
-            Log.d(TAG, "Dictionary not loaded.  Not loading reverse lookup table.");
+    public void analyze(String stroke, int backspaces, String translation) {
+        Log.d(TAG, "analyzing: "+translation);
+        input.add(new Candidate(stroke, translation, backspaces));
+    }
+
+    //*******PRIVATE
+
+    private String get(String translation) {
+        return get(mLookupTable, translation);
+    }
+
+    private String get(SQLiteDatabase db,String translation) {
+        //lookup a translation from our lookup table
+        if (translation==null || translation.isEmpty()) return null;
+        String result=null;
+        Cursor cursor = db.rawQuery(SELECT_STROKE+" = ?", new String[] { translation });
+        if (cursor.moveToFirst()) {
+            result = cursor.getString(cursor.getColumnIndex(DictionaryEntry.COLUMN_STROKE));
         }
+        cursor.close();
+        return result;
     }
 
-
-    private void sendNotification(Optimization optimization) {
-        Intent suggestionIntent = new Intent(context, SuggestionsActivity.class);
-        ArrayList<String> values = new ArrayList<String>();
-        for (Optimization opt:optimizations) {
-            values.add(opt.toString());
+    private boolean getPrefixOf(String translation) {
+        boolean result=false;
+        Cursor cursor = mLookupTable.rawQuery(SELECT_STROKE+" LIKE ?", new String[] { translation+"%" });
+        if (cursor.moveToFirst()) {
+            result = true;
         }
-        suggestionIntent.putExtra("optimizations", values);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, suggestionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_stat_stenoime)
-                        .setContentTitle("Better Stroke Found")
-                        .setContentInfo((optimizations.size()>1?"("+(optimizations.size()-1)+" more)":""))
-                        .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() )
-                        .setContentIntent(pendingIntent);
-        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle("Better Strokes:");
-        for (Optimization opt : optimizations) {
-            inboxStyle.addLine(opt.getStroke() + " : " + opt.getTranslation()
-                    + " ("+opt.occurences+(opt.occurences==1?" time)":" times)"));
-        }
-        mBuilder.setStyle(inboxStyle);
-        int mNotificationId = 2;
-        NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        cursor.close();
+        return result;
     }
 
-    private void addOptimization(Optimization new_opt) {
-        Iterator<Optimization> iter = optimizations.iterator();
-        Optimization opt;
-        while (iter.hasNext()) {
-            opt = iter.next();
-            if (opt.equals(new_opt)) {
-                new_opt.increment(opt.getOccurences());
-                iter.remove();
-            }
-        }
-        optimizations.addFirst(new_opt);
-    }
-
-    private void findBetterStroke(Candidate candidate) {
-        //Send notification, and add to list if any clearly better stroke is available
-        String better_stroke = findBetterStroke(candidate.getStroke(), candidate.getTranslation());
-        if (better_stroke != null) {
-            int original_strokes = countStrokes(candidate.getStroke());
-            int improved_strokes = countStrokes(better_stroke);
-            int stroke_savings = original_strokes-improved_strokes;
-            if (stroke_savings > 0) {
-                last_optimized_stroke = better_stroke;
-                Optimization optimization = new Optimization(better_stroke, candidate.getTranslation());
-                addOptimization(optimization);
-                sendNotification(optimization);
-            }
-
-        }
-    }
-
-    public String findBetterStroke(String stroke, String translation) {
+    private String findBetterStroke(String stroke, String translation) {
         if (translation==null || translation.trim().length()==0) return null;
         //return any clearly better stroke, or null
         String bestStroke = get(translation.trim());
@@ -174,6 +116,61 @@ public class Optimizer {
             return bestStroke;
         }
         return null;
+    }
+
+    private void notifyBetterStroke(Candidate candidate) {
+        //Send notification, and add to list if any clearly better stroke is available
+        String best_stroke = get(candidate.getTranslation().trim());
+        if (best_stroke!=null) {
+            int original_num_strokes = countStrokes(candidate.getStroke());
+            int improved_num_strokes = countStrokes(best_stroke);
+            if (improved_num_strokes < original_num_strokes) {
+                Candidate optimization = new Candidate(best_stroke, candidate.getTranslation().trim(), 1);
+                addOptimization(optimization);
+                sendNotification(optimization);
+            }
+
+        }
+    }
+
+    private void addOptimization(Candidate new_optimization) {
+        Iterator<Candidate> iter = optimizations.iterator();
+        Candidate optimization;
+        while (iter.hasNext()) {
+            optimization = iter.next();
+            if (optimization.getStroke().equals(new_optimization.getStroke())) {
+                new_optimization.increment(optimization.getBackspaces());
+                iter.remove();
+            }
+        }
+        optimizations.addFirst(new_optimization);
+    }
+
+    private void sendNotification(Candidate optimization) {
+        Intent suggestionIntent = new Intent(mContext, SuggestionsActivity.class);
+        ArrayList<String> values = new ArrayList<String>();
+        for (Candidate opt:optimizations) {
+            values.add(opt.toString());
+        }
+        suggestionIntent.putExtra("optimizations", values);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, suggestionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(mContext)
+                        .setSmallIcon(R.drawable.ic_stat_stenoime)
+                        .setContentTitle("Better Stroke Found")
+                        .setContentInfo((optimizations.size()>1?"("+(optimizations.size()-1)+" more)":""))
+                        .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() )
+                        .setContentIntent(pendingIntent);
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle("Better Strokes:");
+        for (Candidate opt : optimizations) {
+            inboxStyle.addLine(opt.getStroke() + " : " + opt.getTranslation()
+                    + " ("+opt.backspaces+(opt.backspaces==1?" time)":" times)"));
+        }
+        mBuilder.setStyle(inboxStyle);
+        int mNotificationId = 2;
+        NotificationManager mNotifyMgr = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     private String shorterOf(String s1, String s2) {
@@ -193,114 +190,110 @@ public class Optimizer {
         return s.length()-s.replace("/","").length();
     }
 
-    private String get(String translation) {
-        if (translation==null || translation.isEmpty()) return null;
-        String result=null;
-        Cursor cursor = reverseLookupTable.rawQuery(SELECT_STROKE+" = ?", new String[] { translation });
-        if (cursor.moveToFirst()) {
-            result = cursor.getString(cursor.getColumnIndex(DictionaryEntry.COLUMN_STROKE));
-        }
-        cursor.close();
-        return result;
-    }
+    private class BackgroundLoader extends AsyncTask<Dictionary, Void, Void> {
 
-    private boolean mightExist(String translation) {
-        boolean result=false;
-        Cursor cursor = reverseLookupTable.rawQuery(SELECT_STROKE+" LIKE ?", new String[] { translation+"%" });
-        if (cursor.moveToFirst()) {
-            result = true;
+        @Override
+        protected Void doInBackground(Dictionary... dictionaries) {
+            Log.d(TAG, "Loading lookup table");
+            running=false;
+            loading=true;
+            long start=new Date().getTime();
+            String translation, existing_stroke, shorter_stroke;
+            int dict_size = dictionaries[0].size();
+            int count=0;
+            SQLiteDatabase db = new LookupTableHelper(mContext).getWritableDatabase();
+            try {
+                SQLiteStatement insert = db.compileStatement(INSERT);
+                SQLiteStatement update = db.compileStatement(UPDATE);
+                SQLiteStatement purge = db.compileStatement(PURGE);
+
+                db.beginTransaction();
+                purge.execute();
+
+                for (String stroke : dictionaries[0].allKeys()) { //3s to iterate
+                    if (!loading) {
+                        Log.d(TAG, "Lookup table load interrupted.");
+                        break;
+                    }
+                    if (stroke != null) {
+                        translation = dictionaries[0].forceLookup(stroke); //2s to lookup
+                        if (translation != null) {
+                            insert.clearBindings();
+                            insert.bindString(1, stroke);
+                            insert.bindString(2, translation);
+                            try {
+                                insert.execute();                           //23s to insert
+                            } catch (SQLiteConstraintException e) {
+                                existing_stroke = Optimizer.this.get(db, translation);
+                                if (existing_stroke != null) {
+                                    shorter_stroke = shorterOf(existing_stroke, stroke);
+                                    if (stroke.equals(shorter_stroke)) {
+                                        update.clearBindings();
+                                        update.bindString(1, stroke);
+                                        update.bindString(2, translation);
+                                        update.execute();                   //29s to update
+                                    }
+                                } else {
+                                    Log.d(TAG, "oops! existing stroke was null for " + translation);
+                                }
+                            }
+                        } else {
+                            Log.d(TAG, "oops! Translation was null for " + stroke);
+                        }
+                    } else {
+                        Log.d(TAG, "oops! Stroke was null");
+                    }
+                    count++;
+                    if (count % 1000 == 0) {
+                        Log.d(TAG, count + "/" + dict_size + " loaded.");
+                    }
+                }
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                Log.d(TAG, "Lookup table loaded in " + (new Date().getTime() - start) / 1000 + "s");
+            } finally {
+                db.close();
+            }
+            return null;
         }
-        cursor.close();
-        return result;
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            running=loading;
+            loading=false;
+            mLookupTable = new LookupTableHelper(mContext).getReadableDatabase();
+            new Analyzer().execute();
+        }
     }
 
     private class Analyzer extends AsyncTask<Void, Void, Void> {
-        private Queue<Candidate> toProcess = new LinkedList<Candidate>();
-        private List<Candidate> candidates = new ArrayList<Candidate>();
-
-        public void enqueue(Candidate item) {
-            toProcess.add(item);
-        }
-
+        private Queue<Candidate> candidates = new LinkedList<Candidate>();
         @Override
         protected Void doInBackground(Void... voids) {
-            Candidate candidate;
-            Log.d(TAG, "Analyzer starting");
+            Candidate candidate, next_item;
+            Log.d(TAG, "Starting Analyzer");
             while (running) {
-                while (!toProcess.isEmpty()) {
-                    Candidate next_candidate = toProcess.remove();
+                while (! input.isEmpty()) {
+                    next_item=input.remove();
                     Iterator<Candidate> iterator = candidates.iterator();
                     while (iterator.hasNext()) {
                         candidate = iterator.next();
-                        candidate.append(next_candidate);
-                        if (mightExist(candidate.getTranslation().trim())) {
-                            findBetterStroke(candidate);
+                        candidate.append(next_item);
+                        if (getPrefixOf(candidate.getTranslation().trim())) {
+                            notifyBetterStroke(candidate);
                         } else {
                             iterator.remove();
                         }
+
                     }
-                    findBetterStroke(next_candidate);
-                    candidates.add(next_candidate);
+                    notifyBetterStroke(next_item);
+                    candidates.add(next_item);
                 }
             }
-            Log.d(TAG, "Analyzer stopping");
+            Log.d(TAG, "Stopping Analyzer");
             return null;
         }
-    }
-
-    private class ThesaurusLoader extends AsyncTask<Dictionary, Void, Void>
-    {
-        private final SQLiteDatabase db = new DictionaryDBHelper(context).getWritableDatabase();
-        private ContentValues values = new ContentValues();
-        private int dict_size;
-
-        @Override
-        protected Void doInBackground(Dictionary... dictionary) {
-            Log.d(TAG, "doInBackground()");
-            String translation, existing_stroke;
-            int progress=0;
-            dict_size = dictionary[0].size();
-            loaded=false;
-            loading=true;
-            Log.v(TAG, "Setting lookup table flags");
-            db.execSQL("UPDATE " + DictionaryEntry.TABLE_NAME +
-                    " SET " + DictionaryEntry.COLUMN_FLAG + " =?", new String[]{"true"});
-            Log.d(TAG, "Building reverseLookupTable");
-            for (String stroke : dictionary[0].allKeys()) {
-                if (!running) {
-                    Log.d(TAG, "Interrupting load of reverse lookup table");
-                    break;
-                }
-                translation = dictionary[0].forceLookup(stroke);
-                if (translation != null) {
-                    if (! translation.contains("{")) {
-                        existing_stroke = Optimizer.this.get(translation);
-                        values.put(DictionaryEntry.COLUMN_STROKE, shorterOf(existing_stroke, stroke));
-                        values.put(DictionaryEntry.COLUMN_TRANSLATION, translation);
-                        values.put(DictionaryEntry.COLUMN_FLAG, false);
-                        db.insertWithOnConflict(DictionaryEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-                        Log.v(TAG, "Translation inserted");
-                    } else {
-                        Log.v(TAG, "Translation skipped");
-                    }
-                } else {
-                    Log.v(TAG, "Null translation");
-                }
-                progress++;
-                Log.v(TAG, progress/dict_size + " loaded...");
-            }
-            if (running) {
-                Log.d(TAG, "removing flagged lookup table entries");
-                    db.execSQL("DELETE FROM " + DictionaryEntry.TABLE_NAME +
-                            " WHERE " + DictionaryEntry.COLUMN_FLAG + " =?", new String[]{"true"});
-                loaded = true;
-            }
-            loading=false;
-            Log.d(TAG, "ReverseLookupTable build complete");
-
-            return null;
-        }
-
     }
 
     private class Candidate {
@@ -318,40 +311,14 @@ public class Optimizer {
         public String getTranslation() {return translation;}
         public int getBackspaces() {return backspaces;}
 
+        public void increment(int initial_value) {backspaces=initial_value+1;}
+
         public void append(Candidate c) {
             this.stroke += "/"+c.getStroke();
             int end = this.translation.length();
             if (end > 0 && c.getBackspaces() > 0 && c.getBackspaces()<end)
                 this.translation=this.translation.substring(0, (end-c.getBackspaces()));
             this.translation+=c.getTranslation();
-        }
-    }
-
-    public class Optimization implements Serializable {
-        private final String stroke;
-        private final String translation;
-        private int occurences=1;
-
-        public Optimization(String stroke, String translation) {
-            this.stroke = stroke;
-            this.translation = translation;
-        }
-
-        public String getStroke() {return stroke;}
-        public String getTranslation() {return translation;}
-        public int getOccurences() {return occurences;}
-
-        public boolean equals(Optimization that) {
-            return this.stroke.equals(that.getStroke())
-                    && this.translation.equals(that.getTranslation());
-        }
-
-        public void increment() {occurences++;}
-        public void increment(int initial_occurences) {occurences=initial_occurences+1;}
-
-        @Override
-        public String toString() {
-            return stroke+" :  "+translation+"  ("+occurences+" times)";
         }
     }
 

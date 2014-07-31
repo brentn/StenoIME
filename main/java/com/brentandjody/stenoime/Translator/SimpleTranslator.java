@@ -18,7 +18,7 @@ import java.util.Stack;
 public class SimpleTranslator extends Translator {
 
     private static final String TAG = SimpleTranslator.class.getSimpleName();
-    private Context context;
+    private Context mContext;
     private boolean locked = false;
     private Dictionary mDictionary;
     private Formatter mFormatter;
@@ -31,6 +31,7 @@ public class SimpleTranslator extends Translator {
 
 
     public SimpleTranslator(Context context) {
+        mContext = context;
         mFormatter = new Formatter();
         suffixMachine = new Suffixes(context);
         if (context instanceof StenoApp) {
@@ -63,25 +64,40 @@ public class SimpleTranslator extends Translator {
     }
 
     @Override
+    public void onDictionaryLoaded() {
+        if (use_optimizer && mOptimizer!=null) {
+            mOptimizer.refreshLookupTable();
+        }
+    }
+
+    @Override
     public void reset() {
         flush();
         history.removeAllElements();
     }
 
     @Override
-    public void onStart(Context context) {
+    public void start() {
         if (use_optimizer) {
             Log.d(TAG, "Optimizer created");
-            mOptimizer = new Optimizer(context);
+            mOptimizer = new Optimizer(mContext);
         } else {
             mOptimizer = null;
+        }
+        reset();
+    }
+
+    @Override
+    public void pause() {
+        if (mOptimizer!=null) {
+            mOptimizer.pause();
         }
     }
 
     @Override
-    public void onStop() {
+    public void stop() {
         if (mOptimizer!=null) {
-            mOptimizer.onStop();
+            mOptimizer.stop();
             mOptimizer=null;
             Log.d(TAG, "Optimizer destroyed");
         }
@@ -94,12 +110,6 @@ public class SimpleTranslator extends Translator {
         strokeQ.clear();
         mFormatter.resetState();
         return new TranslationResult(0, text, "", "");
-    }
-
-    public void initializeOptimizer() {
-        if (use_optimizer && mOptimizer!=null) {
-            mOptimizer.loadReverseLookupTable();
-        }
     }
 
     public TranslationResult translate(Stroke stroke) {

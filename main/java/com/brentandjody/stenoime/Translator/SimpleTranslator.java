@@ -17,7 +17,8 @@ import java.util.Stack;
  */
 public class SimpleTranslator extends Translator {
 
-    private static final String TAG = "StenoIME";
+    private static final String TAG = SimpleTranslator.class.getSimpleName();
+    private Context context;
     private boolean locked = false;
     private Dictionary mDictionary;
     private Formatter mFormatter;
@@ -34,10 +35,6 @@ public class SimpleTranslator extends Translator {
         suffixMachine = new Suffixes(context);
         if (context instanceof StenoApp) {
             use_optimizer = ((StenoApp) context).isOptimizerEnabled();
-            if (use_optimizer) {
-                Log.d(TAG, "Optimizer created");
-                mOptimizer = new Optimizer(context);
-            }
         }
     }
 
@@ -48,18 +45,6 @@ public class SimpleTranslator extends Translator {
 
     public void setDictionary(Dictionary dictionary) {
         mDictionary = dictionary;
-    }
-
-    public void releaseOptimizerSilently() {
-        if (mOptimizer!=null) {
-            mOptimizer.release();
-        }
-    }
-
-    public void releaseOptimizer() {
-        if (mOptimizer!=null) {
-            mOptimizer.releaseAndNotify();
-        }
     }
 
     @Override
@@ -79,7 +64,42 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public void reset() {
+        flush();
         history.removeAllElements();
+    }
+
+    @Override
+    public void onStart(Context context) {
+        if (use_optimizer) {
+            Log.d(TAG, "Optimizer created");
+            mOptimizer = new Optimizer(context);
+        } else {
+            mOptimizer = null;
+        }
+    }
+
+    @Override
+    public void onStop() {
+        if (mOptimizer!=null) {
+            mOptimizer.onStop();
+            mOptimizer=null;
+            Log.d(TAG, "Optimizer destroyed");
+        }
+    }
+
+    @Override
+    public TranslationResult flush() {
+        String text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+        addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
+        strokeQ.clear();
+        mFormatter.resetState();
+        return new TranslationResult(0, text, "", "");
+    }
+
+    public void initializeOptimizer() {
+        if (use_optimizer && mOptimizer!=null) {
+            mOptimizer.loadReverseLookupTable();
+        }
     }
 
     public TranslationResult translate(Stroke stroke) {
@@ -116,10 +136,10 @@ public class SimpleTranslator extends Translator {
                         HistoryItem reset = undoStrokeFromHistory();
                         backspaces = reset.length();
                         text = reset.stroke();
-//                        if (mOptimizer != null) {
-//                            Log.d(TAG, "Optimizing Undo Stroke: bs=" + backspaces + ", text=" + text);
-//                            mOptimizer.analyze("*", backspaces, text);
-//                        }
+                        if (mOptimizer != null) {
+                            Log.d(TAG, "Optimizing Undo Stroke: bs=" + backspaces + ", text=" + text);
+                            mOptimizer.analyze("*", backspaces, text);
+                        }
                         if (!strokeQ.isEmpty()) {
                             //replay the queue
                             stroke="";
@@ -218,19 +238,10 @@ public class SimpleTranslator extends Translator {
         return new TranslationResult(backspaces, text, preview_text, "");
     }
 
-    @Override
-    public TranslationResult submitQueue() {
-        String text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
-        addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
-        strokeQ.clear();
-        mFormatter.resetState();
-        return new TranslationResult(0, text, "", "");
-    }
-
     public TranslationResult insertIntoHistory(String text) {
         TranslationResult result;
         if (strokeQ.size()>0) {
-            TranslationResult queueContents=submitQueue();
+            TranslationResult queueContents= flush();
             result = new TranslationResult(queueContents.getBackspaces(), queueContents.getText()+text, "", "");
         } else {
             result = new TranslationResult(0, text, "", "");

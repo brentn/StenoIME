@@ -11,7 +11,7 @@ import com.brentandjody.stenoime.data.DictionaryContract.DictionaryEntry;
  * Created by brent on 28/07/14.
  */
 public class DictionaryDBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION=1;
+    private static final int DATABASE_VERSION=2;
     public static final String DATABASE_NAME="dictionary.db";
 
     public DictionaryDBHelper(Context context) {
@@ -24,10 +24,9 @@ public class DictionaryDBHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + DictionaryEntry.TABLE_NAME + " (" +
                         DictionaryEntry._ID + " INTEGER PRIMARY KEY, " +
                         DictionaryEntry.COLUMN_STROKE + " TEXT NOT NULL, " +
-                        DictionaryEntry.COLUMN_TRANSLATION + " TEXT NOT NULL); " +
-                        "CREATE UNIQUE INDEX " + DictionaryEntry.INDEX_STROKE +
-                        " ON " + DictionaryEntry.TABLE_NAME + " (" + DictionaryEntry.COLUMN_STROKE + "); " +
-                        "CREATE INDEX " + DictionaryEntry.INDEX_TRANSLATION +
+                        DictionaryEntry.COLUMN_TRANSLATION + " TEXT NOT NULL, " +
+                        DictionaryEntry.COLUMN_FLAG + " BOOLEAN NOT NULL); " +
+                        "CREATE UNIQUE INDEX " + DictionaryEntry.INDEX_TRANSLATION +
                         " ON " + DictionaryEntry.TABLE_NAME + " (" + DictionaryEntry.COLUMN_TRANSLATION + ");";
         db.execSQL(SQL_CREATE_DICTIONARY);
     }

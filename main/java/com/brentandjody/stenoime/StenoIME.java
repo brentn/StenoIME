@@ -43,7 +43,6 @@ import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.performance.Database;
 import com.brentandjody.stenoime.performance.PerformanceItem;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
 
@@ -156,8 +155,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             if (mTranslator!= null) {
                 if (mTranslator.usesDictionary())
                     loadDictionary();
-                if (!restarting)
-                    mTranslator.reset(); // clear stroke history
+                mTranslator.onStart(getApplicationContext());
+                mTranslator.reset(); // clear stroke history
             }
             drawUI();
         }
@@ -171,6 +170,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             configuration_changed=false;
             return;
         }
+        mTranslator.onStop();
         setCandidatesViewShown(false);
         removeVirtualKeyboard();
     }
@@ -188,9 +188,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onUnbindInput() {
         Log.d(TAG, "onUnbindInput()");
         super.onUnbindInput();
-        if (mTranslator!=null && mTranslator instanceof SimpleTranslator) {
-            ((SimpleTranslator) mTranslator).releaseOptimizerSilently();
-        }
         recordStats();
     }
 
@@ -198,6 +195,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     public void onDestroy() {
         super.onDestroy();
 //TXBOLT:        unregisterReceiver(mUsbReceiver);
+        if (mTranslator!=null) {
+            mTranslator.onStop();
+        }
         App.unloadDictionary();
         mKeyboard=null;
     }
@@ -237,208 +237,195 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     @Override
     public void onStroke(Set<String> keys) {
-        try {
-            Stroke stroke = new Stroke(keys);
-            processStroke(stroke);
-            Intent intent = new Intent(STENO_STROKE);
-            intent.putExtra("stroke", stroke.rtfcre());
-            sendBroadcast(intent);
-        } catch (OutOfMemoryError e) {
-            Log.w(TAG, "Out of Memory error Caught in OnStroke().");
-            releaseOptimizer();
-        }
+        Stroke stroke = new Stroke(keys);
+        processStroke(stroke);
+        Intent intent = new Intent(STENO_STROKE);
+        intent.putExtra("stroke", stroke.rtfcre());
+        sendBroadcast(intent);
+
     }
 
     @Override
     public void onDictionaryLoaded() {
         Log.d(TAG, "onDictionaryLoaded Listener fired");
         unlockKeyboard();
+        if (mTranslator!=null && mTranslator instanceof SimpleTranslator) {
+            ((SimpleTranslator)mTranslator).initializeOptimizer();
+        }
     }
 
     // Private methods
 
-    private void releaseOptimizer() {
-        if (mTranslator instanceof SimpleTranslator) {
-            Log.w(TAG, "Releasing optimizer.");
-            ((SimpleTranslator) mTranslator).releaseOptimizer();
-        }
-    }
-
     private void showSpecialKeysDialog() {
         final AlertDialog alert;
-        try {
-            LayoutInflater inflater = getLayoutInflater();
-            View dialog_view = inflater.inflate(R.layout.specialkeys, null);
-            lockKeyboard();
+        LayoutInflater inflater = getLayoutInflater();
+        View dialog_view = inflater.inflate(R.layout.specialkeys, null);
+        lockKeyboard();
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setView(dialog_view);
-            alert = builder.create();
-            alert.setCancelable(false);
-            Window window = alert.getWindow();
-            WindowManager.LayoutParams lp = window.getAttributes();
-            lp.token = mKeyboard.getWindowToken();
-            lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-            lp.verticalMargin = 0.2f;
-            window.setAttributes(lp);
-            window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialog_view);
+        alert = builder.create();
+        alert.setCancelable(false);
+        Window window = alert.getWindow();
+        WindowManager.LayoutParams lp = window.getAttributes();
+        lp.token = mKeyboard.getWindowToken();
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
+        lp.verticalMargin = 0.2f;
+        window.setAttributes(lp);
+        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
-            Button submit_button = (Button) dialog_view.findViewById(R.id.submit_button);
-            submit_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    if (mTranslator instanceof SimpleTranslator) {
-                        sendText(((SimpleTranslator) mTranslator).submitQueue());
-                    }
-                    StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
+        Button submit_button = (Button) dialog_view.findViewById(R.id.submit_button);
+        submit_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                if (mTranslator instanceof SimpleTranslator) {
+                    sendText(((SimpleTranslator) mTranslator).flush());
                 }
-            });
-            Button settings_button = (Button) dialog_view.findViewById(R.id.settings_button);
-            settings_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    launchSettingsActivity();
-                }
-            });
-            Button switch_input_button = (Button) dialog_view.findViewById(R.id.switch_input_button);
-            switch_input_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
-                }
-            });
+                StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
+            }
+        });
+        Button settings_button = (Button) dialog_view.findViewById(R.id.settings_button);
+        settings_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                launchSettingsActivity();
+            }
+        });
+        Button switch_input_button = (Button) dialog_view.findViewById(R.id.switch_input_button);
+        switch_input_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
+            }
+        });
 
-            dialog_view.findViewById(R.id.key_exclamation).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('!');
-                }
-            });
-            dialog_view.findViewById(R.id.key_at).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('@');
-                }
-            });
-            dialog_view.findViewById(R.id.key_hash).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('#');
-                }
-            });
-            dialog_view.findViewById(R.id.key_dollars).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('$');
-                }
-            });
-            dialog_view.findViewById(R.id.key_percent).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('%');
-                }
-            });
-            dialog_view.findViewById(R.id.key_carat).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('^');
-                }
-            });
-            dialog_view.findViewById(R.id.key_ampersand).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('&');
-                }
-            });
-            dialog_view.findViewById(R.id.key_asterisk).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('*');
-                }
-            });
-            dialog_view.findViewById(R.id.key_openbracket).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('(');
-                }
-            });
-            dialog_view.findViewById(R.id.key_closebracket).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar(')');
-                }
-            });
-            dialog_view.findViewById(R.id.key_singlequote).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar("'".charAt(0));
-                }
-            });
-            dialog_view.findViewById(R.id.key_doublequote).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('"');
-                }
-            });
-            dialog_view.findViewById(R.id.key_slash).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('/');
-                }
-            });
-            dialog_view.findViewById(R.id.key_question).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                    sendChar('?');
-                }
-            });
-            Button close_button = (Button) dialog_view.findViewById(R.id.close_button);
-            close_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    alert.dismiss();
-                    unlockKeyboard();
-                }
-            });
-            alert.show();
-        } catch (OutOfMemoryError e) {
-            Log.w(TAG, "Out of memory error caught in showSpecialKeysDialog()");
-            releaseOptimizer();
-        }
+        dialog_view.findViewById(R.id.key_exclamation).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('!');
+            }
+        });
+        dialog_view.findViewById(R.id.key_at).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('@');
+            }
+        });
+        dialog_view.findViewById(R.id.key_hash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('#');
+            }
+        });
+        dialog_view.findViewById(R.id.key_dollars).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('$');
+            }
+        });
+        dialog_view.findViewById(R.id.key_percent).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('%');
+            }
+        });
+        dialog_view.findViewById(R.id.key_carat).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('^');
+            }
+        });
+        dialog_view.findViewById(R.id.key_ampersand).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('&');
+            }
+        });
+        dialog_view.findViewById(R.id.key_asterisk).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('*');
+            }
+        });
+        dialog_view.findViewById(R.id.key_openbracket).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('(');
+            }
+        });
+        dialog_view.findViewById(R.id.key_closebracket).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar(')');
+            }
+        });
+        dialog_view.findViewById(R.id.key_singlequote).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar("'".charAt(0));
+            }
+        });
+        dialog_view.findViewById(R.id.key_doublequote).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('"');
+            }
+        });
+        dialog_view.findViewById(R.id.key_slash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('/');
+            }
+        });
+        dialog_view.findViewById(R.id.key_question).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                sendChar('?');
+            }
+        });
+        Button close_button = (Button) dialog_view.findViewById(R.id.close_button);
+        close_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+            }
+        });
+        alert.show();
     }
 
     private boolean isTextFieldSelected(EditorInfo editorInfo) {
@@ -469,7 +456,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         candidates_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendText(mTranslator.submitQueue());
+                sendText(mTranslator.flush());
             }
         });
         preview = (TextView) candidates_view.findViewById(R.id.preview);
@@ -502,16 +489,16 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "initializeTranslator()");
         switch (App.getTranslatorType()) {
             case RawStrokes:
-                if (mTranslator!=null && mTranslator.usesDictionary()) {//if old translator used dictionary, unload it
-                    Log.d(TAG, "Unloading unused dictionary");
-                    App.unloadDictionary();
-                }
-                if (! (mTranslator instanceof RawStrokeTranslator)) {
+                if (mTranslator==null || (! (mTranslator instanceof RawStrokeTranslator))) { //if changing types
+                    mTranslator.onStop();
+                    if (mTranslator.usesDictionary()) {
+                        App.unloadDictionary();
+                    }
                     mTranslator = new RawStrokeTranslator();
                 }
                 break;
             case SimpleDictionary:
-                if (! (mTranslator instanceof SimpleTranslator)) {
+                if (mTranslator==null ||(! (mTranslator instanceof SimpleTranslator))) { //if changing types
                     mTranslator = new SimpleTranslator(getApplicationContext());
                 }
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));
@@ -680,14 +667,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     // *** NKeyRollover Keyboard ***
 
     private boolean dispatchKeyEvent(KeyEvent event) {
-        try {
-            StenoMachine inputDevice = App.getInputDevice();
-            if (inputDevice instanceof NKeyRolloverMachine) {
-                ((NKeyRolloverMachine) inputDevice).handleKeys(event);
-            }
-        } catch (OutOfMemoryError e) {
-            Log.w(TAG, "Out of Memory error Caught in dispatchKeyEvent().");
-            releaseOptimizer();
+        StenoMachine inputDevice = App.getInputDevice();
+        if (inputDevice instanceof NKeyRolloverMachine) {
+            ((NKeyRolloverMachine) inputDevice).handleKeys(event);
         }
         return (event.getKeyCode() != KeyEvent.KEYCODE_BACK);
     }

@@ -9,11 +9,6 @@ public class RawStrokeTranslator extends Translator {
     private boolean locked=false;
 
     @Override
-    public boolean usesDictionary() {
-        return false;
-    }
-
-    @Override
     public void lock() {
         locked=true;
     }
@@ -21,14 +16,6 @@ public class RawStrokeTranslator extends Translator {
     @Override
     public void unlock() {
         locked=false;
-    }
-
-    @Override
-    public void reset() {}
-
-    @Override
-    public TranslationResult submitQueue() {
-        return new TranslationResult(0, "", "", "");
     }
 
     @Override

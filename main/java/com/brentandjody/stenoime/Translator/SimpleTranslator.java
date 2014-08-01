@@ -36,6 +36,9 @@ public class SimpleTranslator extends Translator {
         suffixMachine = new Suffixes(context);
         if (context instanceof StenoApp) {
             use_optimizer = ((StenoApp) context).isOptimizerEnabled();
+            if (use_optimizer) {
+                mOptimizer = new Optimizer(context);
+            }
         }
     }
 
@@ -66,7 +69,7 @@ public class SimpleTranslator extends Translator {
     @Override
     public void onDictionaryLoaded() {
         if (use_optimizer && mOptimizer!=null) {
-            mOptimizer.refreshLookupTable();
+            mOptimizer.initialize();
         }
     }
 
@@ -79,8 +82,12 @@ public class SimpleTranslator extends Translator {
     @Override
     public void start() {
         if (use_optimizer) {
-            Log.d(TAG, "Optimizer created");
-            mOptimizer = new Optimizer(mContext);
+            if (mOptimizer==null) {
+                mOptimizer = new Optimizer(mContext);
+                mOptimizer.initialize();
+            } else {
+                mOptimizer.resume();
+            }
         } else {
             mOptimizer = null;
         }
@@ -91,6 +98,13 @@ public class SimpleTranslator extends Translator {
     public void pause() {
         if (mOptimizer!=null) {
             mOptimizer.pause();
+        }
+    }
+
+    @Override
+    public void resume() {
+        if (use_optimizer && mOptimizer!=null) {
+            mOptimizer.resume();
         }
     }
 

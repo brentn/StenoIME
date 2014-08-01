@@ -15,6 +15,7 @@ public abstract class Translator {
     public void start() {}
     public void stop() {}
     public void pause() {}
+    public void resume() {}
     public void onDictionaryLoaded() {}
     public TranslationResult flush() {return new TranslationResult(0, "", "", "");}
     public abstract TranslationResult translate(Stroke stroke);

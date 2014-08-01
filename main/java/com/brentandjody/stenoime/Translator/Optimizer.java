@@ -46,32 +46,91 @@ public class Optimizer {
 
     private final Context mContext;
     private SQLiteDatabase mLookupTable=null;
+    private Runnable mAnalyzer;
     private Queue<Candidate> input = new LinkedList<Candidate>();
+    private Queue<Candidate> candidates = new LinkedList<Candidate>();
     private Deque<Candidate> optimizations = new ArrayDeque<Candidate>();
     private boolean loading, running;
+    private String best_stroke;
 
     public Optimizer(Context context) {
         Log.d(TAG, "Optimizer created");
         mContext=context;
+        loading=false;
         running=false;
+    }
+
+    public void start() {
+        Log.d(TAG, "start()");
+        mAnalyzer = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "starting looper");
+                while (running) {
+                    try {
+                        Candidate candidate, next_item;
+                        while (!input.isEmpty()) {
+                            next_item = input.remove();
+                            Log.v(TAG, "optimizing: "+next_item.getTranslation());
+                            Iterator<Candidate> iterator = candidates.iterator();
+                            while (iterator.hasNext()) {
+                                candidate = iterator.next();
+                                candidate.append(next_item);
+                                if (getPrefixOf(candidate.getTranslation().trim())) {
+                                    notifyBetterStroke(candidate);
+                                } else {
+                                    iterator.remove();
+                                }
+
+                            }
+                            notifyBetterStroke(next_item);
+                            candidates.add(next_item);
+                        }
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "analysis interrupted");
+                    }
+                }
+                Log.d(TAG, "...looper stopped");
+            }
+        };
+
+        //execute the above runnable
+        if (!loading) {
+            run();
+        }
     }
 
     public void pause() {
+        Log.d(TAG, "pause()");
+        running=false;
+    }
+
+    public void resume() {
+        Log.d(TAG, "resume()");
+        run();
     }
 
     public void stop() {
+        Log.d(TAG, "stop()");
         loading=false;
         running=false;
         mLookupTable=null;
+        mAnalyzer=null;
         input.clear();
         Log.d(TAG, "Optimizer destroyed");
     }
 
     public boolean isRunning() {return running;}
 
-    public void refreshLookupTable() {
+    public void initialize() {
         assert(((StenoApp)mContext).isDictionaryLoaded());
         new BackgroundLoader().execute(((StenoApp) mContext).getDictionary(null));
+    }
+
+    public void reloadLookupTable(Dictionary dictionary) {
+        // this method is for testing
+        new BackgroundLoader().execute(dictionary);
     }
 
     public void analyze(String stroke, int backspaces, String translation) {
@@ -79,7 +138,20 @@ public class Optimizer {
         input.add(new Candidate(stroke, translation, backspaces));
     }
 
+    public String getLastBestStroke() { //only for testing
+        return best_stroke;
+    }
+
     //*******PRIVATE
+
+    private void run() {
+        if (!loading) {
+            running = true;
+            Log.d(TAG, "running in background thread");
+            new Thread(mAnalyzer).start();
+            Log.d(TAG, "background Thread finished");
+        }
+    }
 
     private String get(String translation) {
         return get(mLookupTable, translation);
@@ -120,7 +192,7 @@ public class Optimizer {
 
     private void notifyBetterStroke(Candidate candidate) {
         //Send notification, and add to list if any clearly better stroke is available
-        String best_stroke = get(candidate.getTranslation().trim());
+        best_stroke = get(candidate.getTranslation().trim());
         if (best_stroke!=null) {
             int original_num_strokes = countStrokes(candidate.getStroke());
             int improved_num_strokes = countStrokes(best_stroke);
@@ -129,7 +201,6 @@ public class Optimizer {
                 addOptimization(optimization);
                 sendNotification(optimization);
             }
-
         }
     }
 
@@ -139,7 +210,7 @@ public class Optimizer {
         while (iter.hasNext()) {
             optimization = iter.next();
             if (optimization.getStroke().equals(new_optimization.getStroke())) {
-                new_optimization.increment(optimization.getBackspaces());
+                new_optimization.increment(optimization.getCounter());
                 iter.remove();
             }
         }
@@ -165,7 +236,7 @@ public class Optimizer {
         inboxStyle.setBigContentTitle("Better Strokes:");
         for (Candidate opt : optimizations) {
             inboxStyle.addLine(opt.getStroke() + " : " + opt.getTranslation()
-                    + " ("+opt.backspaces+(opt.backspaces==1?" time)":" times)"));
+                    + " ("+opt.counter +(opt.counter ==1?" time)":" times)"));
         }
         mBuilder.setStyle(inboxStyle);
         int mNotificationId = 2;
@@ -244,7 +315,7 @@ public class Optimizer {
                         Log.d(TAG, "oops! Stroke was null");
                     }
                     count++;
-                    if (count % 1000 == 0) {
+                    if (count % 10000 == 0) {
                         Log.d(TAG, count + "/" + dict_size + " loaded.");
                     }
                 }
@@ -260,65 +331,44 @@ public class Optimizer {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            running=loading;
-            loading=false;
             mLookupTable = new LookupTableHelper(mContext).getReadableDatabase();
-            new Analyzer().execute();
-        }
-    }
-
-    private class Analyzer extends AsyncTask<Void, Void, Void> {
-        private Queue<Candidate> candidates = new LinkedList<Candidate>();
-        @Override
-        protected Void doInBackground(Void... voids) {
-            Candidate candidate, next_item;
-            Log.d(TAG, "Starting Analyzer");
-            while (running) {
-                while (! input.isEmpty()) {
-                    next_item=input.remove();
-                    Iterator<Candidate> iterator = candidates.iterator();
-                    while (iterator.hasNext()) {
-                        candidate = iterator.next();
-                        candidate.append(next_item);
-                        if (getPrefixOf(candidate.getTranslation().trim())) {
-                            notifyBetterStroke(candidate);
-                        } else {
-                            iterator.remove();
-                        }
-
-                    }
-                    notifyBetterStroke(next_item);
-                    candidates.add(next_item);
-                }
+            if (loading) {
+                loading = false;
+                start();
             }
-            Log.d(TAG, "Stopping Analyzer");
-            return null;
         }
     }
 
     private class Candidate {
         private String stroke;
         private String translation;
-        private int backspaces=0;
+        private int counter =0;
 
         public Candidate(String stroke, String translation, int backspaces) {
             this.stroke = stroke;
             this.translation = translation;
-            this.backspaces = backspaces;
+            this.counter = backspaces;
         }
 
         public String getStroke() {return stroke;}
         public String getTranslation() {return translation;}
-        public int getBackspaces() {return backspaces;}
+        public int getCounter() {return counter;}
 
-        public void increment(int initial_value) {backspaces=initial_value+1;}
+        public void increment(int initial_value) {
+            counter =initial_value+1;}
 
         public void append(Candidate c) {
+            //appends another stroke/translation pair to this one
+            // assumes counter is used to enumerate backspaces
             this.stroke += "/"+c.getStroke();
             int end = this.translation.length();
-            if (end > 0 && c.getBackspaces() > 0 && c.getBackspaces()<end)
-                this.translation=this.translation.substring(0, (end-c.getBackspaces()));
+            if (end > 0 && c.getCounter() > 0 && c.getCounter()<end)
+                this.translation=this.translation.substring(0, (end-c.getCounter()));
             this.translation+=c.getTranslation();
+        }
+
+        public String toString() {
+            return stroke + " : " + translation + "   ("+counter+ " time"+(counter>1?"s.)":".)");
         }
     }
 

@@ -484,16 +484,18 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.d(TAG, "initializeTranslator()");
         switch (App.getTranslatorType()) {
             case RawStrokes:
-                if (mTranslator!=null && (! (mTranslator instanceof RawStrokeTranslator))) { //if changing types
-                    mTranslator.stop();
-                    if (mTranslator.usesDictionary()) {
-                        App.unloadDictionary();
+                if (mTranslator==null || (! (mTranslator instanceof RawStrokeTranslator))) { //if changing types
+                    if (mTranslator!=null) {
+                        mTranslator.stop();
+                        if (mTranslator.usesDictionary()) {
+                            App.unloadDictionary();
+                        }
                     }
                     mTranslator = new RawStrokeTranslator();
                 }
                 break;
             case SimpleDictionary:
-                if (mTranslator!=null &&(! (mTranslator instanceof SimpleTranslator))) { //if changing types
+                if (mTranslator==null ||(! (mTranslator instanceof SimpleTranslator))) { //if changing types
                     mTranslator = new SimpleTranslator(getApplicationContext());
                 }
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));

@@ -1,11 +1,13 @@
 package com.brentandjody.stenoime;
 
 import android.app.ListActivity;
-import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
+import com.brentandjody.stenoime.data.OptimizerTableHelper;
+import com.brentandjody.stenoime.data.DBContract.OptimizationEntry;
 
-import java.util.ArrayList;
 
 public class SuggestionsActivity extends ListActivity {
 
@@ -13,12 +15,18 @@ public class SuggestionsActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_suggestions);
-        Intent intent = getIntent();
-        ArrayList<String> values = new ArrayList<String>();
-        if (intent.getStringArrayListExtra("optimizations") != null) {
-            values = intent.getStringArrayListExtra("optimizations");
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, values);
+        SQLiteDatabase db = new OptimizerTableHelper(this).getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT " + OptimizationEntry._ID + ", "
+                + OptimizationEntry.COLUMN_STROKE + ", "
+                + OptimizationEntry.COLUMN_TRANSLATION + ", "
+                + OptimizationEntry.COLUMN_OCCURRENCES
+                + " FROM " + OptimizationEntry.TABLE_NAME
+                + " ORDER BY " + OptimizationEntry.COLUMN_OCCURRENCES + " DESC;", null);
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+                R.layout.optimization_item, cursor,
+                new String[] {OptimizationEntry.COLUMN_STROKE, OptimizationEntry.COLUMN_TRANSLATION, OptimizationEntry.COLUMN_OCCURRENCES},
+                new int[] { R.id.stroke, R.id.translation, R.id.occurrences });
         setListAdapter(adapter);
     }
 

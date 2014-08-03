@@ -4,10 +4,12 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -40,7 +42,8 @@ import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
 import com.brentandjody.stenoime.Translator.TranslationResult;
 import com.brentandjody.stenoime.Translator.Translator;
-import com.brentandjody.stenoime.performance.Database;
+import com.brentandjody.stenoime.data.StatsTableHelper;
+import com.brentandjody.stenoime.data.DBContract.StatsEntry;
 import com.brentandjody.stenoime.performance.PerformanceItem;
 
 import java.util.Date;
@@ -501,6 +504,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));
                 break;
         }
+        mTranslator.start();
     }
 
     private void drawUI() {
@@ -622,9 +626,20 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         Log.i(TAG, "Strokes:" + stats.strokes() + " Words:" + (stats_words) + " Duration:" + stats_duration);
         if (stats.strokes() > 0 && stats_duration > .01) {
             Log.i(TAG, "Speed:" + ((stats.letters() / 5d) / (stats_duration) + " Ratio:" + (stats_ratio)));
-            new Database(getApplicationContext()).insert(stats);
+            SQLiteDatabase db = new StatsTableHelper(getApplicationContext()).getWritableDatabase();
+            try {
+                ContentValues values = new ContentValues();
+                values.put(StatsEntry.COLUMN_WHEN, stats.when().getTime());
+                values.put(StatsEntry.COLUMN_SESS_DUR, stats_duration);
+                values.put(StatsEntry.COLUMN_MAX_SPEED, stats.max_speed());
+                values.put(StatsEntry.COLUMN_LETTERS, stats.letters());
+                values.put(StatsEntry.COLUMN_STROKES, stats.strokes());
+                values.put(StatsEntry.COLUMN_CORRECTIONS, stats.corrections());
+                db.insert(StatsEntry.TABLE_NAME, null, values);
+            } finally {
+                db.close();
+            }
         }
-        resetStats();
     }
 
     private void sendNotification() {

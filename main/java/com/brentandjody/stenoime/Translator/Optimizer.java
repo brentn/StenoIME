@@ -2,6 +2,7 @@ package com.brentandjody.stenoime.Translator;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,15 +17,15 @@ import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
 import com.brentandjody.stenoime.SuggestionsActivity;
 import com.brentandjody.stenoime.data.DBContract.DictionaryEntry;
+import com.brentandjody.stenoime.data.DBContract.OptimizationEntry;
 import com.brentandjody.stenoime.data.LookupTableHelper;
+import com.brentandjody.stenoime.data.OptimizerTableHelper;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Class to report on shorter strokes for what is being typed
@@ -49,9 +50,8 @@ public class Optimizer {
     private Runnable mAnalyzer;
     private Queue<Candidate> input = new LinkedList<Candidate>();
     private Queue<Candidate> candidates = new LinkedList<Candidate>();
-    private Deque<Candidate> optimizations = new ArrayDeque<Candidate>();
     private boolean loading, running;
-    private String best_stroke;
+    private String last_optimization=null;
 
     public Optimizer(Context context) {
         Log.d(TAG, "Optimizer created");
@@ -62,6 +62,7 @@ public class Optimizer {
 
     public void start() {
         Log.d(TAG, "start()");
+        candidates = new LinkedBlockingQueue<Candidate>();
         mAnalyzer = new Runnable() {
             @Override
             public void run() {
@@ -71,20 +72,22 @@ public class Optimizer {
                         Candidate candidate, next_item;
                         while (!input.isEmpty()) {
                             next_item = input.remove();
-                            Log.v(TAG, "optimizing: "+next_item.getTranslation());
-                            Iterator<Candidate> iterator = candidates.iterator();
-                            while (iterator.hasNext()) {
-                                candidate = iterator.next();
-                                candidate.append(next_item);
-                                if (getPrefixOf(candidate.getTranslation().trim())) {
-                                    notifyBetterStroke(candidate);
-                                } else {
-                                    iterator.remove();
-                                }
+                            //Log.d(TAG, "optimizing: "+next_item.getTranslation());
+                            if (!next_item.getTranslation().trim().isEmpty()) {
+                                Iterator<Candidate> iterator = candidates.iterator();
+                                while (iterator.hasNext()) {
+                                    candidate = iterator.next();
+                                    candidate.append(next_item);
+                                    if (getPrefixOf(candidate.getTranslation().trim())) {
+                                        notifyBetterStroke(candidate);
+                                    } else {
+                                        iterator.remove();
+                                    }
 
+                                }
+                                notifyBetterStroke(next_item);
+                                candidates.add(next_item);
                             }
-                            notifyBetterStroke(next_item);
-                            candidates.add(next_item);
                         }
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
@@ -104,6 +107,7 @@ public class Optimizer {
     public void pause() {
         Log.d(TAG, "pause()");
         running=false;
+        input.clear();
     }
 
     public void resume() {
@@ -134,12 +138,12 @@ public class Optimizer {
     }
 
     public void analyze(String stroke, int backspaces, String translation) {
-        Log.d(TAG, "analyzing: "+translation);
+        //Log.d(TAG, "analyzing: "+stroke+":"+translation);
         input.add(new Candidate(stroke, translation, backspaces));
     }
 
     public String getLastBestStroke() { //only for testing
-        return best_stroke;
+        return last_optimization;
     }
 
     //*******PRIVATE
@@ -192,7 +196,7 @@ public class Optimizer {
 
     private void notifyBetterStroke(Candidate candidate) {
         //Send notification, and add to list if any clearly better stroke is available
-        best_stroke = get(candidate.getTranslation().trim());
+        String best_stroke = get(candidate.getTranslation().trim());
         if (best_stroke!=null) {
             int original_num_strokes = countStrokes(candidate.getStroke());
             int improved_num_strokes = countStrokes(best_stroke);
@@ -200,48 +204,67 @@ public class Optimizer {
                 Candidate optimization = new Candidate(best_stroke, candidate.getTranslation().trim(), 1);
                 addOptimization(optimization);
                 sendNotification(optimization);
+                last_optimization=optimization.getStroke();
             }
         }
     }
 
     private void addOptimization(Candidate new_optimization) {
-        Iterator<Candidate> iter = optimizations.iterator();
-        Candidate optimization;
-        while (iter.hasNext()) {
-            optimization = iter.next();
-            if (optimization.getStroke().equals(new_optimization.getStroke())) {
-                new_optimization.increment(optimization.getCounter());
-                iter.remove();
+        SQLiteDatabase db = new OptimizerTableHelper(mContext).getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(OptimizationEntry.COLUMN_STROKE, new_optimization.getStroke());
+        values.put(OptimizationEntry.COLUMN_TRANSLATION, new_optimization.getTranslation());
+        values.put(OptimizationEntry.COLUMN_OCCURRENCES, 1);
+        try {
+            db.insertWithOnConflict(OptimizationEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_ABORT);
+            Log.d(TAG, "New optimization added: "+new_optimization.getStroke());
+        } catch (Exception e) {
+            int occurrences = 1;
+            Cursor cursor = db.rawQuery("SELECT " + OptimizationEntry.COLUMN_OCCURRENCES
+                    + " FROM " + OptimizationEntry.TABLE_NAME
+                    + " WHERE " + OptimizationEntry.COLUMN_STROKE + " = '" + new_optimization.getStroke() + "';", null);
+            if (cursor.moveToFirst()) {
+                occurrences+=cursor.getInt(0);
             }
+            cursor.close();
+            values.put(OptimizationEntry.COLUMN_OCCURRENCES, occurrences);
+            db.update(OptimizationEntry.TABLE_NAME, values, OptimizationEntry.COLUMN_STROKE + "=?",
+                    new String[] {new_optimization.getStroke()});
+            Log.d(TAG, "Updating optimization: "+new_optimization.getStroke()+" with "+occurrences);
+        } finally {
+            db.close();
         }
-        optimizations.addFirst(new_optimization);
     }
 
     private void sendNotification(Candidate optimization) {
         Intent suggestionIntent = new Intent(mContext, SuggestionsActivity.class);
-        ArrayList<String> values = new ArrayList<String>();
-        for (Candidate opt:optimizations) {
-            values.add(opt.toString());
-        }
-        suggestionIntent.putExtra("optimizations", values);
+        SQLiteDatabase db = new OptimizerTableHelper(mContext).getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT " + OptimizationEntry.COLUMN_STROKE + ", "
+                            + OptimizationEntry.COLUMN_TRANSLATION + ", "
+                            + OptimizationEntry.COLUMN_OCCURRENCES
+                            + " FROM " + OptimizationEntry.TABLE_NAME
+                            + " ORDER BY " + OptimizationEntry.COLUMN_OCCURRENCES + " DESC;", null);
+        int total = cursor.getCount();
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, suggestionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(mContext)
                         .setSmallIcon(R.drawable.ic_stat_stenoime)
                         .setContentTitle("Better Stroke Found")
-                        .setContentInfo((optimizations.size()>1?"("+(optimizations.size()-1)+" more)":""))
+                        .setContentInfo((total>1?"("+(total-1)+" more)":""))
                         .setContentText(optimization.getStroke() + " : " + optimization.getTranslation() )
                         .setContentIntent(pendingIntent);
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle("Better Strokes:");
-        for (Candidate opt : optimizations) {
-            inboxStyle.addLine(opt.getStroke() + " : " + opt.getTranslation()
-                    + " ("+opt.counter +(opt.counter ==1?" time)":" times)"));
+        while (cursor.moveToNext()) {
+            inboxStyle.addLine(cursor.getString(cursor.getColumnIndex(OptimizationEntry.COLUMN_STROKE)) + ":"
+                    + cursor.getString(cursor.getColumnIndex(OptimizationEntry.COLUMN_TRANSLATION)));
         }
         mBuilder.setStyle(inboxStyle);
         int mNotificationId = 2;
         NotificationManager mNotifyMgr = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        cursor.close();
+        db.close();
     }
 
     private String shorterOf(String s1, String s2) {
@@ -258,7 +281,9 @@ public class Optimizer {
     }
 
     private int countStrokes(String s) {
-        return s.length()-s.replace("/","").length();
+        int strokes = s.length()-s.replace("/","").length()+1;
+        int undos = s.length()-s.replace("**","*").length();
+        return strokes-(undos*2);
     }
 
     private class BackgroundLoader extends AsyncTask<Dictionary, Void, Void> {

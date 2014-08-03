@@ -106,6 +106,7 @@ public class SimpleTranslator extends Translator {
         if (use_optimizer && mOptimizer!=null) {
             mOptimizer.resume();
         }
+        reset();
     }
 
     @Override
@@ -162,7 +163,7 @@ public class SimpleTranslator extends Translator {
                         text = reset.stroke();
                         if (mOptimizer != null) {
                             Log.d(TAG, "Optimizing Undo Stroke: bs=" + backspaces + ", text=" + text);
-                            mOptimizer.analyze("*", backspaces, text);
+                            mOptimizer.analyze("**", backspaces, text);
                         }
                         if (!strokeQ.isEmpty()) {
                             //replay the queue

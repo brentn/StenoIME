@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">StenoIME</string>
     <string name="app_title">Steno Keyboard</string>
     <string name="loading_dictionary">Loading Dictionary</string>
@@ -10,7 +12,8 @@
     <string name="translator">Translator</string>
     <string name="formatter">Formatter</string>
     <string name="inline_preview">Inline preview</string>
-        <string name="about_text"><![CDATA[<p><strong><i>Machine Stenography</i></strong> (court reporting) uses a <i>chording</i>
+    <string name="about_text">
+<![CDATA[<p><strong><i>Machine Stenography</i></strong> (court reporting) uses a <i>chording</i>
     keyboard to provide the ability to type text at speeds that exceed that of human speech.
     Unfortunately it takes quite a bit of work to learn, and until recently, expensive hardware/software to get started.</p>
     <p>Plover (<a href=http://stenoknight.com/wiki/Getting_Started>http://stenoknight.com/wiki/Getting_Started</a>) is an open-source project
@@ -29,5 +32,31 @@
     many different stenographic theories - so if you have already learned some machine stenography, you will want a dictionary built on the
     theory you have learned.</p>
     <p>The default dictionary is taken from the <i>Plover</i> project, and is built on a synthesis of  NYCI and StenEd theories.
-</p>]]></string>
+</p>]]>
+    </string>
+    <string name="optimizer">Stroke Suggestions</string>
+    <string name="keyboard_magnifier">Keyboard Magnifier</string>
+    <string name="pref_zoom_enabled">pref_zoom_enabled</string>
+    <string name="pref_optimizer_enabled">pref_optimizer_enabled</string>
+    <string name="hardware">Hardware</string>
+    <string name="pref_kbd_enabled">pref_kbd_enabled</string>
+    <string name="dictionary">Dictionary</string>
+    <string name="pref_dictionary_button">pref_dictionary_button</string>
+    <string name="edit_dictionaries">Edit Dictionaries</string>
+    <string name="enable_nkro_keyboard">Enable NKRO Keyboard</string>
+    <string name="preview_on_summary">Ambiguous (preview) words will be shown after regular text.\n</string>
+    <string name="preview_off_summary">Ambiguous words will be shown above the keyboard.\n</string>
+    <string name="optimizer_off_summary">Do not provide stroke suggestions (uses less memory)</string>
+    <string name="optimizer_on_summary">Notify when a shorter stroke is found (uses much more memory)</string>
+    <string name="pref_translator">pref_translator</string>
+    <string name="key_about_button">about_button</string>
+    <string name="text_about_stenography">About stenography...</string>
+    <string name="key_dictionaries">dictionaries</string>
+    <string name="key_dictionary_size">dictionary_size</string>
+    <string name="key_inline_preview">pref_inline_preview</string>
+    <string name="key_machine_type">default_machine_type</string>
+    <string name="title_activity_suggestions">Better Strokes</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
 </resources>

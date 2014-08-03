@@ -8,11 +8,16 @@ public abstract class Translator {
 
     public static enum TYPE {RawStrokes, SimpleDictionary}
 
-    public abstract boolean usesDictionary();
-    public abstract void lock();
-    public abstract void unlock();
-    public abstract void reset();
-    public abstract TranslationResult submitQueue();
+    public boolean usesDictionary() {return false;}
+    public void lock() {}
+    public void unlock() {}
+    public void reset() {}
+    public void start() {}
+    public void stop() {}
+    public void pause() {}
+    public void resume() {}
+    public void onDictionaryLoaded() {}
+    public TranslationResult flush() {return new TranslationResult(0, "", "", "");}
     public abstract TranslationResult translate(Stroke stroke);
 
 

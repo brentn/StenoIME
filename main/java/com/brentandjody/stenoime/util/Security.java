@@ -96,7 +96,7 @@ public class Security {
      * @param publicKey public key associated with the developer account
      * @param signedData signed data from server
      * @param signature server signature
-     * @return true if the data and signature match
+     * @return true if the data and signature bestMatch
      */
     public static boolean verify(PublicKey publicKey, String signedData, String signature) {
         Signature sig;

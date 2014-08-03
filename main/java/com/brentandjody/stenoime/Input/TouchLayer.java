@@ -1,11 +1,17 @@
 package com.brentandjody.stenoime.Input;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.Shader;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.brentandjody.stenoime.R;
+import com.brentandjody.stenoime.StenoIME;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -28,6 +35,8 @@ import java.util.Set;
 public class TouchLayer extends RelativeLayout {
 
     private static final int NUMBER_OF_FINGERS=2;
+    private static final int ZOOM_SIZE=200;
+    private static  boolean ENABLE_ZOOM =false;
     private static FrameLayout LOADING_SPINNER;
     private static Paint PAINT;
 
@@ -35,6 +44,14 @@ public class TouchLayer extends RelativeLayout {
     private boolean loading;
     private Path[] paths = new Path[NUMBER_OF_FINGERS];
     private int[] fingerIds = new int[NUMBER_OF_FINGERS];
+    private float[] zoomX = new float[NUMBER_OF_FINGERS];
+    private float[] zoomY = new float[NUMBER_OF_FINGERS];
+    private boolean[] zooming = new boolean[NUMBER_OF_FINGERS];
+    private Paint image, white;
+    private Matrix matrix;
+    private Shader shader;
+    private Bitmap kbImage;
+    private boolean get_screenshot=false;
 
     public TouchLayer(Context context) {
         super(context);
@@ -75,7 +92,7 @@ public class TouchLayer extends RelativeLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (LOADING_SPINNER == null) return;
+        if (LOADING_SPINNER==null) return;
         if (loading)
             LOADING_SPINNER.setVisibility(VISIBLE);
         else {
@@ -86,8 +103,24 @@ public class TouchLayer extends RelativeLayout {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        for (int i=0; i<NUMBER_OF_FINGERS; i++) {
-            canvas.drawPath(paths[i], PAINT);
+        //Don't draw paths and zooms if taking a screenshot
+        if (! get_screenshot) {
+            for (int i = 0; i < NUMBER_OF_FINGERS; i++) {
+                canvas.drawPath(paths[i], PAINT);
+            }
+            if (kbImage != null && ENABLE_ZOOM) {
+                shader = new BitmapShader(kbImage, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                image.setShader(shader);
+                for (int i = 0; i < NUMBER_OF_FINGERS; i++) {
+                    if (zooming[i]) {
+                        matrix.reset();
+                        matrix.postScale(2f, 2f, zoomX[i], zoomY[i]);
+                        image.getShader().setLocalMatrix(matrix);
+                        canvas.drawCircle(zoomX[i], zoomY[i], ZOOM_SIZE, white);
+                        canvas.drawCircle(zoomX[i], zoomY[i], ZOOM_SIZE - 1, image);
+                    }
+                }
+            }
         }
     }
 
@@ -97,6 +130,8 @@ public class TouchLayer extends RelativeLayout {
         int i;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: case MotionEvent.ACTION_POINTER_DOWN: {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+                ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
                 i = event.getActionIndex();
                 if (i >= NUMBER_OF_FINGERS) break;
                 x = event.getX(i);
@@ -105,11 +140,25 @@ public class TouchLayer extends RelativeLayout {
                 paths[i].reset();
                 paths[i].moveTo(x, y);
                 toggleKeyAt(x, y);
+                zooming[i] = true;
+                zoomX[i]=x;
+                zoomY[i]=y;
+                this.invalidate();
+                getScreenshot();
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 selectKeys(event);
-                invalidate();
+                for (i=0;i<event.getPointerCount();i++) {
+                    for (int n = 0; n < NUMBER_OF_FINGERS; n++) {
+                        if (event.getPointerId(i) == fingerIds[n]) {
+                            zooming[n] = true;
+                            zoomX[n] = event.getX(i);
+                            zoomY[n] = event.getY(i);
+                        }
+                    }
+                }
+                this.invalidate();
                 break;
             }
             case MotionEvent.ACTION_UP: case MotionEvent.ACTION_POINTER_UP: {
@@ -126,9 +175,10 @@ public class TouchLayer extends RelativeLayout {
                 for (int n=0; n<NUMBER_OF_FINGERS; n++) {
                     if (event.getPointerId(i) == fingerIds[n]) {
                         paths[n].reset();
-                        invalidate();
+                        zooming[n]=false;
                     }
                 }
+                this.invalidate();
                 break;
             }
         }
@@ -163,16 +213,31 @@ public class TouchLayer extends RelativeLayout {
 
     public boolean anyKeysSelected() {
         for (TextView key : keys) {
-            if (key.isSelected()) return true;
+            if (key.isSelected()) {
+                return true;
+            }
         }
         return false;
     }
 
+    private void getScreenshot() {
+        get_screenshot=true;
+        kbImage = ((StenoIME) getContext()).getKeyboardImage();
+        get_screenshot = false;
+    }
+
     private void initialize() {
         loading=false;
+        image = new Paint();
+        white = new Paint();
+        white.setColor(Color.WHITE);
+        white.setStrokeWidth(1);
+        matrix = new Matrix();
+
         setWillNotDraw(false);
         for (int x=0; x<NUMBER_OF_FINGERS; x++) {
             paths[x] = new Path();
+            zooming[x] = false;
         }
         PAINT = new Paint();
         if (getResources() != null)
@@ -236,8 +301,9 @@ public class TouchLayer extends RelativeLayout {
                         paths[i].lineTo(e.getHistoricalX(i, h), e.getHistoricalY(i, h));
                     }
                     for (TextView key : keys) {
-                        if (pointerOnKey(pointer, key)) {
+                        if (pointerOnKey(pointer, key) && (!key.isSelected())) {
                             key.setSelected(true);
+                            getScreenshot();
                         }
                     }
                 }

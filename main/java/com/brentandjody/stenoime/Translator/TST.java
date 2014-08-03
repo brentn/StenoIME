@@ -40,6 +40,11 @@ public class TST<Value> {
         return get(key) != null;
     }
 
+    public boolean nodeExists(String key) {
+        //tests whether a node is already in the tree - even if it's value is null;
+        return get(root, key, 0) != null;
+    }
+
     public Value get(String key) {
         if (key == null) throw new NullPointerException();
         if (key.length() == 0) throw new IllegalArgumentException("key must have length >= 1");

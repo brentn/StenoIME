@@ -122,7 +122,7 @@ public class SelectDictionaryActivity extends ListActivity {
 
 
     private void loadDictionaryList() {
-        String dictionaries = prefs.getString(StenoApp.KEY_DICTIONARIES, "");
+        String dictionaries = prefs.getString(getString(R.string.key_dictionaries), "");
         for (String dictionary : dictionaries.split(StenoApp.DELIMITER)) {
             if (!dictionary.trim().isEmpty()) {
                 pathList.add(dictionary);
@@ -149,7 +149,7 @@ public class SelectDictionaryActivity extends ListActivity {
         if (!dictionaries.isEmpty()) { //list is prefixed with DELIMITER
             dictionaries = dictionaries.substring(1);
         }
-        prefs.edit().putString(StenoApp.KEY_DICTIONARIES, dictionaries).commit();
+        prefs.edit().putString(getString(R.string.key_dictionaries), dictionaries).commit();
     }
 
     private void addDictionary() {
@@ -165,7 +165,7 @@ public class SelectDictionaryActivity extends ListActivity {
     }
 
     /**
-     * Get a file path from a Uri. This will get the the path for Storage Access
+     * Get a file path from a Uri. This will score the the path for Storage Access
      * Framework Documents, as well as the _data field for the MediaStore and
      * other file-based ContentProviders.
      *

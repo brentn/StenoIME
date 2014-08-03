@@ -2,7 +2,6 @@ package com.brentandjody.stenoime.Translator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,8 +114,8 @@ public class Stroke {
         return result;
     }
 
-    private static Set<String> decompress(int keys) {
-        Set<String> result = new HashSet<String>();
+    private static List<String> decompress(int keys) {
+        List<String> result = new ArrayList<String>();
         for (int i=0; i<STENO_KEYS.size(); i++) {
             String key = STENO_KEYS.get(i);
             if (((keys >> i) & 1) == 1) {
@@ -177,26 +176,23 @@ public class Stroke {
         return result;
     }
 
-    private List<String> convertNumbers(Collection<String> keys) {
+    private List<String> convertNumbers(List<String> keys) {
         // convert appropriate letters to numbers if the rtfcre contains '#'
-        if ((keys==null) || (!keys.contains("#"))) return new LinkedList<String>(keys);
+        if ((keys==null) || (!keys.contains("#"))) return keys;
         List<String> result = new LinkedList<String>();
-        boolean numeral = false;
         for (String key : keys) {
             if (NUMBER_KEYS.containsKey(key)) {
                 result.add(NUMBER_KEYS.get(key));
-                numeral = true;
             } else {
-                result.add(key);
+                if (!key.equals("#")) {
+                    result.add(key);
+                }
             }
-        }
-        if (numeral) {
-            result.remove("#");
         }
         return result;
     }
 
-    public Set<String> getKeySet() {
+    public List<String> getKeySet() {
         return decompress(keys);
     }
 
@@ -204,9 +200,9 @@ public class Stroke {
         if (input==null) return "";
         //sort according to steno order
         List<String> chord = new LinkedList<String>();
-        for (String key : STENO_KEYS)  if (input.contains(key)) chord.add(key);
-        boolean number=false;
-        for (String key : NUMBER_KEYS.values()) if (input.contains(key)) { number=true; chord.add(key); }
+        boolean isAllDigits=false;
+        for (String key : NUMBER_KEYS.values()) if (input.contains(key)) { isAllDigits=true; chord.add(key); }
+        for (String key : STENO_KEYS)  if (input.contains(key)) { isAllDigits=false; chord.add(key); }
         String result = "";
         String suffix = "";
         if (! Collections.disjoint(chord, IMPLICIT_HYPHENS)) {
@@ -215,7 +211,7 @@ public class Stroke {
             }
         } else {
             for (String key : chord) {
-                if (number || key.charAt(key.length()-1) == '-') {
+                if (isAllDigits || key.charAt(key.length()-1) == '-') {
                     result += key.replace("-", "");
                 } else {
                     if (key.charAt(0) == '-') {

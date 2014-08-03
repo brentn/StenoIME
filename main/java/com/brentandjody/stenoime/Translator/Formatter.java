@@ -13,6 +13,7 @@ public class Formatter {
     public static final String punctuation = ":;,";
 
     private int backspaces;
+    private boolean suffix;
     // state variables
     private CASE capitalization=null;
     private boolean glue=false;
@@ -25,6 +26,7 @@ public class Formatter {
     }
 
     public String format (String input, boolean reset_state) {
+        suffix = false;
         State prior_state = getState();
         backspaces=0;
         if (input==null || input.length()==0) return "";
@@ -35,6 +37,7 @@ public class Formatter {
         StringBuilder sb = new StringBuilder();
         if (hasFlags() || input.contains("{")) {
             for (String atom : breakApart(input)) {
+                suffix = isSuffix(atom);
                 if (atom.equals("{#Return}")) {
                     sb.append("\n"); space=""; atom="";
                 }
@@ -102,12 +105,19 @@ public class Formatter {
     }
 
     public State getState() {
-        return new State(capitalization, glue);
+        return new State(capitalization, glue, suffix);
+    }
+
+    public void resetState() {
+        capitalization=null;
+        glue=false;
+        suffix=false;
     }
 
     public void restoreState(State state) {
         capitalization = state.getCapitalization();
         glue = state.hasGlue();
+        suffix = state.suffix();
     }
 
     public boolean hasFlags() { return (glue || (capitalization!=null)); }
@@ -139,6 +149,15 @@ public class Formatter {
         return result;
     }
 
+    public boolean wasSuffix() { return suffix; }
+
+    private boolean isSuffix(String atom) {
+        if (atom==null) return false;
+        if (atom.length()<3) return false;
+        if (atom.charAt(atom.length()-2)=='^') return false; //it is a joiner, not a suffix
+        return atom.charAt(0) == '{' && atom.charAt(1) == '^';
+    }
+
     private String remove_backspaces(String text) {
         StringBuilder result = new StringBuilder();
         boolean start = true;
@@ -163,10 +182,12 @@ public class Formatter {
     public class State {
         private CASE capitalization;
         private boolean glue;
+        private boolean suffix;
 
-        public State(CASE capitalization, boolean glue) {
+        public State(CASE capitalization, boolean glue, boolean suffix) {
             this.capitalization=capitalization;
             this.glue=glue;
+            this.suffix=suffix;
         }
 
         public CASE getCapitalization() {
@@ -175,7 +196,9 @@ public class Formatter {
         public boolean hasGlue() {
             return glue;
         }
-
+        public boolean suffix() {
+            return suffix;
+        }
     }
 
 }

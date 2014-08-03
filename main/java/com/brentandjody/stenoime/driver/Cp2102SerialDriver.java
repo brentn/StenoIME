@@ -120,7 +120,7 @@ public class Cp2102SerialDriver extends CommonUsbSerialDriver {
             numBytesRead = mConnection.bulkTransfer(mReadEndpoint, mReadBuffer, readAmt,
                     timeoutMillis);
             if (numBytesRead < 0) {
-                // This sucks: we get -1 on timeout, not 0 as preferred.
+                // This sucks: we score -1 on timeout, not 0 as preferred.
                 // We *should* use UsbRequest, except it has a bug/api oversight
                 // where there is no way to determine the number of bytes read
                 // in response :\ -- http://b.android.com/28023

@@ -6,8 +6,10 @@ import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 
+import com.brentandjody.stenoime.R;
 import com.brentandjody.stenoime.StenoApp;
 
 import java.io.BufferedReader;
@@ -53,7 +55,7 @@ public class Dictionary {
     }
 
 
-    public void load(String[] filenames, AssetManager assetManager, ProgressBar progressBar, int size) {
+    public void load(String[] filenames, AssetManager assetManager, int size) {
         // assume filenames is not empty or null
         Log.d(TAG, "loading dictionary");
         for (String filename : filenames) {
@@ -74,7 +76,7 @@ public class Dictionary {
             }
         }
         loading = true;
-        new JsonLoader(assetManager, progressBar, size).execute(filenames);
+        new JsonLoader(assetManager, size).execute(filenames);
     }
 
     private OnDictionaryLoadedListener onDictionaryLoadedListener;
@@ -104,9 +106,19 @@ public class Dictionary {
         return (dictionary.get(key));
     }
 
+    public String longestPrefix(String key) {
+        String prefix = key;
+        if (forceLookup(key)!=null) return key;
+        while (prefix.contains("/")) {
+            prefix = prefix.substring(0, prefix.indexOf('/'));
+            if (forceLookup(prefix) != null) return prefix;
+        }
+        return "";
+    }
+
     public Stroke[] longestValidStroke(String outline) {
         //returns outline, if it has a valid translation
-        //or the longest combination of strokes, starting from the beginning of outline, that has a valid translation
+        //or the longest combination of strokeCount, starting from the beginning of outline, that has a valid translation
         //or null
         String stroke = dictionary.longestPrefixOf(outline);
         while ((stroke.contains("/")) && (! outlineContainsStroke(outline, stroke))) {
@@ -118,28 +130,33 @@ public class Dictionary {
         return Stroke.separate(stroke);
     }
 
+    public Iterable<String> allKeys() {
+        return dictionary.keys();
+    }
+
     private boolean outlineContainsStroke(String outline, String stroke) {
-        //ensures stroke does not contain "partial" strokes  from outline
+        //ensures stroke does not contain "partial" strokeCount  from outline
         return ((outline+"/").contains(stroke+"/"));
     }
 
     private class JsonLoader extends AsyncTask<String, Integer, Integer> {
         private int loaded;
         private int total_size;
-        private ProgressBar progressBar;
+        private ProgressBar progressBar=null;
         private AssetManager assetManager;
 
-        public JsonLoader(AssetManager am, ProgressBar progress, int size) {
+        public JsonLoader(AssetManager am, int size) {
             assetManager = am;
-            progressBar = progress;
             total_size = size;
+            if (context instanceof StenoApp) {
+                progressBar = ((StenoApp) context).getProgressBar();
+            }
         }
 
         protected Integer doInBackground(String... filenames) {
             loaded = 0;
             int update_interval = total_size/100;
             if (update_interval == 0) update_interval=1;
-            progressBar.setProgress(0);
             String line, stroke, translation;
             String[] fields;
             //if no personal dictionaries are defined, load the default
@@ -199,26 +216,51 @@ public class Dictionary {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressBar.setMax(total_size);
-            progressBar.setProgress(0);
+            if (context instanceof StenoApp) {
+                progressBar = ((StenoApp) context).getProgressBar();
+                if (progressBar != null) {
+                    View progress = (View) progressBar.getParent();
+                    if (progress != null) progress.setVisibility(View.VISIBLE);
+                    progressBar.setMax(total_size);
+                    progressBar.setProgress(0);
+                }
+            }
         }
 
         @Override
         protected void onPostExecute(Integer result) {
             super.onPostExecute(result);
+            Log.d(TAG, "Dictionary loaded");
             int size = safeLongToInt(result);
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt(StenoApp.KEY_DICTIONARY_SIZE, size);
+            editor.putInt(context.getString(R.string.key_dictionary_size), size);
             editor.commit();
             loading = false;
             if (onDictionaryLoadedListener != null)
                 onDictionaryLoadedListener.onDictionaryLoaded();
+            if (progressBar==null && context instanceof StenoApp)
+                progressBar=((StenoApp)context).getProgressBar();
+            if (progressBar != null) {
+                View progress = (View) progressBar.getParent();
+                if (progress != null) progress.setVisibility(View.GONE);
+            }
+
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            progressBar.setProgress(values[0]);
+            if (progressBar != null) {
+                progressBar.setProgress(values[0]);
+            } else {
+                if (context instanceof StenoApp) {
+                    progressBar = ((StenoApp) context).getProgressBar();
+                    if (progressBar != null) {
+                        progressBar.setMax(total_size);
+                        progressBar.setProgress(values[0]);
+                    }
+                }
+            }
         }
 
     }

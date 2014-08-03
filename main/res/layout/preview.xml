@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:gravity="bottom">
 
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="12dp"
-        android:id="@+id/shadow"
+        android:id="@+id/shadow2"
         android:clickable="false"
-        android:background="@drawable/shadow"
-        android:layout_alignParentStart="false" />
+        android:background="@drawable/shadow" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/text"
-        android:background="@android:color/black"
-        android:layout_below="@+id/shadow">
+        android:background="#222"
+        android:layout_below="@+id/shadow2"
+        android:baselineAligned="true">
 
         <TextView
             android:layout_width="0dp"
@@ -29,7 +30,7 @@
             android:password="false"
             android:phoneNumber="false"
             android:singleLine="false"
-            android:textColor="@android:color/holo_blue_light"
+            android:textColor="@android:color/holo_blue_dark"
             android:layout_weight="1"
             android:layout_marginLeft="20dp" />
 
@@ -51,12 +52,12 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:layout_alignBottom="@+id/text"
         android:clickable="false"
         android:id="@+id/preview_overlay"
-        android:visibility="invisible"
-        android:layout_marginBottom="5dp">
+        android:visibility="visible"
+        android:layout_alignParentEnd="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -65,8 +66,8 @@
             android:text="@string/loading_dictionary"
             android:clickable="false"
             android:layout_alignParentEnd="true"
-            android:textColor="@android:color/holo_blue_bright"
-            android:layout_marginLeft="10dp"/>
+            android:textColor="@android:color/holo_blue_dark"
+            android:layout_marginLeft="10dp" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleHorizontal"
@@ -77,7 +78,7 @@
             android:layout_weight="1"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:progress="85" />
+            android:progress="0" />
 
     </LinearLayout>
 

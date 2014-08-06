@@ -336,12 +336,10 @@ public class Optimizer {
                         } else {
                             Log.d(TAG, "oops! Translation was null for " + stroke);
                         }
-                    } else {
-                        Log.d(TAG, "oops! Stroke was null");
                     }
                     count++;
                     if (count % 10000 == 0) {
-                        Log.d(TAG, count + "/" + dict_size + " loaded.");
+                        Log.v(TAG, count + "/" + dict_size + " loaded.");
                     }
                 }
                 db.setTransactionSuccessful();

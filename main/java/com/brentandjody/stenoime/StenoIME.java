@@ -203,6 +203,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     @Override
+    public void onViewClicked(boolean focusChanged) {
+        super.onViewClicked(focusChanged);
+        Log.d(TAG, "onViewClicked("+focusChanged+")");
+        if (mTranslator!=null) mTranslator.reset();
+        preview_length=0;
+        redo_space=false;
+    }
+
+    @Override
     public boolean onKeyUp(int keyCode, KeyEvent event){
             return dispatchKeyEvent(event);
     }

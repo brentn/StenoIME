@@ -179,7 +179,7 @@ public class StenoApp extends Application {
                 }
                 //*************************
 
-                if (NKRO_KEYBOARD_PURCHASED) {
+                if (NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY) {
                     Log.d(TAG, "NKRO Keyboard is in inventory");
                 } else {
                     Log.d(TAG, "NKRO Keyboard is NOT in inventory");

@@ -155,42 +155,37 @@ public class SimpleTranslator extends Translator {
         if (!locked) {
             if (stroke.equals("*")) { //undo
                 if (!strokeQ.isEmpty()) {
-                    strokeQ.removeLast();
-                } else {
-                    if (!history.isEmpty()) {
-                        HistoryItem reset = undoStrokeFromHistory();
-                        backspaces = reset.length();
-                        text = reset.stroke();
-                        if (mOptimizer != null) {
-                            Log.d(TAG, "Optimizing Undo Stroke: bs=" + backspaces + ", text=" + text);
-                            mOptimizer.analyze("**", backspaces, text);
-                        }
-                        if (!strokeQ.isEmpty()) {
-                            //replay the queue
-                            stroke="";
-                            Stack<String> tempQ = new Stack<String>();
-                            while (!strokeQ.isEmpty()) {
-                                tempQ.push(strokeQ.removeLast());
-                            }
-                            while (!tempQ.isEmpty()) {
-                                String tempStroke = tempQ.pop();
-                                stroke += "/"+tempStroke;
-                                TranslationResult recurse = translate_simple_stroke(tempStroke);
-                                text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
-                            }
-                            if (!stroke.isEmpty()) stroke=stroke.substring(1);
-                        }
-                    } else {
-                        backspaces=-1; // special code for "remove last word"
+                    //strokeQ.removeLast();
+                    TranslationResult flush = flush(); //flush queue, then undo from history
+                }
+                if (!history.isEmpty()) {
+                    HistoryItem reset = undoStrokeFromHistory();
+                    backspaces = reset.length();
+                    text = reset.stroke();
+                    if (mOptimizer != null) {
+                        mOptimizer.analyze("**", backspaces, text);
                     }
+                    if (!strokeQ.isEmpty()) {
+                        //replay the queue
+                        stroke="";
+                        Stack<String> tempQ = new Stack<String>();
+                        while (!strokeQ.isEmpty()) {
+                            tempQ.push(strokeQ.removeLast());
+                        }
+                        while (!tempQ.isEmpty()) {
+                            String tempStroke = tempQ.pop();
+                            stroke += "/"+tempStroke;
+                            TranslationResult recurse = translate_simple_stroke(tempStroke);
+                            text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
+                        }
+                        if (!stroke.isEmpty()) stroke=stroke.substring(1);
+                    }
+                } else {
+                    backspaces=-1; // special code for "remove last word"
                 }
             } else {
                 strokeQ.add(stroke);
-                if (isNumeric(stroke)) {
-                    lookupResult = "{&"+stroke+"}";
-                } else {
-                    lookupResult = mDictionary.lookup(strokesInQueue());
-                }
+                lookupResult = mDictionary.lookup(strokesInQueue());
                 if (found(lookupResult)) {
                     if (!ambiguous(lookupResult)) {
                         state = mFormatter.getState();
@@ -202,7 +197,11 @@ public class SimpleTranslator extends Translator {
                 } else {
                     if (strokeQ.size() == 1) {
                         state = mFormatter.getState();
-                        text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                        if (Formatter.isNumeric(stroke)) {
+                            text = mFormatter.format(stroke);
+                        } else {
+                            text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                        }
                         backspaces = mFormatter.backspaces();
                         addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                         strokeQ.clear();
@@ -244,7 +243,11 @@ public class SimpleTranslator extends Translator {
                                 strokeQ.add(tempQ.pop());
                             }
                             state = mFormatter.getState();
-                            text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                            if (Formatter.isNumeric(stroke)) {
+                                text = mFormatter.format(stroke);
+                            } else {
+                                text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                            }
                             backspaces = mFormatter.backspaces();
                             addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                             strokeQ.clear();
@@ -279,14 +282,6 @@ public class SimpleTranslator extends Translator {
 
     private boolean found(String s) {return (s != null); }
     private boolean ambiguous(String s) { return s.equals("");}
-
-    private boolean isNumeric(String s) {
-        if (s==null || s.length()==0) return false;
-        for (char c : s.toCharArray()) {
-            if ("0123456789".indexOf(c)==-1) return false;
-        }
-        return true;
-    }
 
     private String strokesInQueue() {
         if (strokeQ.isEmpty()) return "";

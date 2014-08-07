@@ -30,6 +30,9 @@ public class Formatter {
         State prior_state = getState();
         backspaces=0;
         if (input==null || input.length()==0) return "";
+        if (isNumeric(input.replace("/",""))) {
+            input = "{&"+input.replace("/","")+"}";
+        }
         String output=input;
         String space = " ";
         boolean new_glue=false;
@@ -156,6 +159,14 @@ public class Formatter {
         if (atom.length()<3) return false;
         if (atom.charAt(atom.length()-2)=='^') return false; //it is a joiner, not a suffix
         return atom.charAt(0) == '{' && atom.charAt(1) == '^';
+    }
+
+    public static boolean isNumeric(String s) {
+        if (s==null || s.length()==0) return false;
+        for (char c : s.toCharArray()) {
+            if ("0123456789".indexOf(c)==-1) return false;
+        }
+        return true;
     }
 
     private String remove_backspaces(String text) {

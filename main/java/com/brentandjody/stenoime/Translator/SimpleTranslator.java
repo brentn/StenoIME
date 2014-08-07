@@ -155,35 +155,39 @@ public class SimpleTranslator extends Translator {
         if (!locked) {
             if (stroke.equals("*")) { //undo
                 if (!strokeQ.isEmpty()) {
-                    //strokeQ.removeLast();
-                    TranslationResult flush = flush(); //flush queue, then undo from history
-                }
-                if (!history.isEmpty()) {
-                    HistoryItem reset = undoStrokeFromHistory();
-                    backspaces = reset.length();
-                    text = reset.stroke();
-                    if (mOptimizer != null) {
-                        mOptimizer.analyze("**", backspaces, text);
+                    strokeQ.removeLast();
+                    if (strokeQ.isEmpty()) {
+                        addToHistory(0, "", "", 0, null);// add dummy item to history to be removed below
                     }
-                    if (!strokeQ.isEmpty()) {
+                }
+                if (strokeQ.isEmpty()) {  //undo an item from history
+                    if (!history.isEmpty()) {
+                        HistoryItem reset = undoStrokeFromHistory();  //always ends up with something in the queue??
+                        backspaces = reset.length();
+                        text = reset.text();
                         //replay the queue
-                        stroke="";
+                        stroke = "";
                         Stack<String> tempQ = new Stack<String>();
                         while (!strokeQ.isEmpty()) {
                             tempQ.push(strokeQ.removeLast());
                         }
                         while (!tempQ.isEmpty()) {
                             String tempStroke = tempQ.pop();
-                            stroke += "/"+tempStroke;
+                            stroke += "/" + tempStroke;
                             TranslationResult recurse = translate_simple_stroke(tempStroke);
-                            text = text.substring(0, text.length()-recurse.getBackspaces()) + recurse.getText();
+                            if (recurse.getBackspaces() > text.length()) {
+                                backspaces += recurse.getBackspaces() - text.length();
+                                text += recurse.getText();
+                            }  else {
+                                text = text.substring(0, text.length() - recurse.getBackspaces()) + recurse.getText();
+                            }
                         }
-                        if (!stroke.isEmpty()) stroke=stroke.substring(1);
+                        if (!stroke.isEmpty()) stroke = stroke.substring(1);
+                    } else {
+                        backspaces = -1; // special code for "remove text until you hit a space"
                     }
-                } else {
-                    backspaces=-1; // special code for "remove last word"
                 }
-            } else {
+            } else { //new stroke
                 strokeQ.add(stroke);
                 lookupResult = mDictionary.lookup(strokesInQueue());
                 if (found(lookupResult)) {
@@ -362,27 +366,57 @@ public class SimpleTranslator extends Translator {
     }
 
     private HistoryItem undoStrokeFromHistory() {
+        // pop the last 2 items from history,
+        // and put all but the last stroke back into the queue to replay.
+        // returns backspaces to delete 2 items in length()
+        // and a queue full of strokes.
         HistoryItem result = new HistoryItem(0, "", "", 0, null);
-        HistoryItem hItem = history.pop();
-        int num_spaces=hItem.backspaces();
-        result.setStroke(spaces(num_spaces));
-        result.setLength(hItem.length());
-        String hStroke = hItem.stroke();
-        if (hStroke.contains("/")) {
-            mFormatter.restoreState(hItem.getState());
-            mDictionary.forceLookup(hStroke.substring(hStroke.lastIndexOf("/") + 1));
-            hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
-            Collections.addAll(strokeQ, hStroke.split("/"));
-        } else { // replay prior stroke (in case it was ambiguous)
+        if (!history.isEmpty()) {
+            HistoryItem item1=history.pop();
+            result.setLength(item1.length()-item1.backspaces());
+            if (item1.getState() != null)
+                mFormatter.restoreState(item1.getState());
+            String stroke = item1.stroke();
+            if (stroke.contains("/")){
+                item1.setStroke(stroke.substring(0, stroke.lastIndexOf(("/"))));
+            } else {
+                item1.setStroke("");
+            }
+
             if (!history.isEmpty()) {
-                hItem = history.pop();
-                mFormatter.restoreState(hItem.getState());
-                result.setStroke(spaces(hItem.backspaces()));
-                result.increaseLength(hItem.length()-num_spaces);
-                hStroke = hItem.stroke();
-                Collections.addAll(strokeQ, hStroke.split("/"));
+                HistoryItem item2=history.pop();
+                result.increaseLength(item2.length()-item2.backspaces());
+                if (item2.getState() != null)
+                    mFormatter.restoreState(item2.getState());
+                Collections.addAll(strokeQ, item2.stroke().split("/"));
+            }
+            if (!item1.stroke().isEmpty()) {
+                Collections.addAll(strokeQ, item1.stroke().split("/"));
             }
         }
+
+
+
+//        HistoryItem result = new HistoryItem(0, "", "", 0, null);
+//        HistoryItem hItem = history.pop();
+//        int num_spaces=hItem.backspaces();
+//        result.setText(spaces(num_spaces));
+//        result.setLength(hItem.length());
+//        String hStroke = hItem.stroke();
+//        if (hStroke.contains("/")) {
+//            mFormatter.restoreState(hItem.getState());
+//            mDictionary.forceLookup(hStroke.substring(hStroke.lastIndexOf("/") + 1));
+//            hStroke = hStroke.substring(0, hStroke.lastIndexOf("/"));
+//            Collections.addAll(strokeQ, hStroke.split("/"));
+//        } else { // replay prior stroke (in case it was ambiguous)
+//            if (!history.isEmpty()) {
+//                hItem = history.pop();
+//                mFormatter.restoreState(hItem.getState());
+//                result.increaseLength(hItem.length()-num_spaces);
+//                hStroke = hItem.stroke();
+//                Collections.addAll(strokeQ, hStroke.split("/"));
+//            }
+//        }
         return result;
     }
 
@@ -418,7 +452,7 @@ public class SimpleTranslator extends Translator {
         public void setStroke(String stroke) {
             this.stroke = stroke;
         }
-
+        public void setText(String text) {this.text = text;}
         public void increaseLength(int amount) {
             this.length += amount;
         }

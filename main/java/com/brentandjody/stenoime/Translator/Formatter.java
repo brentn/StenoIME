@@ -54,16 +54,19 @@ public class Formatter {
                     sb.append("\b,"); atom="";
                 }
                 if (atom.equals("{.}")) {
-                    sb.append("\b. "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b."); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{?}")) {
-                    sb.append("\b? "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b?"); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{!}")) {
-                    sb.append("\b! "); new_capitalization=CASE.Capital; atom="";
+                    sb.append("\b!"); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.contains("{^")) {
-                    sb.append("\b"); atom = atom.replace("{^", "");
+                    if (sb.length()==0 || sb.charAt(sb.length()-1) == ' ') {
+                        sb.append("\b");
+                    }
+                    atom = atom.replace("{^", "");
                 }
                 if (atom.contains("^}")) {
                     space=""; atom = atom.replace("^}", "");

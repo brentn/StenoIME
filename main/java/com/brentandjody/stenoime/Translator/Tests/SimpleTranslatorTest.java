@@ -2,9 +2,6 @@ package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 import android.util.Log;
-import android.widget.ProgressBar;
-
-import com.brentandjody.stenoime.Translator.Definition;
 import com.brentandjody.stenoime.Translator.Dictionary;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
@@ -125,18 +122,18 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");           //admitted im
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT"); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
-        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");        //admitted immortal.
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");        //admitted immortal.
         checkResults(translator.translate(new Stroke("*")), 9, "immortal ", "");   //admitted immortal
 
         // test period and subsequent capital with undo
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God "); //God
-        checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ".  ");  //God.
-        checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", ""); //God.  Thank
+        checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ". ");  //God.
+        checkResults(translator.translate(new Stroke("THAPBG")), 1, ". Thank ", ""); //God.  Thank
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");       //God. Thank you
         checkResults(translator.translate(new Stroke("*")), 10, "Thank ", "");    //God. Thank
-        checkResults(translator.translate(new Stroke("*")), 8, "", ".  ");        // God.
-        checkResults(translator.translate(new Stroke("ADZ")), 1, ".  ", "Adds "); //God.  Adds
-        checkResults(translator.translate(new Stroke("*")), 2, "", ".  ");        //God.
+        checkResults(translator.translate(new Stroke("*")), 7, "", ". ");        // God.
+        checkResults(translator.translate(new Stroke("ADZ")), 1, ". ", "Adds "); //God.  Adds
+        checkResults(translator.translate(new Stroke("*")), 1, "", ". ");        //God.
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");       //God
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "God thank ", "");//God thank
         checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");//God thankful
@@ -154,8 +151,10 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
         checkResults(translator.translate(new Stroke("KPA")), 0, "", "");
         checkResults(translator.translate(new Stroke("U")), 0, "You ", "");
-        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
-        checkResults(translator.translate(new Stroke("R-R")), 1, ".  \n", "");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");
+        checkResults(translator.translate(new Stroke("R-R")), 1, ". \n", "");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
+        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "\n\n", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
         //Suffix Folding
         checkResults(translator.translate(new Stroke("UD")), 0, "youed ", "");

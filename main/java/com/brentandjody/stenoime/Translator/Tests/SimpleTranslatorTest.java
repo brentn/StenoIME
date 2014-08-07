@@ -172,8 +172,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 4, "1 ", "");
         checkResults(translator.translate(new Stroke("#TO")), 1, "20 ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
-        checkResults(translator.translate(new Stroke("#H")), 0, "4 ", "");
-        checkResults(translator.translate(new Stroke("AUG")), 0, "", "August ");
+        checkResults(translator.translate(new Stroke("#H")), 0, "", "4 ");
+        checkResults(translator.translate(new Stroke("AUG")), 0, "4 ", "August ");
         checkResults(translator.translate(new Stroke("#TO")), 0, "August 20 ", "");
         checkResults(translator.translate(new Stroke("#SH")), 1, "14 ", "");
         //word interrupted by delete
@@ -225,10 +225,10 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 6, "God ", "'s ");
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");
 
-        checkResults(translator.translate(new Stroke("#H")), 0, "God 4 ", "");
-        checkResults(translator.translate(new Stroke("AUG")), 0, "", "August ");
-        checkResults(translator.translate(new Stroke("#TO")), 0, "August 20 ", "");
-        checkResults(translator.translate(new Stroke("#SH")), 1, "14 ", "");
+        checkResults(translator.translate(new Stroke("#H")), 0, "God ", "4 ");
+        checkResults(translator.translate(new Stroke("AUG")), 0, "4 ", "August ");
+        checkResults(translator.translate(new Stroke("#TO")), 0, "August ", "20 ");
+        checkResults(translator.translate(new Stroke("#SH")), 0, "2014 ", "");
         outFile.delete();
     }
 

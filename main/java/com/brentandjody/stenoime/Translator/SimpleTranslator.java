@@ -213,7 +213,11 @@ public class SimpleTranslator extends Translator {
                         Stack<String> tempQ = new Stack<String>();
                         while (!(found(lookupResult) || strokeQ.isEmpty())) {
                             tempQ.push(strokeQ.removeLast());
-                            lookupResult = mDictionary.forceLookup(strokesInQueue());
+                            if (Formatter.isNumeric(strokesInQueue())) {
+                                lookupResult = strokesInQueue();
+                            } else {
+                                lookupResult = mDictionary.forceLookup(strokesInQueue());
+                            }
                         }
                         // at this point, either a lookup was found, or the queue is empty
                         if (found(lookupResult)) {
@@ -373,7 +377,7 @@ public class SimpleTranslator extends Translator {
         HistoryItem result = new HistoryItem(0, "", "", 0, null);
         if (!history.isEmpty()) {
             HistoryItem item1=history.pop();
-            result.setLength(item1.length()-item1.backspaces());
+            result.setLength(item1.length() - item1.backspaces());
             if (item1.getState() != null)
                 mFormatter.restoreState(item1.getState());
             String stroke = item1.stroke();
@@ -385,7 +389,7 @@ public class SimpleTranslator extends Translator {
 
             if (!history.isEmpty()) {
                 HistoryItem item2=history.pop();
-                result.increaseLength(item2.length()-item2.backspaces());
+                result.increaseLength(item2.length() - item2.backspaces());
                 if (item2.getState() != null)
                     mFormatter.restoreState(item2.getState());
                 Collections.addAll(strokeQ, item2.stroke().split("/"));

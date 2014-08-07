@@ -27,7 +27,7 @@
             android:title="@string/inline_preview"
             android:summaryOn="@string/preview_on_summary"
             android:summaryOff="@string/preview_off_summary"
-            android:defaultValue="false"/>
+            android:defaultValue="true"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/dictionary">

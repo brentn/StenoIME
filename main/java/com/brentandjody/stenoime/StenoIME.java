@@ -476,7 +476,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void initializePreview() {
         Log.d(TAG, "initializePreview()");
-        inline_preview = prefs.getBoolean(getString(R.string.key_inline_preview), false);
+        inline_preview = prefs.getBoolean(getString(R.string.key_inline_preview), true);
         if (App.isDictionaryLoaded()) {
             if (getCurrentInputConnection()==null)
                 showPreviewBar(false);

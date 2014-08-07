@@ -186,7 +186,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
 
     }
 
-    public void estRealDictionary() throws Exception {
+    public void testRealDictionary() throws Exception {
         InputStream in = getContext().getAssets().open("dict.json");
         File outFile = new File("/sdcard", "dict.json");
         OutputStream out = new FileOutputStream(outFile);
@@ -222,8 +222,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
         checkResults(translator.translate(new Stroke("AES")), 0, "God ", "'s ");
         checkResults(translator.translate(new Stroke("TRAO*UT")), 4, "God's ", "truth ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "", "God ");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "'s ");
+        checkResults(translator.translate(new Stroke("*")), 4, "", "God ");
 
         checkResults(translator.translate(new Stroke("#H")), 0, "God 4 ", "");
         checkResults(translator.translate(new Stroke("AUG")), 0, "", "August ");

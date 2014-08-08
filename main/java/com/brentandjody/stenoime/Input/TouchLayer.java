@@ -144,7 +144,7 @@ public class TouchLayer extends RelativeLayout {
                 zoomX[i]=x;
                 zoomY[i]=y;
                 this.invalidate();
-                getScreenshot();
+                if (ENABLE_ZOOM) getScreenshot();
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
@@ -223,9 +223,11 @@ public class TouchLayer extends RelativeLayout {
     }
 
     private void getScreenshot() {
-        get_screenshot=true;
-        kbImage = ((StenoIME) getContext()).getKeyboardImage();
-        get_screenshot = false;
+        if (ENABLE_ZOOM) {
+            get_screenshot = true;
+            kbImage = ((StenoIME) getContext()).getKeyboardImage();
+            get_screenshot = false;
+        }
     }
 
     private void initialize() {
@@ -305,7 +307,7 @@ public class TouchLayer extends RelativeLayout {
                     for (TextView key : keys) {
                         if (pointerOnKey(pointer, key) && (!key.isSelected())) {
                             key.setSelected(true);
-                            getScreenshot();
+                            if (ENABLE_ZOOM) getScreenshot();
                         }
                     }
                 }

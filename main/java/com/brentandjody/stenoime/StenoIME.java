@@ -212,12 +212,23 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event){
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+            // dismiss IME on back, otherwise ignore
+            return super.onKeyUp(keyCode, event);
+        } else {
             return dispatchKeyEvent(event);
+        }
     }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return dispatchKeyEvent(event);
+        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+            // dismiss IME on back, otherwise ignore
+            return super.onKeyDown(keyCode, event);
+        } else {
+            return dispatchKeyEvent(event);
+        }
     }
 
     @Override

@@ -2,9 +2,6 @@ package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 import android.util.Log;
-import android.widget.ProgressBar;
-
-import com.brentandjody.stenoime.Translator.Definition;
 import com.brentandjody.stenoime.Translator.Dictionary;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
@@ -110,52 +107,54 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
         checkResults(translator.translate(new Stroke("-D")), 6, "admitted ", "");
         // undo (with & without queue)
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
-        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "");
-        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
-        checkResults(translator.translate(new Stroke("HREU")), 0, "adds ", "ly ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 14, "admitted ", "");
-        checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT");
-        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "", "im/PHORT");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "im");
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT");
-        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");
-        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");      //admitted adds
+        checkResults(translator.translate(new Stroke("*")), 9, "admitted ", "");    //admitted
+        checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");//admitted realized
+        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "");   //admitted
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");      //admitted adds
+        checkResults(translator.translate(new Stroke("HREU")), 0, "adds ", "ly ");  //admitted addsly
+        checkResults(translator.translate(new Stroke("*")), 5, "", "adds ");        //admitted adds
+        checkResults(translator.translate(new Stroke("*")), 9, "admitted ", "");   //admitted
+        checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");        //admitted im
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT"); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
+        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im/PHORT");     //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("*")), 0, "", "im");           //admitted im
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT"); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");        //admitted immortal.
+        checkResults(translator.translate(new Stroke("*")), 9, "immortal ", "");   //admitted immortal
 
         // test period and subsequent capital with undo
-        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
-        checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ".  ");
-        checkResults(translator.translate(new Stroke("THAPBG")), 1, ".  Thank ", "");
-        checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
-        checkResults(translator.translate(new Stroke("*")), 10, "Thank ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, " ", ".  "); //Space is due to period removing it
-        checkResults(translator.translate(new Stroke("ADZ")), 1, ".  ", "Adds ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "", "God ");
-        checkResults(translator.translate(new Stroke("THAPBG")), 0, "God thank ", "");
-        checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");
-        checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");
-        checkResults(translator.translate(new Stroke("*")), 13, "thankful ", "");
-        checkResults(translator.translate(new Stroke("*")), 9, "thank ", "");
-        checkResults(translator.translate(new Stroke("*")), 10, "", "God ");
+        checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God "); //God
+        checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ". ");  //God.
+        checkResults(translator.translate(new Stroke("THAPBG")), 1, ". Thank ", ""); //God.  Thank
+        checkResults(translator.translate(new Stroke("U")), 0, "you ", "");       //God. Thank you
+        checkResults(translator.translate(new Stroke("*")), 10, "Thank ", "");    //God. Thank
+        checkResults(translator.translate(new Stroke("*")), 7, "", ". ");        // God.
+        checkResults(translator.translate(new Stroke("ADZ")), 1, ". ", "Adds "); //God.  Adds
+        checkResults(translator.translate(new Stroke("*")), 1, "", ". ");        //God.
+        checkResults(translator.translate(new Stroke("*")), 4, "", "God ");       //God
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "God thank ", "");//God thank
+        checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");//God thankful
+        checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");//God thankfulness
+        checkResults(translator.translate(new Stroke("*")), 17, "God thankful ", ""); //God thankful
+        checkResults(translator.translate(new Stroke("*")), 13, "God thank ", "");     //God thank
+        checkResults(translator.translate(new Stroke("*")), 10, "", "God ");      //God
         // test fingerspelling and undo
-        checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");
-        checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");
-        checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");
-        checkResults(translator.translate(new Stroke("*")), 3, "b ", "");
-        checkResults(translator.translate(new Stroke("*")), 3, "a ", "");
+        checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");    //a
+        checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");       //ab
+        checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");       //abc
+        checkResults(translator.translate(new Stroke("*")), 3, "b ", "");         //ab
+        checkResults(translator.translate(new Stroke("*")), 3, "a ", "");         //a
         // caps should persist through enter
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "thank ", "");
         checkResults(translator.translate(new Stroke("KPA")), 0, "", "");
         checkResults(translator.translate(new Stroke("U")), 0, "You ", "");
-        checkResults(translator.translate(new Stroke("-PL")), 0, "", ".  ");
-        checkResults(translator.translate(new Stroke("R-R")), 1, ".  \n", "");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");
+        checkResults(translator.translate(new Stroke("R-R")), 1, ". \n", "");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
+        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "\n\n", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "Thank ", "");
         //Suffix Folding
         checkResults(translator.translate(new Stroke("UD")), 0, "youed ", "");
@@ -173,6 +172,18 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 4, "1 ", "");
         checkResults(translator.translate(new Stroke("#TO")), 1, "20 ", "");
         checkResults(translator.translate(new Stroke("U")), 0, "you ", "");
+        checkResults(translator.translate(new Stroke("#H")), 0, "", "4 ");
+        checkResults(translator.translate(new Stroke("AUG")), 0, "4 ", "August ");
+        checkResults(translator.translate(new Stroke("#TO")), 0, "August 20 ", "");
+        checkResults(translator.translate(new Stroke("#SH")), 1, "14 ", "");
+        //word interrupted by delete
+        checkResults(translator.translate(new Stroke("EBGS")), 0, "", "ex-");
+        checkResults(translator.translate(new Stroke("KHAEUBG")), 0, "exchange ", "");
+        checkResults(translator.translate(new Stroke("EBGS")), 0, "", "ex-");
+        checkResults(translator.translate(new Stroke("T")), 0, "ex-", "it ");
+        checkResults(translator.translate(new Stroke("*")), 3, "", "ex-");
+        checkResults(translator.translate(new Stroke("KHAEUBG")), 0, "exchange ", "");
+
     }
 
     public void testRealDictionary() throws Exception {
@@ -211,8 +222,13 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
         checkResults(translator.translate(new Stroke("AES")), 0, "God ", "'s ");
         checkResults(translator.translate(new Stroke("TRAO*UT")), 4, "God's ", "truth ");
-        checkResults(translator.translate(new Stroke("*")), 0, "", "");
-        checkResults(translator.translate(new Stroke("*")), 6, "", "God ");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "'s ");
+        checkResults(translator.translate(new Stroke("*")), 4, "", "God ");
+
+        checkResults(translator.translate(new Stroke("#H")), 0, "God ", "4 ");
+        checkResults(translator.translate(new Stroke("AUG")), 0, "4 ", "August ");
+        checkResults(translator.translate(new Stroke("#TO")), 0, "August ", "20 ");
+        checkResults(translator.translate(new Stroke("#SH")), 0, "2014 ", "");
         outFile.delete();
     }
 
@@ -239,8 +255,8 @@ public class SimpleTranslatorTest extends AndroidTestCase {
     private void checkResults(TranslationResult result, int bs, String text, String preview) {
         Log.w("TEST", bs+"="+result.getBackspaces()+" "+text+"="+result.getText()+" "+preview+"="+result.getPreview());
         assertEquals(bs, result.getBackspaces());
-        assertEquals(preview, result.getPreview());
         assertEquals(text, result.getText());
+        assertEquals(preview, result.getPreview());
     }
 }
 

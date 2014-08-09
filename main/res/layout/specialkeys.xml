@@ -257,6 +257,24 @@
         <TableRow
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:paddingBottom="10dp">
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reset performance stats"
+                android:id="@+id/reset_button"
+                android:background="@drawable/top_key"
+                android:textColor="#FFF"
+                android:paddingRight="5dp"
+                android:paddingLeft="5dp"
+                android:visibility="gone" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:paddingBottom="16dp">
 
             <Button

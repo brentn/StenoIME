@@ -35,7 +35,7 @@ import java.util.Set;
 public class TouchLayer extends RelativeLayout {
 
     private static final int NUMBER_OF_FINGERS=2;
-    private static final int ZOOM_SIZE=200;
+    private static final int ZOOM_SIZE=150;
     private static  boolean ENABLE_ZOOM =false;
     private static FrameLayout LOADING_SPINNER;
     private static Paint PAINT;
@@ -130,9 +130,9 @@ public class TouchLayer extends RelativeLayout {
         int i;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: case MotionEvent.ACTION_POINTER_DOWN: {
+                i = event.getActionIndex();
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
                 ENABLE_ZOOM = prefs.getBoolean(getResources().getString(R.string.pref_zoom_enabled), false);
-                i = event.getActionIndex();
                 if (i >= NUMBER_OF_FINGERS) break;
                 x = event.getX(i);
                 y = event.getY(i);
@@ -140,21 +140,23 @@ public class TouchLayer extends RelativeLayout {
                 paths[i].reset();
                 paths[i].moveTo(x, y);
                 toggleKeyAt(x, y);
-                zooming[i] = true;
+                zooming[i] = ENABLE_ZOOM;
                 zoomX[i]=x;
                 zoomY[i]=y;
                 this.invalidate();
-                getScreenshot();
+                if (ENABLE_ZOOM) getScreenshot();
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 selectKeys(event);
-                for (i=0;i<event.getPointerCount();i++) {
-                    for (int n = 0; n < NUMBER_OF_FINGERS; n++) {
-                        if (event.getPointerId(i) == fingerIds[n]) {
-                            zooming[n] = true;
-                            zoomX[n] = event.getX(i);
-                            zoomY[n] = event.getY(i);
+                if (ENABLE_ZOOM) {
+                    for (i = 0; i < event.getPointerCount(); i++) {
+                        for (int n = 0; n < NUMBER_OF_FINGERS; n++) {
+                            if (event.getPointerId(i) == fingerIds[n]) {
+                                zooming[n] = true;
+                                zoomX[n] = event.getX(i);
+                                zoomY[n] = event.getY(i);
+                            }
                         }
                     }
                 }
@@ -221,9 +223,11 @@ public class TouchLayer extends RelativeLayout {
     }
 
     private void getScreenshot() {
-        get_screenshot=true;
-        kbImage = ((StenoIME) getContext()).getKeyboardImage();
-        get_screenshot = false;
+        if (ENABLE_ZOOM) {
+            get_screenshot = true;
+            kbImage = ((StenoIME) getContext()).getKeyboardImage();
+            get_screenshot = false;
+        }
     }
 
     private void initialize() {
@@ -303,7 +307,7 @@ public class TouchLayer extends RelativeLayout {
                     for (TextView key : keys) {
                         if (pointerOnKey(pointer, key) && (!key.isSelected())) {
                             key.setSelected(true);
-                            getScreenshot();
+                            if (ENABLE_ZOOM) getScreenshot();
                         }
                     }
                 }

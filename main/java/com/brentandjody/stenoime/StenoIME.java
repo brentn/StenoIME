@@ -203,12 +203,32 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event){
-            return dispatchKeyEvent(event);
+    public void onViewClicked(boolean focusChanged) {
+        super.onViewClicked(focusChanged);
+        Log.d(TAG, "onViewClicked("+focusChanged+")");
+        if (mTranslator!=null) mTranslator.reset();
+        preview_length=0;
+        redo_space=false;
     }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+            // dismiss IME on back, otherwise ignore
+            return super.onKeyUp(keyCode, event);
+        } else {
+            return dispatchKeyEvent(event);
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return dispatchKeyEvent(event);
+        if (App.getMachineType() == StenoMachine.TYPE.VIRTUAL) {
+            // dismiss IME on back, otherwise ignore
+            return super.onKeyDown(keyCode, event);
+        } else {
+            return dispatchKeyEvent(event);
+        }
     }
 
     @Override
@@ -291,6 +311,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 alert.dismiss();
                 unlockKeyboard();
                 launchSettingsActivity();
+            }
+        });
+        Button reset_button = (Button) dialog_view.findViewById(R.id.reset_button);
+        reset_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                resetStats();
             }
         });
         Button switch_input_button = (Button) dialog_view.findViewById(R.id.switch_input_button);
@@ -467,7 +496,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
 
     private void initializePreview() {
         Log.d(TAG, "initializePreview()");
-        inline_preview = prefs.getBoolean(getString(R.string.key_inline_preview), false);
+        inline_preview = prefs.getBoolean(getString(R.string.key_inline_preview), true);
         if (App.isDictionaryLoaded()) {
             if (getCurrentInputConnection()==null)
                 showPreviewBar(false);

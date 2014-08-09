@@ -2,12 +2,16 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference android:key="@string/key_about_button"
-        android:title="@string/text_about_stenography"/>
+    <Preference android:key="@string/key_tutorial_button"
+        android:title="@string/text_tutorial_button"/>
 
-    <SwitchPreference android:key="@string/pref_zoom_enabled"
-        android:title="@string/keyboard_magnifier"
-        android:defaultValue="false"/>
+    <PreferenceCategory android:title="Virtual Keyboard">
+        <SwitchPreference android:key="@string/pref_zoom_enabled"
+            android:title="@string/keyboard_magnifier"
+            android:summaryOn="@string/zoom_on_summary"
+            android:summaryOff="@string/zoom_off_summary"
+            android:defaultValue="false"/>
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/translator">
         <ListPreference android:key="@string/pref_translator"
@@ -27,7 +31,7 @@
             android:title="@string/inline_preview"
             android:summaryOn="@string/preview_on_summary"
             android:summaryOff="@string/preview_off_summary"
-            android:defaultValue="false"/>
+            android:defaultValue="true"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/dictionary">

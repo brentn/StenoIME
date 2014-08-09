@@ -313,6 +313,15 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 launchSettingsActivity();
             }
         });
+        Button reset_button = (Button) dialog_view.findViewById(R.id.reset_button);
+        reset_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.dismiss();
+                unlockKeyboard();
+                resetStats();
+            }
+        });
         Button switch_input_button = (Button) dialog_view.findViewById(R.id.switch_input_button);
         switch_input_button.setOnClickListener(new View.OnClickListener() {
             @Override

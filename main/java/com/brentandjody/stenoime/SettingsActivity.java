@@ -7,6 +7,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.SwitchPreference;
 import android.util.Log;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
 
 import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.util.IabHelper;
@@ -36,6 +38,7 @@ public class SettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         App = ((StenoApp) getApplication());
         iabHelper = App.getIabHelper();
+        verifyEnabled();
         setupPurchaseListener();
         addPreferencesFromResource(R.xml.preferences);
         initializeControls();
@@ -61,18 +64,30 @@ public class SettingsActivity extends PreferenceActivity {
         iabHelper.launchPurchaseFlow(this, sku, PURCHASE_REQUEST_CODE, mPurchaseFinishedListner, PAYLOAD);
     }
 
+    private void verifyEnabled() {
+        InputMethodManager imeManager = (InputMethodManager)getApplicationContext().getSystemService(INPUT_METHOD_SERVICE);
+        for (InputMethodInfo i : imeManager.getEnabledInputMethodList()) {
+            if (i.getPackageName().equals(getApplication().getPackageName())) return;
+        }
+        Log.d(TAG, "Steno Keyboard is not enabled");
+        startActivity(new Intent(this, SetupActivity.class));
+    }
+
     private void initializeControls() {
-        // about button
-        Preference about = findPreference(getString(R.string.key_about_button));
-        about.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        // tutorial button
+        Preference btn_tutorial = findPreference(getString(R.string.key_tutorial_button));
+        btn_tutorial.setIcon(R.drawable.ic_info);
+        btn_tutorial.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(SettingsActivity.this, AboutActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(SettingsActivity.this, TutorialActivity.class));
                 return false;
             }
         });
+
         // set translator options
+        SwitchPreference zoom = (SwitchPreference) findPreference("pref_zoom_enabled");
+
         ListPreference translator = (ListPreference) findPreference(getString(R.string.pref_translator));
         translator.setSummary(translator.getEntry());
         translator.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

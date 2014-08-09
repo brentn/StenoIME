@@ -268,7 +268,8 @@
                 android:background="@drawable/top_key"
                 android:textColor="#FFF"
                 android:paddingRight="5dp"
-                android:paddingLeft="5dp" />
+                android:paddingLeft="5dp"
+                android:visibility="gone" />
         </TableRow>
 
         <TableRow

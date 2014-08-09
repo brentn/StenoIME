@@ -46,8 +46,8 @@
     <string name="enable_nkro_keyboard">Enable NKRO Keyboard</string>
     <string name="preview_on_summary">Ambiguous (preview) words will be shown after regular text.\n</string>
     <string name="preview_off_summary">Ambiguous words will be shown above the keyboard.\n</string>
-    <string name="optimizer_off_summary">Do not provide stroke suggestions (uses less memory)</string>
-    <string name="optimizer_on_summary">Notify when a shorter stroke is found (uses much more memory)</string>
+    <string name="optimizer_off_summary">Do not provide stroke suggestions.</string>
+    <string name="optimizer_on_summary">Notify when a shorter stroke is found.</string>
     <string name="pref_translator">pref_translator</string>
     <string name="key_about_button">about_button</string>
     <string name="text_about_stenography">About stenography...</string>
@@ -58,5 +58,11 @@
     <string name="title_activity_suggestions">Better Strokes</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="zoom_on_summary">Zoom in on keyboard (may reduce responsiveness on some devices)</string>
+    <string name="zoom_off_summary">Do not zoom in on keyboard.</string>
+    <string name="title_activity_setup">SetupActivity</string>
+    <string name="title_activity_tutorial">Stenography, the basics.</string>
+    <string name="key_tutorial_button">tutorial_button</string>
+    <string name="text_tutorial_button">Quick Start Tutorial...</string>
 
 </resources>

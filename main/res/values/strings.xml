@@ -61,8 +61,25 @@
     <string name="zoom_on_summary">Zoom in on keyboard (may reduce responsiveness on some devices)</string>
     <string name="zoom_off_summary">Do not zoom in on keyboard.</string>
     <string name="title_activity_setup">SetupActivity</string>
-    <string name="title_activity_tutorial">Stenography, the basics.</string>
+    <string name="title_activity_tutorial">Getting Started</string>
     <string name="key_tutorial_button">tutorial_button</string>
     <string name="text_tutorial_button">Quick Start Tutorial...</string>
+    <string name="text_lesson1"><![CDATA[<large><p> The basic keyboard is divided into three parts:</p> * the Left bank<br/>* the Vowels<br/> * the Right bank<br/><p>The <b>*</b> and <b>#</b> keys are also part of the keyboard; however, the <b>...</b> button is not.  This button allows you to access special keys and settings that are not a part of the traditional stenograpy keyboard.</p>
+    <p>When stroking a chord, keys may be pressed in any order, using one or two fingers to swipe along the keyboard.  The stroke is not registered until you remove your fingers from the keyboard, at which time it is translated and sent.</p>
+     <p>If you make a mistake, tapping the <b>*</b> key will <i>undo</i> the last stroke.</p>
+     <p>When referring to a particular chord on the keyboard, keys are always written in order from left to right as follows: <br/><br/><b>S T K P W H R A O * E U F R P B L G T S D Z</b>.</p></large>]]></string>
+    <string name="text_lesson2">Words are formed a syllable at a time. Each syllable has one-or-more of the following: A starting sound (Left bank), a Vowel sound, and an ending sound (Right bank). The word </string>
+    <string name="text_lesson3">The keyboard does not have keys for all of the sounds you will need. Missing sounds can be written with key combinations. For instance, F in the left bank is stroked: TP, and J is stroked: SKWR. All of the letters can be produced on the Left bank, and can be used for spelling out words when combined with the \'*\' key (or *P for uppercase)</string>
+    <string name="text_lesson4">Vowel sounds</string>
+    <string name="text_lesson5">Ending sounds</string>
+    <string name="text_lesson6">Lesson 6</string>
+    <string name="text_lesson7">Further Information</string>
+    <string name="title_lesson1">Lesson 1 - the keyboard</string>
+    <string name="title_lesson2">Lesson 2 - the basics</string>
+    <string name="title_lesson3">Lesson 3 - the Left bank</string>
+    <string name="title_lesson4">Lesson 4 - vowel sounds</string>
+    <string name="title_lesson5">Lesson 5 - the Right bank</string>
+    <string name="title_lesson6"><![CDATA[Lesson 6 - briefs & dictionary]]></string>
+    <string name="title_lesson7">Lesson 7 - further info.</string>
 
 </resources>

@@ -1,16 +1,227 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.brentandjody.stenoime.TutorialActivity">
 
-    <TextView
-        android:text="@string/hello_world"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <com.brentandjody.stenoime.Input.TutorialFlipper
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/viewFlipper"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp">
 
-</RelativeLayout>
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page1">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson1"
+                    android:id="@+id/textView"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson1"
+                    android:id="@+id/textView1"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView2"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page2" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson2"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson2"
+                    android:id="@+id/textView2"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView3"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page3">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson3"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson3"
+                    android:id="@+id/textView3"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            </LinearLayout>
+        </ScrollView>
+
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView4"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page4">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson4"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson4"
+                    android:id="@+id/textView4"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView5"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page5">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson5"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson5"
+                    android:id="@+id/textView5"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView6"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page6">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson6"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson6"
+                    android:id="@+id/textView6"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView7"
+            android:fillViewport="false">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/page7">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="@string/title_lesson7"
+                    android:textColor="@android:color/holo_blue_dark"
+                    android:layout_marginBottom="20dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_lesson7"
+                    android:id="@+id/textView7"
+                    android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+            </LinearLayout>
+        </ScrollView>
+
+    </com.brentandjody.stenoime.Input.TutorialFlipper>
+
+</LinearLayout>

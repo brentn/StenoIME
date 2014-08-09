@@ -91,10 +91,10 @@
     a: AEU<br/>e: AOE<br/>i: AOEU<br/>o: OEU<br/>u: AOU</p>]]></string>
     <string name="text_lesson5"><![CDATA[<p>The ending sounds are the trickiest, and have alot of rules and exceptions to memorize.</p>
     <p>Let\'s start with the missing letter sounds:<br/>
-    j: PBLG<br/>k: LG<br/>m: PL<br/>n: PB<br/>x: LGS</p>
-    <p>In addition to these, <b>F</b> can double as a <b>V</b>, and triple as another <b>S</b>.  For instance: fast: TPAFT, or paved: PAEUFD.</p>
+    j: -PBLG<br/>k: -LG<br/>m: -PL<br/>n: -PB<br/>x: -LGS</p>
+    <p>In addition to these, <b>-F</b> can double as a <b>V</b>, and triple as another <b>S</b>.  For instance: fast: TPAFT, or paved: PAEUFD.</p>
     <p>Finally, here are some other common endings:<br/>
-    sh: RB<br/>ch: FP<br/>tion/tious: GS<br/>ness: PBS<br/>full: FL</p>]]></string>
+    sh: -RB<br/>ch: -FP<br/>tion/tious: -GS<br/>ness: -PBS<br/>full: -FL</p>]]></string>
     <string name="text_lesson6"><![CDATA[<p>The real key to stenography is your <b>dictionary</b>.</p>
     <p>The dictionary explains how each stroke is translated into a word.  Why use three strokes to type <i>tomorrow</i>, when you can do it in one (TOEPL)?</p>
     <p>In fact, <i>any stroke</i> can be translated into <i>any syllable, any phrase, any sentence, or even any paragraph</i>.  All the strokes that we\'ve given you in this tutorial are only true because the dictionary we are using says so.</p>

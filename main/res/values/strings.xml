@@ -102,7 +102,9 @@
     <p>These are called <i>briefs</i> and are as individual as each stenographer.</p>
     <p>The secret to attaining extreme typing speeds is to develop a dictionary containing briefs for all of the phrases you use most frequently.</p>
     <p><i>How</i> you map your strokes to your phrases is called your <i>Steno Theory</i>, and that is beyond the scope of this tutorial.  However, let me encourage you to add to your dictionary without hesitation.</p>
-    <p></p>]]></string>
+    <p>The best way to do that is to use two dictionaries.  Download the standard dictionary <a href=https://drive.google.com/file/d/0B4tEVyQtpVv0b0gtUF9YaWVWTms/edit?usp=sharing>here</a>, and a blank personal-dictionary <a href=https://drive.google.com/file/d/0B4tEVyQtpVv0TTQwX3dlbTBUcFE/edit?usp=sharing>here</a>.  (I like to store them in Dropbox or Google Drive, so I have access to the same dictionaries on all my devices)</p>
+    <p>Then go into your Steno Keyboard settings, and select the standard dictionary first, and your personal dictionary second.</p>
+    <p>If you make all of your changes (using a simple text-editor like notepad) in the second dictionary, they will override those in the main dictionary, and they will be easier to maintain.</p>]]></string>
     <string name="text_lesson7"><![CDATA[<p>Here are some excellent resources for developing your stenography skills further:<br/><br/>
     <a href=http://stenoknight.com/wiki/Main_Page>Plover</a>: Open source cross-platform stenography on your computer+<br/><br/>
     <a href=https://sites.google.com/site/ploverdoc/home>Learn Plover!</a>: Basics of stenography<br/><br/>

@@ -530,6 +530,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 if (mTranslator==null ||(! (mTranslator instanceof SimpleTranslator))) { //if changing types
                     mTranslator = new SimpleTranslator(getApplicationContext());
                 }
+                mTranslator.start();
                 ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));
                 break;
         }

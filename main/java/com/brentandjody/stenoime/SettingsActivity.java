@@ -1,6 +1,8 @@
 package com.brentandjody.stenoime;
 
 import android.content.Intent;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -11,6 +13,8 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
 import com.brentandjody.stenoime.Translator.Translator;
+import com.brentandjody.stenoime.data.DBContract;
+import com.brentandjody.stenoime.data.OptimizerTableHelper;
 import com.brentandjody.stenoime.util.IabHelper;
 import com.brentandjody.stenoime.util.IabResult;
 import com.brentandjody.stenoime.util.Purchase;
@@ -81,6 +85,20 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 startActivity(new Intent(SettingsActivity.this, TutorialActivity.class));
+                return false;
+            }
+        });
+
+        // optimizer button
+        SQLiteDatabase db = new OptimizerTableHelper(this).getReadableDatabase();
+        boolean has_entries = DatabaseUtils.queryNumEntries(db, DBContract.OptimizationEntry.TABLE_NAME)>0;
+        Preference btn_optimizer = findPreference(getString(R.string.key_optimizer_button));
+        btn_optimizer.setIcon(R.drawable.ic_list);
+        btn_optimizer.setEnabled(has_entries);
+        btn_optimizer.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivity(new Intent(SettingsActivity.this, SuggestionsActivity.class));
                 return false;
             }
         });

@@ -120,8 +120,11 @@ public class SimpleTranslator extends Translator {
 
     @Override
     public TranslationResult flush() {
-        String text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
-        addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
+        String text="";
+        if (mDictionary != null && !mDictionary.isLoading()) {
+            text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+            addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
+        }
         strokeQ.clear();
         mFormatter.resetState();
         return new TranslationResult(0, text, "", "");

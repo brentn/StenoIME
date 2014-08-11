@@ -72,7 +72,7 @@ public class Optimizer {
                         Candidate candidate, next_item;
                         while (!input.isEmpty()) {
                             next_item = input.remove();
-                            //Log.d(TAG, "optimizing: "+next_item.getTranslation());
+                            Log.v(TAG, "optimizing: "+next_item.getTranslation());
                             if (!next_item.getTranslation().trim().isEmpty()) {
                                 Iterator<Candidate> iterator = candidates.iterator();
                                 while (iterator.hasNext()) {
@@ -138,7 +138,7 @@ public class Optimizer {
     }
 
     public void analyze(String stroke, int backspaces, String translation) {
-        //Log.d(TAG, "analyzing: "+stroke+":"+translation);
+        Log.v(TAG, "analyzing: "+stroke+":"+translation);
         input.add(new Candidate(stroke, translation, backspaces));
     }
 

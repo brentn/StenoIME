@@ -24,6 +24,8 @@
             android:summaryOn="@string/optimizer_on_summary"
             android:summaryOff="@string/optimizer_off_summary"
             android:defaultValue="false"/>
+        <Preference android:key="@string/key_optimizer_button"
+            android:title="@string/text_optimizer_button"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/formatter">

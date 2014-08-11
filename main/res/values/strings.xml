@@ -64,37 +64,57 @@
     <string name="title_activity_tutorial">Getting Started</string>
     <string name="key_tutorial_button">tutorial_button</string>
     <string name="text_tutorial_button">Quick Start Tutorial...</string>
-    <string name="text_lesson1"><![CDATA[<large><p> The basic keyboard is divided into three parts:</p> * the Left bank<br/>* the Vowels<br/> * the Right bank<br/><p>The <b>*</b> and <b>#</b> keys are also part of the keyboard; however, the <b>...</b> button is not.  This button allows you to access special keys and settings that are not a part of the traditional stenograpy keyboard.</p>
+    <string name="text_lesson1"><![CDATA[<p>The basic keyboard is divided into three parts:</p>
+     * the Left bank<br/>
+     * the Vowels<br/>
+     * the Right bank<br/>
+     <p>The <b>*</b> and <b>#</b> keys are also part of the keyboard; however, the <b>…</b> button is not.  This button allows you to access special keys and settings that are not a part of the traditional stenograpy keyboard.</p>
      <p>Keys can be tapped or <i>swiped</i> across, and change color when activated. When forming a stroke, keys may be pressed in any order, using one or two fingers.  The stroke is not complete until you remove your fingers from the keyboard, at which time it is translated and sent.</p>
-     <p>If you make a mistake, tapping the <b>*</b> key will <i>undo</i> the last stroke.</p>
-     <p>When referring to a particular stroke, keys are always written in order from left to right according to the following order: <br/><br/><b>S T K P W H R A O * E U F R P B L G T S D Z</b></p>
+     <p><b>UNDO</b><br/>If you make a mistake, tapping the <b>*</b> key by itself will <i>undo</i> the previous stroke that was sent.</p>
+     <p><b>READING & WRITING STROKES</b><br/>When referring to a particular stroke, keys are always written in order from left to right according to the following order: <br/>
+     <br/><b>S T K P W H R A O * E U F R P B L G T S D Z</b></p>
      <p>Thus, there is no such stroke as FA (since the only F comes after the only A) but rather, it would be written as AF.</p>
-     <p><br/>(swipe to the left for the next lesson...)</p></large>]]></string>
-    <string name="text_lesson2"><![CDATA[<p>You will be <i>sounding-out</i> words, rather than spelling them (which is good news for poor spellers).</p>
-     <p>Words are formed one-syllable-at-a-time, each stroke representing a single syllable.</p>
-     <p>Syllables may be made up of one or more of the following:<br/>
+     <p>Keeping this in mind, when swiping across keys to form a stroke, it makes no difference what order the keys are pressed in.  It only matters which keys are pressed when your fingers are removed from the keyboard.</p>
+     <p>Once a key is pressed, you cannot <i>un-press</i> it.  If you accidentally hit a wrong key, simply remove your fingers (to send the stroke), and tap the <b>*</b> key to undo the stroke.</p>
+     <p><br/>(swipe to the left for the next lesson…)</p>]]></string>
+    <string name="text_lesson2"><![CDATA[<p>You will be <i>sounding-out</i> words, rather than spelling them (which might be good news for poor spellers).</p>
+     <p>Words are sounded-out one-syllable-at-a-time, each stroke representing a single syllable.</p>
+     <p>Each syllable may be made up of one or more of the following:<br/>
      <br/> * Beginning consonant sound(s)
-     <br/> * a Vowel sound
+     <br/> * Vowel sound(s)
      <br/> * Ending consonant sound(s)</p>
-     <p>Beginning consonant sounds are stroked in order using the <b>Left Bank</b> of the keyboard, vowels, using the <b>Vowel keys</b>, and ending consonant sounds using the <b>Right Bank</b>.</p>
+     <p>Beginning consonant sounds are stroked using the <b>Left Bank</b> of the keyboard, vowels, using the <b>Vowel keys</b>, and ending consonant sounds using the <b>Right Bank</b>.</p>
      <p>For example: the word <i>tap</i> would be stroked by pressing the <b>T</b> in the Left bank, swiping down to the <b>A</b>, and then over to the <b>P</b> in the Right bank, and then removing your finger from the keyboard.</p>
-     <p>The word <i>parted</i> is two syllables, and is stroked: <b>PART / -D</b>.  That is, <b>P</b> on the Left, <b>A</b>, then <b>-RT</b> on the Right, then release.  Then <b>-D</b> and release. (notice that keys in the right bank are often written with a <b>-</b> in front of them, to indicate that they are on the <b>Right bank</b> of the keyboard.) </p>]]></string>
+     <p>The word <i>parted</i> is two syllables, and is stroked: <b>PART / -D</b>.  That is, <b>P</b> on the Left, <b>A</b>, then <b>-RT</b> on the Right, then release.  Then <b>-D</b> and release. (notice that keys in the right bank are often written with a <b>-</b> in front of them, to indicate that they are on the <b>Right bank</b> of the keyboard.) </p>
+     <p>Recall that the keys are always read in the same order, so attempting to type the word "lost" by pressing LOST will result in the word "lots".  Later lessons will explain how to address this.</p>]]></string>
     <string name="text_lesson3"><![CDATA[<p>Notice that the keyboard does not have keys for all of the letters of the alphabet, nor for all of the sounds you will need.  That is because many sounds are produced by pressing <i>key combinations</i>.</p>
-    <p>For instance, F in the left bank is stroked: TP, and J is stroked: SKWR.</p>
+    <p>For instance, F in the left bank is stroked: TP, and L is stroked: HR.</p>
     <p>In fact, all of the missing letters of the alphabet can be produced on the Left bank using key combinations as follows:<br/><br/>
     b: PW<br/>c: KR<br/>d: TK<br/>f: TP<br/>g: TKPW<br/>i: EU<br/>j: SKWR<br/>l: HR<br/>m: PH<br/>n: TPH<br/>q: KW<br/>v: SR<br/>x: KP<br/>y: KWR<br/>z: STKPW<br/></p>
     <p>These key-combinations will be used in forming the Beginning sounds of each syllable.</p>
-    <p><b>FINGERSPELLING:</b> Individual letters can be typed by stroking the appropriate key or key-combination, along with the <b>*</b> key (or the <b>*</b> and <b>-P</b> keys for uppercase letters).</p>]]></string>
-    <string name="text_lesson4"><![CDATA[<p>English has many different vowel sounds, all of which can be produced using the 4 vowel keys.  But let\'s just start with the basic short and long vowel sounds:</p>
-    <p>Short vowel sounds are produced by simply pressing the corresponding (A, E, O, or U) vowel key.  However, you will notice there is no <b>I</b> key.  The short i is produced by pressing the <b>EU</b> key-combination.</p>
-    <p>Long vowel sounds are produced by pressing the short vowel, combined with both vowels on the other side of the keyboard:<br/>
-    a: AEU<br/>e: AOE<br/>i: AOEU<br/>o: OEU<br/>u: AOU</p>]]></string>
-    <string name="text_lesson5"><![CDATA[<p>The ending sounds are the trickiest, and have alot of rules and exceptions to memorize.</p>
+    <p><b>FINGERSPELLING:</b><br/>
+    When you are unable to figure out how to stroke a particular word, you can spell the word one-letter-at-a-time using the keys from the Left bank alone (plus vowels).  Individual letters can be typed by stroking the appropriate key or key-combination from the Left bank, along with the <b>*</b> key.</p>
+    <p><b>TIP:</b><br/>If you have "Stroke Suggestions" enabled in your settings, words you have fingerspelled will appear in the notifications, along with the correct stroke for that word.</p>]]></string>
+    <string name="text_lesson4"><![CDATA[<p>English has many different vowel sounds, all of which can be produced using the 4 vowel keys. </p>
+    <p><b>SHORT VOWEL SOUNDS</b><br/>Short vowel sounds are produced by simply pressing the corresponding (A, E, O, or U) vowel key.  However, you will notice there is no <b>I</b> key.  The short i is produced by pressing the <b>EU</b> key-combination.</p>
+    <p><b>LONG VOWEL SOUNDS</b><br/>Long vowel sounds are produced with the following key combinations:<br/>
+    <br/>a: AEU<br/>e: AOE<br/>i: AOEU<br/>o: OE<br/>u: AOU</p>
+    <p><b>DIPTHONGS</b><br/>Dipthongs are vowel combinations where both sounds are pronounced.  In English there are 3 main ones:<br/>
+    <br/>aw: AU<br/>ow: OU<br/>oi: OEU</p>
+    <p><b>HOMONYMNS</b><br/>Certain words in English sound exactly the same as each other (such as pear and pair).  These are called <i>homonymns</i>.  The following vowel-combinations are used to distinguish such homonyms from one another:<br/>
+    <br/>ae or ea: AE<br/>
+    oa or oo: AO</p>]]></string>
+    <string name="text_lesson5"><![CDATA[<p>The ending sounds are the trickiest, and have a lot of rules and exceptions to memorize.</p>
     <p>Let\'s start with the missing letter sounds:<br/>
-    j: -PBLG<br/>k: -LG<br/>m: -PL<br/>n: -PB<br/>x: -LGS</p>
-    <p>In addition to these, <b>-F</b> can double as a <b>V</b>, and triple as another <b>S</b>.  For instance: fast: TPAFT, or paved: PAEUFD.</p>
+    <br/>j: -PBLG<br/>k: -LG<br/>m: -PL (this is also used for the <i>lm</i> sound)<br/>n: -PB<br/>x: -LGS</p>
+    <p>There are 3 common endings which are produced using a single letter from the Right bank:<br/>
+    <br/>s: -S<br/>
+    ing: -G<br/>
+    ed: -D<br/></p>
+    These can often be included in a single stroke to make a word, but can always be added after-the-fact as a second stroke.</p>
+    <p>In addition to these, <b>-F</b> can double as a <b>-V</b>, or as another <b>-S</b>.  For instance: fast: TPAFT, or paved: PAEUFD.</p>
     <p>Finally, here are some other common endings:<br/>
-    sh: -RB<br/>ch: -FP<br/>tion/tious: -GS<br/>ness: -PBS<br/>full: -FL</p>]]></string>
+    <br/>th: *T<br/>sh: -RB<br/>ch: -FP<br/>ng/nj : -PBG<br/>mp: *PL<br/>rv: -FRB<br/>lch/lj: -LG<br/>lk: *LG<br/>nk: *PBG<br/>tion/tious: -GS<br/>ction/ctious: -RBG<br/>rch/nch: -FRPB<br/>ness: -PBS<br/>full: -FL</p>]]></string>
     <string name="text_lesson6"><![CDATA[<p>The real key to stenography is your <b>dictionary</b>.</p>
     <p>The dictionary explains how each stroke is translated into a word.  Why use three strokes to type <i>tomorrow</i>, when you can do it in one (TOEPL)?</p>
     <p>In fact, <i>any stroke</i> can be translated into <i>any syllable, any phrase, any sentence, or even any paragraph</i>.  All the strokes that we\'ve given you in this tutorial are only true because the dictionary we are using says so.</p>
@@ -102,13 +122,13 @@
     <p>These are called <i>briefs</i> and are as individual as each stenographer.</p>
     <p>The secret to attaining extreme typing speeds is to develop a dictionary containing briefs for all of the phrases you use most frequently.</p>
     <p><i>How</i> you map your strokes to your phrases is called your <i>Steno Theory</i>, and that is beyond the scope of this tutorial.  However, let me encourage you to add to your dictionary without hesitation.</p>
-    <p>The best way to do that is to use two dictionaries.  Download the standard dictionary <a href=https://drive.google.com/file/d/0B4tEVyQtpVv0b0gtUF9YaWVWTms/edit?usp=sharing>here</a>, and a blank personal-dictionary <a href=https://drive.google.com/file/d/0B4tEVyQtpVv0TTQwX3dlbTBUcFE/edit?usp=sharing>here</a>.  (I like to store them in Dropbox or Google Drive, so I have access to the same dictionaries on all my devices)</p>
+    <p>The best way to do that is to use two dictionaries.  Download the standard dictionary <a href=http://stenoknight.com/plover/dict.json download>here</a>, and a blank personal-dictionary <a href=http://www.cheapandsleazy.net/filez/empty_dictionary.json.zip>here</a>.  (I like to store them in Dropbox or Google Drive, so I have access to the same dictionaries on all my devices)</p>
     <p>Then go into your Steno Keyboard settings, and select the standard dictionary first, and your personal dictionary second.</p>
     <p>If you make all of your changes (using a simple text-editor like notepad) in the second dictionary, they will override those in the main dictionary, and they will be easier to maintain.</p>]]></string>
     <string name="text_lesson7"><![CDATA[<p>Here are some excellent resources for developing your stenography skills further:<br/><br/>
-    <a href=http://stenoknight.com/wiki/Main_Page>Plover</a>: Open source cross-platform stenography on your computer+<br/><br/>
-    <a href=https://sites.google.com/site/ploverdoc/home>Learn Plover!</a>: Basics of stenography<br/><br/>
-    <a href=http://qwertysteno.com>qwertysteno.com</a>: Steno theory with online practice tools<br/></p>]]></string>
+    <a href=http://stenoknight.com/wiki/Main_Page>Plover</a>: Open source cross-platform stenography on your computer<br/><br/>
+    <a href=https://sites.google.com/site/ploverdoc/lesson-1-fingers-and-keys>Learn Plover!</a>: Basics of stenography<br/><br/>
+    <a href=http://qwertysteno.com>qwertysteno.com/Basics/Introduction.php</a>: Steno theory with online practice tools<br/></p>]]></string>
     <string name="title_lesson1">Lesson 1 - the keyboard</string>
     <string name="title_lesson2">Lesson 2 - sounding it out</string>
     <string name="title_lesson3">Lesson 3 - the Left bank</string>

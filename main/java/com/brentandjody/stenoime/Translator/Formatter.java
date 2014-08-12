@@ -17,6 +17,7 @@ public class Formatter {
     // state variables
     private CASE capitalization=null;
     private boolean glue=false;
+    private boolean trim=false;
 
     public Formatter() {
     }
@@ -29,6 +30,7 @@ public class Formatter {
         suffix = false;
         State prior_state = getState();
         backspaces=0;
+        trim=false;
         if (input==null || input.length()==0) return "";
         if (isNumeric(input.replace("/",""))) {
             input = "{&"+input.replace("/","")+"}";
@@ -42,29 +44,29 @@ public class Formatter {
             for (String atom : breakApart(input)) {
                 suffix = isSuffix(atom);
                 if (atom.equals("{#Return}")) {
-                    sb.append("\n"); space=""; atom="";
+                    sb.append("\n"); space=""; atom=""; trim=true;
                 }
                 if (atom.equals("{#BackSpace}")) {
                     sb.append("\b"); space=""; atom="";
                 }
                 if (atom.equals("{#Tab}")) {
-                    sb.append("\t"); space=""; atom="";
+                    sb.append("\t"); space=""; atom=""; trim=true;
                 }
                 if (atom.equals("{,}")) {
-                    sb.append("\b,"); atom="";
+                    sb.append(","); atom=""; trim=true;
                 }
                 if (atom.equals("{.}")) {
-                    sb.append("\b."); new_capitalization=CASE.Capital; atom="";
+                    sb.append("."); new_capitalization=CASE.Capital; atom=""; trim=true;
                 }
                 if (atom.equals("{?}")) {
-                    sb.append("\b?"); new_capitalization=CASE.Capital; atom="";
+                    sb.append("?"); new_capitalization=CASE.Capital; atom=""; trim=true;
                 }
                 if (atom.equals("{!}")) {
-                    sb.append("\b!"); new_capitalization=CASE.Capital; atom="";
+                    sb.append("!"); new_capitalization=CASE.Capital; atom=""; trim=true;
                 }
                 if (atom.contains("{^")) {
                     if (sb.length()==0 || sb.charAt(sb.length()-1) == ' ') {
-                        sb.append("\b");
+                        trim=true;
                     }
                     atom = atom.replace("{^", "");
                 }
@@ -73,10 +75,10 @@ public class Formatter {
                 }
                 // new flags
                 if (atom.contains("{-|}")) {
-                    new_capitalization=CASE.Capital; space=""; atom="";
+                    new_capitalization=CASE.Capital; space=""; atom=""; trim=true;
                 }
                 if (atom.contains("{>}")) {
-                    new_capitalization=CASE.Lowercase; space=""; atom="";
+                    new_capitalization=CASE.Lowercase; space=""; atom=""; trim=true;
                 }
                 if (atom.contains("{&")) {
                     new_glue=true; atom = atom.replace("{&", "");
@@ -84,13 +86,14 @@ public class Formatter {
                 atom = atom.replace("{","").replace("}","");
                 // remove space before punctuation
                 if (atom.length() == 1 && punctuation.contains(atom))
-                    sb.append("\b");
+                    trim=true;
                 sb.append(atom);
             }
             // process flags
             boolean text_not_empty = !sb.toString().replace("\n","").isEmpty();
             if (glue && new_glue)
-                sb.reverse().append("\b").reverse();
+                trim=true;
+                //sb.reverse().append("\b").reverse();
             if (text_not_empty) {
                 if (capitalization==CASE.Capital)
                     sb.replace(0,1,sb.substring(0,1).toUpperCase());
@@ -111,27 +114,30 @@ public class Formatter {
     }
 
     public State getState() {
-        return new State(capitalization, glue, suffix);
+        return new State(capitalization, glue, suffix, trim);
     }
 
     public void resetState() {
         capitalization=null;
         glue=false;
         suffix=false;
+        trim=false;
     }
 
     public void restoreState(State state) {
         capitalization = state.getCapitalization();
         glue = state.hasGlue();
         suffix = state.suffix();
+        trim = state.trim();
     }
 
-    public boolean hasFlags() { return (glue || (capitalization!=null)); }
+    public boolean hasFlags() { return (glue || (capitalization!=null)); } //should this return true if trim is set?
 
     public int backspaces() {return backspaces;}
 
+    public boolean trim() {return trim;}
 
-    public void removeItemFromQueue() { glue=false; capitalization=null; }
+    public void removeItemFromQueue() { glue=false; capitalization=null; trim=false;}
 
     public List<String> breakApart(String s) {
         //break a translation string into atoms. (recursive)
@@ -197,11 +203,13 @@ public class Formatter {
         private CASE capitalization;
         private boolean glue;
         private boolean suffix;
+        private boolean trim; //trim spaces from end of current output
 
-        public State(CASE capitalization, boolean glue, boolean suffix) {
+        public State(CASE capitalization, boolean glue, boolean suffix, boolean trim) {
             this.capitalization=capitalization;
             this.glue=glue;
             this.suffix=suffix;
+            this.trim=trim;
         }
 
         public CASE getCapitalization() {
@@ -213,6 +221,7 @@ public class Formatter {
         public boolean suffix() {
             return suffix;
         }
+        public boolean trim() {return trim;}
     }
 
 }

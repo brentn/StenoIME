@@ -46,6 +46,10 @@ public class Dictionary {
         return loading;
     }
 
+    public boolean isLoaded() {
+        return (!loading && size()>10);
+    }
+
     public void clear() {
         dictionary = new TST<String>();
     }
@@ -94,6 +98,7 @@ public class Dictionary {
             Log.w("Lookup", "Called while dictionary loading");
         }
         if (key.isEmpty()) return null;
+        if (isNumeric(key)) return key;
         if (((Collection) dictionary.prefixMatch(key+"/")).size() > 0) return ""; //ambiguous
         return dictionary.get(key);
     }
@@ -103,6 +108,7 @@ public class Dictionary {
         //or null if not found found
         // (this is the same as lookup, except it doesn't return "" for ambiguous entries
         if (key == null || key.isEmpty()) return null;
+        if (isNumeric(key)) return key;
         return (dictionary.get(key));
     }
 
@@ -137,6 +143,14 @@ public class Dictionary {
     private boolean outlineContainsStroke(String outline, String stroke) {
         //ensures stroke does not contain "partial" strokeCount  from outline
         return ((outline+"/").contains(stroke+"/"));
+    }
+
+    private static boolean isNumeric(String s) {
+        if (s==null || s.length()==0) return false;
+        for (char c : s.toCharArray()) {
+            if ("0123456789".indexOf(c)==-1) return false;
+        }
+        return true;
     }
 
     private class JsonLoader extends AsyncTask<String, Integer, Integer> {

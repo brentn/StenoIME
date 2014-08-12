@@ -37,6 +37,7 @@ import com.brentandjody.stenoime.Input.StenoMachine;
 import com.brentandjody.stenoime.Input.TXBoltMachine;
 import com.brentandjody.stenoime.Input.TouchLayer;
 import com.brentandjody.stenoime.Translator.Dictionary;
+import com.brentandjody.stenoime.Translator.FullTranslator;
 import com.brentandjody.stenoime.Translator.RawStrokeTranslator;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
@@ -576,8 +577,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendChar(char c) {
-        if (mTranslator instanceof SimpleTranslator) {
-            sendText(((SimpleTranslator) mTranslator).insertIntoHistory(String.valueOf(c)));
+        if (mTranslator instanceof FullTranslator) {
+            sendText(((FullTranslator) mTranslator).insertIntoHistory(String.valueOf(c)));
         } else {
             sendText(new TranslationResult(0, String.valueOf(c), "", ""));
         }
@@ -597,7 +598,9 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         }
         // deal with backspaces
-        if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
+        if (tr.getBackspaces()==-2) {  // this is a special signal to trim any trailing spaces
+            trimSpaces(connection);
+        } else if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
             smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
@@ -608,8 +611,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //draw the preview
         if (inline_preview) {
             String p = tr.getPreview();
-            if (mTranslator instanceof SimpleTranslator) {
-                int bs = ((SimpleTranslator) mTranslator).preview_backspaces();
+            if (mTranslator instanceof FullTranslator) {
+                int bs = ((FullTranslator) mTranslator).preview_backspaces();
                 redo_space=(bs > 0);
             }
             if (redo_space)
@@ -624,6 +627,20 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         try {
             String t = connection.getTextBeforeCursor(2, 0).toString();
             while (! (t.length()==0 || t.equals(" "))) {
+                connection.deleteSurroundingText(1, 0);
+                t = connection.getTextBeforeCursor(1, 0).toString();
+                stats.addLetters(-1);
+            }
+        } finally {
+            connection.commitText("", 1);
+        }
+    }
+
+    private void trimSpaces(InputConnection connection) {
+        // removes any trailing spaces from the current connection
+        try {
+            String t = connection.getTextBeforeCursor(1, 0).toString();
+            while (t.length()==1 && t.equals(" ")) {
                 connection.deleteSurroundingText(1, 0);
                 t = connection.getTextBeforeCursor(1, 0).toString();
                 stats.addLetters(-1);

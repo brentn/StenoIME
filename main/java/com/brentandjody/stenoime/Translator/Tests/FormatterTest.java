@@ -14,15 +14,21 @@ public class FormatterTest extends AndroidTestCase {
         assertEquals("", formatter.format(null));
         assertEquals("", formatter.format(""));
         assertEquals("Bob ", formatter.format("Bob"));
+        assertFalse(formatter.trim());
         // special keys
         assertEquals("\n", formatter.format("{#Return}"));
         assertEquals("", formatter.format("{#BackSpace}"));
         assertEquals(1, formatter.backspaces());
         assertEquals("\t", formatter.format("{#Tab}"));
         assertEquals("spin ", formatter.format("{^spin}"));
-        assertEquals(1, formatter.backspaces());
+        assertEquals(0, formatter.backspaces());
+        assertTrue(formatter.trim());
         assertEquals("cycle", formatter.format("{cycle^}"));
+        assertEquals(". ", formatter.format("{.}"));
+        assertTrue(formatter.trim());
         // flags
+        assertTrue(formatter.hasFlags());
+        assertEquals("Big ", formatter.format("big"));
         assertFalse(formatter.hasFlags());
         assertEquals("", formatter.format("{-|}"));
         assertTrue(formatter.hasFlags());
@@ -31,10 +37,11 @@ public class FormatterTest extends AndroidTestCase {
         formatter.format("{>}");
         assertEquals("cRAYON ", formatter.format("CRAYON"));
         assertEquals("a ", formatter.format("{&a}"));
+        assertFalse(formatter.trim());
         assertEquals("b ", formatter.format("{&b}"));
-        assertEquals(1, formatter.backspaces());
+        assertTrue(formatter.trim());
         assertEquals("c ", formatter.format("{&c"));
-        assertEquals(1, formatter.backspaces());
+        assertTrue(formatter.trim());
         assertTrue(formatter.hasFlags());
         assertEquals("d ", formatter.format("d"));
         assertFalse(formatter.hasFlags());

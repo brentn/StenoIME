@@ -1,5 +1,6 @@
 package com.brentandjody.stenoime.Translator;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,12 +13,12 @@ public class Formatter {
     public static  enum CASE {Capital, Lowercase}
     public static final String punctuation = ":;,";
 
-    private int backspaces;
-    private boolean suffix;
+    private int mBackspaces;
+    private boolean mSuffix;
     // state variables
-    private CASE capitalization=null;
-    private boolean glue=false;
-    private boolean trim=false;
+    private CASE mCapitalization =null;
+    private boolean mGlue=false;
+    private int mPriorSpaces=0;
 
     public Formatter() {
     }
@@ -27,10 +28,9 @@ public class Formatter {
     }
 
     public String format (String input, boolean reset_state) {
-        suffix = false;
+        mSuffix = false;
         State prior_state = getState();
-        backspaces=0;
-        trim=false;
+        mBackspaces =0;
         if (input==null || input.length()==0) return "";
         if (isNumeric(input.replace("/",""))) {
             input = "{&"+input.replace("/","")+"}";
@@ -42,31 +42,31 @@ public class Formatter {
         StringBuilder sb = new StringBuilder();
         if (hasFlags() || input.contains("{")) {
             for (String atom : breakApart(input)) {
-                suffix = isSuffix(atom);
+                mSuffix = isSuffix(atom);
                 if (atom.equals("{#Return}")) {
-                    sb.append("\n"); space=""; atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+"\n"); space=""; atom="";
                 }
                 if (atom.equals("{#BackSpace}")) {
                     sb.append("\b"); space=""; atom="";
                 }
                 if (atom.equals("{#Tab}")) {
-                    sb.append("\t"); space=""; atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+"\t"); space=""; atom="";
                 }
                 if (atom.equals("{,}")) {
-                    sb.append(","); atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+","); atom="";
                 }
                 if (atom.equals("{.}")) {
-                    sb.append("."); new_capitalization=CASE.Capital; atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+"."); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{?}")) {
-                    sb.append("?"); new_capitalization=CASE.Capital; atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+"?"); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.equals("{!}")) {
-                    sb.append("!"); new_capitalization=CASE.Capital; atom=""; trim=true;
+                    sb.append(backspaces(mPriorSpaces)+"!"); new_capitalization=CASE.Capital; atom="";
                 }
                 if (atom.contains("{^")) {
                     if (sb.length()==0 || sb.charAt(sb.length()-1) == ' ') {
-                        trim=true;
+                        sb.append(backspaces(mPriorSpaces));
                     }
                     atom = atom.replace("{^", "");
                 }
@@ -75,10 +75,10 @@ public class Formatter {
                 }
                 // new flags
                 if (atom.contains("{-|}")) {
-                    new_capitalization=CASE.Capital; space=""; atom=""; trim=true;
+                    new_capitalization=CASE.Capital; space=""; atom="";
                 }
                 if (atom.contains("{>}")) {
-                    new_capitalization=CASE.Lowercase; space=""; atom=""; trim=true;
+                    new_capitalization=CASE.Lowercase; space=""; atom="";
                 }
                 if (atom.contains("{&")) {
                     new_glue=true; atom = atom.replace("{&", "");
@@ -86,23 +86,22 @@ public class Formatter {
                 atom = atom.replace("{","").replace("}","");
                 // remove space before punctuation
                 if (atom.length() == 1 && punctuation.contains(atom))
-                    trim=true;
+                    sb.append(backspaces(mPriorSpaces));
                 sb.append(atom);
             }
             // process flags
             boolean text_not_empty = !sb.toString().replace("\n","").isEmpty();
-            if (glue && new_glue)
-                trim=true;
-                //sb.reverse().append("\b").reverse();
+            if (mGlue && new_glue)
+                sb.reverse().append(backspaces(mPriorSpaces)).reverse();
             if (text_not_empty) {
-                if (capitalization==CASE.Capital)
+                if (mCapitalization ==CASE.Capital)
                     sb.replace(0,1,sb.substring(0,1).toUpperCase());
-                if (capitalization==CASE.Lowercase)
+                if (mCapitalization ==CASE.Lowercase)
                     sb.replace(0,1,sb.substring(0,1).toLowerCase());
             }
-            glue = new_glue;
+            mGlue = new_glue;
             if (text_not_empty || new_capitalization!=null) {
-                capitalization = new_capitalization;
+                mCapitalization = new_capitalization;
             }
 
             output = sb.toString();
@@ -110,34 +109,33 @@ public class Formatter {
                 restoreState(prior_state);
             }
         }
+        mPriorSpaces=space.length();
         return remove_backspaces(output)+space;
     }
 
     public State getState() {
-        return new State(capitalization, glue, suffix, trim);
+        return new State(mCapitalization, mGlue, mSuffix, mPriorSpaces);
     }
 
     public void resetState() {
-        capitalization=null;
-        glue=false;
-        suffix=false;
-        trim=false;
+        mCapitalization =null;
+        mGlue =false;
+        mSuffix =false;
     }
 
     public void restoreState(State state) {
-        capitalization = state.getCapitalization();
-        glue = state.hasGlue();
-        suffix = state.suffix();
-        trim = state.trim();
+        mCapitalization = state.getCapitalization();
+        mGlue = state.hasGlue();
+        mSuffix = state.isSuffix();
+        mPriorSpaces = state.getmPriorSpaces();
     }
 
-    public boolean hasFlags() { return (glue || (capitalization!=null)); } //should this return true if trim is set?
+    public boolean hasFlags() { return (mGlue || (mCapitalization !=null)); }
 
-    public int backspaces() {return backspaces;}
+    public int backspaces() {return mBackspaces;}
 
-    public boolean trim() {return trim;}
 
-    public void removeItemFromQueue() { glue=false; capitalization=null; trim=false;}
+    public void removeItemFromQueue() { mGlue =false; mCapitalization =null; }
 
     public List<String> breakApart(String s) {
         //break a translation string into atoms. (recursive)
@@ -161,7 +159,7 @@ public class Formatter {
         return result;
     }
 
-    public boolean wasSuffix() { return suffix; }
+    public boolean wasSuffix() { return mSuffix; }
 
     private boolean isSuffix(String atom) {
         if (atom==null) return false;
@@ -178,6 +176,12 @@ public class Formatter {
         return true;
     }
 
+    private static String backspaces(int length) {
+        char[] result = new char[length];
+        Arrays.fill(result, '\b');
+        return new String(result);
+    }
+
     private String remove_backspaces(String text) {
         StringBuilder result = new StringBuilder();
         boolean start = true;
@@ -185,7 +189,7 @@ public class Formatter {
         for (char c : text.toCharArray()) {
             if (c=='\b') {
                 if (start) {
-                    backspaces++;
+                    mBackspaces++;
                 } else {
                     result.deleteCharAt(i-1);
                     i--;
@@ -200,28 +204,28 @@ public class Formatter {
     }
 
     public class State {
-        private CASE capitalization;
-        private boolean glue;
-        private boolean suffix;
-        private boolean trim; //trim spaces from end of current output
+        private CASE mCapitalization;
+        private boolean mGlue;
+        private boolean mSuffix;
+        private int mPriorSpaces;
 
-        public State(CASE capitalization, boolean glue, boolean suffix, boolean trim) {
-            this.capitalization=capitalization;
-            this.glue=glue;
-            this.suffix=suffix;
-            this.trim=trim;
+        public State(CASE capitalization, boolean glue, boolean suffix, int prior_spaces) {
+            this.mCapitalization=capitalization;
+            this.mGlue=glue;
+            this.mSuffix=suffix;
+            this.mPriorSpaces=prior_spaces;
         }
 
         public CASE getCapitalization() {
-            return capitalization;
+            return mCapitalization;
         }
         public boolean hasGlue() {
-            return glue;
+            return mGlue;
         }
-        public boolean suffix() {
-            return suffix;
+        public boolean isSuffix() {
+            return mSuffix;
         }
-        public boolean trim() {return trim;}
+        public int getmPriorSpaces() {return mPriorSpaces;}
     }
 
 }

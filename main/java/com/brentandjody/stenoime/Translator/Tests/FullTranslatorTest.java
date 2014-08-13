@@ -51,7 +51,7 @@ public class FullTranslatorTest extends AndroidTestCase {
     }
 
     public void testLockAndUnlock() throws Exception {
-        final FullTranslator translator = new FullTranslator(getContext());
+            final FullTranslator translator = new FullTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         dictionary.load(new String[] {"/sdcard/test.json"}, null, 10);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -72,7 +72,7 @@ public class FullTranslatorTest extends AndroidTestCase {
 
 
     public void testTranslate() throws Exception {
-        final FullTranslator translator = new FullTranslator(getContext(), true);
+        final FullTranslator translator = new FullTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[] {"/sdcard/test.json"}, null, 10);
@@ -89,7 +89,8 @@ public class FullTranslatorTest extends AndroidTestCase {
         // not found (with & without queue)
         checkResults(translator.translate(new Stroke("-B")), 0, "-B ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
-        checkResults(translator.translate(new Stroke("PHEUT")), 0, "admit ", "");
+        checkResults(translator.translate(new Stroke("PHEUT")), 0, "", "admit ");
+        checkResults(translator.translate(new Stroke("-D")), 0, "admitted ", "");
         // deterministic (with & without queue)
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
@@ -209,7 +210,7 @@ public class FullTranslatorTest extends AndroidTestCase {
         in.close();
         out.flush();
         out.close();
-        final FullTranslator translator = new FullTranslator(getContext(), true);
+        final FullTranslator translator = new FullTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
         dictionary.load(new String[] {"/sdcard/dict.json"}, null, 10);

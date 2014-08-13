@@ -120,6 +120,7 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
+//        PreferenceCategory translator_category = (PreferenceCategory) findPreference(getString("pref_cat_translator"));
         SwitchPreference optimizer = (SwitchPreference) findPreference(getResources().getString(R.string.pref_optimizer_enabled));
         optimizer.setEnabled(!(translator.getValue().equals("0")));
         optimizer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

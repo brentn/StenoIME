@@ -13,7 +13,7 @@
             android:defaultValue="false"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/translator">
+    <PreferenceCategory android:key="@string/pref_cat_translator" android:title="@string/translator">
         <ListPreference android:key="@string/pref_translator"
             android:title="@string/translator_type"
             android:entries="@array/translator_names"
@@ -39,6 +39,11 @@
     <PreferenceCategory android:title="@string/dictionary">
         <Preference android:key="@string/pref_dictionary_button"
             android:title="@string/edit_dictionaries"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/key_options">
+        <SwitchPreference android:key="@string/key_show_perf_notifications"
+            defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/hardware">

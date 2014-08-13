@@ -138,4 +138,7 @@
     <string name="title_lesson7">Lesson 7 - further info.</string>
     <string name="key_optimizer_button">optimizer_button</string>
     <string name="text_optimizer_button">View Stroke Suggestions...</string>
+    <string name="pref_cat_translator">pref_cat_translator</string>
+    <string name="key_show_perf_notifications">Show Performance Notifications</string>
+    <string name="key_options">Options</string>
 </resources>

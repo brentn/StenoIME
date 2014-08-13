@@ -28,7 +28,6 @@ public class StenoApp extends Application {
     public static final String TAG = StenoApp.class.getSimpleName();
 
     private static final boolean USE_WORD_LIST = true;
-    private static final boolean SHOW_PERFORMANCE_NOTIFICATIONS = true;
 
     private static final String PUBLICKEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnyCtAAdSMc6ErV+EaMzTesLJSStqYq9cKBf4e8Cy9byfTIaclMK49SU/3+cPsXPX3LoVvmNitfWx4Cd5pUEIad3SEkYRWxGlfwdh4CGY2Cxy7bQEw/y+vIvHX5qXvPljcs6LtoJn9Ui01LTtEQ130rg6p61VuA4+MAuNZS2ReHf4IB7pqnNpMYQbWghpEN+rIrGnfTj2Bz/lZzNqmM+BHir4WH4Uu9zKExlxN+fe2CaKWTLMCi+xhwvZpjm2IgRWQ02wdf2aVezDSDPg7Ze/yKU/3aCWpzdMtBuheWJCf7tS1QjF8XCBi70iVngb20EPAkfnOjkP7F7y08Gg3AF9OQIDAQAB";
     public static final String SKU_NKRO_KEYBOARD = "nkro_keyboard_connection";
@@ -46,6 +45,7 @@ public class StenoApp extends Application {
     private boolean nkro_enabled = false;
     private boolean txbolt_enabled = false;
     private boolean optimizer_enabled = false;
+    private boolean show_perf_notifications = false;
 
     private static final boolean NO_PURCHASES_NECESSARY=true;
     private static final boolean RESET_PURCHASES_FOR_TESTING =false;
@@ -57,6 +57,7 @@ public class StenoApp extends Application {
         mDictionary = new Dictionary(getApplicationContext());
         nkro_enabled = prefs.getBoolean(getString(R.string.pref_kbd_enabled), false);
         optimizer_enabled = prefs.getBoolean(getString(R.string.pref_optimizer_enabled), false);
+        show_perf_notifications = prefs.getBoolean(getString(R.string.key_show_perf_notifications), false);
         int val = Integer.parseInt(prefs.getString(getString(R.string.pref_translator), "1"));
         mTranslatorType = Translator.TYPE.values()[val];
         mMachineType = StenoMachine.TYPE.VIRTUAL;
@@ -112,7 +113,7 @@ public class StenoApp extends Application {
     public Translator.TYPE getTranslatorType() { return mTranslatorType; }
     public ProgressBar getProgressBar() {return mProgressBar; }
     public boolean useWordList() { return USE_WORD_LIST; }
-    public boolean showPerformanceNotifications() {return SHOW_PERFORMANCE_NOTIFICATIONS;}
+    public boolean showPerformanceNotifications() {return show_perf_notifications;}
     public boolean isNkroKeyboardPurchased() { return NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY; }
     public boolean isNkro_enabled() {
         if (! (NKRO_KEYBOARD_PURCHASED || NO_PURCHASES_NECESSARY)) return false;

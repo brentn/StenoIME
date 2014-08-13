@@ -37,6 +37,7 @@ import com.brentandjody.stenoime.Input.StenoMachine;
 import com.brentandjody.stenoime.Input.TXBoltMachine;
 import com.brentandjody.stenoime.Input.TouchLayer;
 import com.brentandjody.stenoime.Translator.Dictionary;
+import com.brentandjody.stenoime.Translator.FullTranslator;
 import com.brentandjody.stenoime.Translator.OldTranslator;
 import com.brentandjody.stenoime.Translator.RawStrokeTranslator;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
@@ -299,9 +300,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             public void onClick(View view) {
                 alert.dismiss();
                 unlockKeyboard();
-                if (mTranslator instanceof SimpleTranslator) {
-                    sendText(((SimpleTranslator) mTranslator).flush());
-                }
+                sendText(mTranslator.flush());
                 StenoIME.this.sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER);
             }
         });
@@ -532,7 +531,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                     mTranslator = new SimpleTranslator(getApplicationContext());
                 }
                 mTranslator.start();
-                ((SimpleTranslator) mTranslator).setDictionary(App.getDictionary(StenoIME.this));
+                mTranslator.setDictionary(App.getDictionary(StenoIME.this));
+                break;
+            case FullDictionary:
+                if (mTranslator==null ||(! (mTranslator instanceof FullTranslator))) { //if changing types
+                    mTranslator = new FullTranslator(getApplicationContext());
+                }
+                mTranslator.start();
+                mTranslator.setDictionary(App.getDictionary(StenoIME.this));
                 break;
         }
         mTranslator.start();

@@ -2,10 +2,8 @@ package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 import android.util.Log;
-import android.widget.ProgressBar;
 
 import com.brentandjody.stenoime.Translator.Dictionary;
-import com.brentandjody.stenoime.Translator.Stroke;
 
 import junit.framework.Assert;
 
@@ -16,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 

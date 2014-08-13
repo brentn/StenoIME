@@ -14,7 +14,6 @@ import java.util.Stack;
  */
 public class SimpleTranslator extends Translator {
 
-    private static final TranslationResult BLANK_RESULT = new TranslationResult(0, "", "", "");
     private final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "", "", 0, null);
 
     private boolean locked=false;

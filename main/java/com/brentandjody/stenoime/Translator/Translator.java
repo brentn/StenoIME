@@ -6,7 +6,9 @@ package com.brentandjody.stenoime.Translator;
  */
 public abstract class Translator {
 
-    public static enum TYPE {RawStrokes, SimpleDictionary}
+    protected static final TranslationResult BLANK_RESULT = new TranslationResult(0, "", "", "");
+
+    public static enum TYPE {RawStrokes, SimpleDictionary, FullDictionary}
 
     public boolean usesDictionary() {return false;}
     public void lock() {}
@@ -16,8 +18,9 @@ public abstract class Translator {
     public void stop() {}
     public void pause() {}
     public void resume() {}
+    public void setDictionary(Dictionary dictionary) {}
     public void onDictionaryLoaded() {}
-    public TranslationResult flush() {return new TranslationResult(0, "", "", "");}
+    public TranslationResult flush() {return BLANK_RESULT;}
     public abstract TranslationResult translate(Stroke stroke);
 
 

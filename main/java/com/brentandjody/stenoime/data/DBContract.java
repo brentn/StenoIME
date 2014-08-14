@@ -29,4 +29,10 @@ public class DBContract {
         public static final String COLUMN_MAX_SPEED = "maxspeed";
         public static final String COLUMN_CORRECTIONS = "corrections";
     }
+
+    public static final class WordEntry {
+        public static final String TABLE_NAME = "words";
+        public static final String COLUMN_WORD = "key";
+        public static final String COLUMN_SCORE = "value";
+    }
 }

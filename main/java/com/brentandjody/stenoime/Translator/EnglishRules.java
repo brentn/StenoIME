@@ -2,6 +2,8 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 
+import com.brentandjody.stenoime.data.WordListHelper;
+
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -27,10 +29,10 @@ public class EnglishRules {
 
     private static final Rule[] RULES = new Rule[]{RULE1, RULE2, RULE3, RULE4, RULE5, RULE6, RULE7, RULE8, RULE9, RULE10};
 
-    private WordList word_list=null;
+    private WordListHelper word_list=null;
 
     public EnglishRules(Context context) {
-        word_list = new WordList(context);
+        word_list = new WordListHelper(context);
     }
 
     public String bestMatch(String word, String suffix) {
@@ -86,7 +88,7 @@ public class EnglishRules {
     }
 
     private int word_score(String word) {
-        if (word_list==null) return WordList.NOT_FOUND; //if not using word list
+        if (word_list==null) return WordListHelper.NOT_FOUND; //if not using word list
         return word_list.score(word);
     }
 

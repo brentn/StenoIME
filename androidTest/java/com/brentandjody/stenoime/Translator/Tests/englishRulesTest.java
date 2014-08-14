@@ -2,15 +2,15 @@ package com.brentandjody.stenoime.Translator.Tests;
 
 import android.test.AndroidTestCase;
 
-import com.brentandjody.stenoime.Translator.Suffixes;
+import com.brentandjody.stenoime.Translator.EnglishRules;
 
 /**
  * Test Created by brentn on 16/01/14.
  */
-public class SuffixesTest extends AndroidTestCase {
+public class englishRulesTest extends AndroidTestCase {
 
     public void testOrthography() throws Exception {
-        Suffixes mSuffixes = new Suffixes(getContext(), true);
+        EnglishRules mSuffixes = new EnglishRules(getContext());
         assertEquals("artistically ", mSuffixes.bestMatch("artistic", "ly"));
         assertEquals("establishes ", mSuffixes.bestMatch("establish", "s"));
         assertEquals("speeches ", mSuffixes.bestMatch("speech", "s"));

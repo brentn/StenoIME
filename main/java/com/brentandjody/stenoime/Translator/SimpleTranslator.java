@@ -14,14 +14,14 @@ import java.util.Stack;
  */
 public class SimpleTranslator extends Translator {
 
-    private final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "", "", 0, null);
+    protected final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "", "", 0, null);
 
     private boolean locked=false;
-    private Formatter mFormatter;
-    private Formatter.State mPriorState;
-    private Dictionary mDictionary=null;
-    private Stack<HistoryItem> mHistory = new Stack<HistoryItem>();
-    private Deque<String> mStrokeQueue = new ArrayDeque<String>();
+    protected Formatter mFormatter;
+    protected Formatter.State mPriorState;
+    protected Dictionary mDictionary=null;
+    protected Stack<HistoryItem> mHistory = new Stack<HistoryItem>();
+    protected Deque<String> mStrokeQueue = new ArrayDeque<String>();
 
     public SimpleTranslator(Context context) {
         mFormatter = new Formatter();
@@ -132,21 +132,22 @@ public class SimpleTranslator extends Translator {
                 word="";
                 while (word.isEmpty() && partial_stroke.contains("/")) {
                     partial_stroke = partial_stroke.substring(0, partial_stroke.lastIndexOf("/"));
-                    word = mFormatter.format(mDictionary.forceLookup(partial_stroke));
+                    word = mDictionary.forceLookup(partial_stroke);
+                    if (word == null) word="";
                 }
                 if (word.isEmpty()) {
-                    word = mFormatter.format(mDictionary.forceLookup(partial_stroke));
-                    if (word.isEmpty()) {
+                    word = mDictionary.forceLookup(partial_stroke);
+                    if (word == null) {
                         word="/"+rtfcre;
                         partial_stroke=rtfcre;
                     }
                 }
-                result += word;
-                rtfcre = rtfcre.replaceAll("^" + partial_stroke + "(/)?", ""); //remove partial_stroke from start of rtfcre
+                result += word+" ";
+                rtfcre = rtfcre.replaceAll("^" + partial_stroke.replace("*","\\*") + "(/)?", ""); //remove partial_stroke from start of rtfcre
             }
             result = result.replaceAll("^/",""); //remove leading slash
         }
-        return result.trim();
+        return result;
     }
 
     private int unCommitTwoStrokes() {
@@ -174,7 +175,7 @@ public class SimpleTranslator extends Translator {
     }
 
     private TranslationResult commitQueue(String translation) {
-        String text = mFormatter.format(translation);
+        String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
         mHistory.push(new HistoryItem(text.length(), strokesInQueue(), text, mFormatter.backspaces(), mPriorState));
         mStrokeQueue.clear();
         mPriorState = mFormatter.getState();
@@ -197,11 +198,10 @@ public class SimpleTranslator extends Translator {
             lookupResult = forceLookup(strokesInQueue());
             result = commitQueue(lookupResult);
             // put strokes that were not used back into the queue
-            mStrokeQueue.clear();
             while (!temp.isEmpty()) {
                 mStrokeQueue.add(temp.pop());
             }
-            result = addPreview(result);
+//            result = addPreview(result);
         } else { // entire queue is not found
             result = commitQueue(strokes_in_full_queue);
         }
@@ -239,7 +239,7 @@ public class SimpleTranslator extends Translator {
             }
         }
         text = text + b.getText();
-        return new TranslationResult(backspaces, text, getPreview(), "");
+        return new TranslationResult(backspaces, text, "", "");
     }
 
     private boolean found(String lookupResult) {
@@ -261,18 +261,18 @@ public class SimpleTranslator extends Translator {
         return sb.substring(0, sb.lastIndexOf("/"));
     }
 
-    private String getPreview() {
+    protected String getPreview() {
         // force lookup of strokesInQueue(),
         // and if not found, return raw strokes
         if (mStrokeQueue.isEmpty()) return "";
-        return mFormatter.format(forceLookup(strokesInQueue()), true); //format, but don't update state
+        return mFormatter.format(forceLookup(strokesInQueue()), Formatter.ACTION.Ignore_state); //format, but don't update state
     }
 
     private TranslationResult addPreview(TranslationResult tr) {
         return new TranslationResult(tr.getBackspaces(), tr.getText(), getPreview(), tr.getExtra());
     }
 
-    private class HistoryItem {
+    protected class HistoryItem {
         private int mLength;
         private String mRtfcre;
         private String mText;

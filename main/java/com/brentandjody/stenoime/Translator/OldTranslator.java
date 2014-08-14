@@ -26,14 +26,14 @@ public class OldTranslator extends Translator {
     private Deque<String> strokeQ = new ArrayDeque<String>();
     private Stack<HistoryItem> history = new Stack<HistoryItem>();
     private int preview_backspaces=0;
-    private Suffixes suffixMachine;
+    private EnglishRules suffixMachine;
     private boolean use_optimizer;
 
 
     public OldTranslator(Context context) {
         mContext = context;
         mFormatter = new Formatter();
-        suffixMachine = new Suffixes(context);
+        suffixMachine = new EnglishRules(context);
         if (context instanceof StenoApp) {
             use_optimizer = ((StenoApp) context).isOptimizerEnabled();
             if (use_optimizer) {
@@ -44,7 +44,7 @@ public class OldTranslator extends Translator {
 
     public OldTranslator(Context context, boolean useWordList) { //for testing
         mFormatter = new Formatter();
-        suffixMachine = new Suffixes(context, useWordList);
+        suffixMachine = new EnglishRules(context);
     }
 
     public void setDictionary(Dictionary dictionary) {
@@ -122,7 +122,7 @@ public class OldTranslator extends Translator {
     public TranslationResult flush() {
         String text="";
         if (mDictionary != null && !mDictionary.isLoading()) {
-            text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+            text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()), Formatter.ACTION.Update_State);
             addToHistory(text.length(), strokesInQueue(), text, 0, mFormatter.getState());
         }
         strokeQ.clear();
@@ -196,7 +196,7 @@ public class OldTranslator extends Translator {
                 if (found(lookupResult)) {
                     if (!ambiguous(lookupResult)) {
                         state = mFormatter.getState();
-                        text = mFormatter.format(lookupResult);
+                        text = mFormatter.format(lookupResult, Formatter.ACTION.Update_State);
                         backspaces = mFormatter.backspaces();
                         addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
                         strokeQ.clear();
@@ -205,9 +205,9 @@ public class OldTranslator extends Translator {
                     if (strokeQ.size() == 1) {
                         state = mFormatter.getState();
                         if (Formatter.isNumeric(stroke)) {
-                            text = mFormatter.format(stroke);
+                            text = mFormatter.format(stroke, Formatter.ACTION.Update_State);
                         } else {
-                            text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                            text = mFormatter.format(trySuffixFolding(strokesInQueue()), Formatter.ACTION.Update_State);
                         }
                         backspaces = mFormatter.backspaces();
                         addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
@@ -225,9 +225,9 @@ public class OldTranslator extends Translator {
                         // at this point, either a lookup was found, or the queue is empty
                         if (found(lookupResult)) {
                             state = mFormatter.getState();
-                            text = mFormatter.format(lookupResult);
+                            text = mFormatter.format(lookupResult, Formatter.ACTION.Update_State);
                             if (text.isEmpty())
-                                text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()));
+                                text = mFormatter.format(mDictionary.forceLookup(strokesInQueue()), Formatter.ACTION.Update_State);
                             backspaces = mFormatter.backspaces();
                             if (mFormatter.wasSuffix()) {
                                 history.push(new HistoryItem(0, "", "", 0, null)); //dummy item
@@ -255,9 +255,9 @@ public class OldTranslator extends Translator {
                             }
                             state = mFormatter.getState();
                             if (Formatter.isNumeric(stroke)) {
-                                text = mFormatter.format(stroke);
+                                text = mFormatter.format(stroke, Formatter.ACTION.Update_State);
                             } else {
-                                text = mFormatter.format(trySuffixFolding(strokesInQueue()));
+                                text = mFormatter.format(trySuffixFolding(strokesInQueue()), Formatter.ACTION.Update_State);
                             }
                             backspaces = mFormatter.backspaces();
                             addToHistory(text.length(), strokesInQueue(), text, backspaces, state);
@@ -310,7 +310,7 @@ public class OldTranslator extends Translator {
         String key = mDictionary.longestPrefix(strokesInQueue());
         //Log.d(TAG, "lookupQueue-longestPrefix:"+key);
         if (key.isEmpty()) return strokesInQueue()+" "; //no prefix found
-        String result = mFormatter.format(mDictionary.forceLookup(key), true);
+        String result = mFormatter.format(mDictionary.forceLookup(key), Formatter.ACTION.Ignore_state);
         preview_backspaces += mFormatter.backspaces();
         while (key.length()<stroke.length()) {
             stroke = stroke.substring(key.length()+1);
@@ -320,7 +320,7 @@ public class OldTranslator extends Translator {
                 key=stroke;
                 result += "/"+stroke;
             } else {
-                result += mFormatter.format(mDictionary.forceLookup(key), true);
+                result += mFormatter.format(mDictionary.forceLookup(key), Formatter.ACTION.Ignore_state);
                 preview_backspaces += mFormatter.backspaces();
             }
         }

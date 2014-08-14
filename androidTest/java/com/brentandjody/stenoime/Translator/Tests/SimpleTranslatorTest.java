@@ -117,11 +117,11 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 5, "", "adds ");        //admitted adds
         checkResults(translator.translate(new Stroke("*")), 9, "admitted ", "");   //admitted
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");        //admitted im
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT "); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im /PHORT "); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
-        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im/PHORT ");     //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im /PHORT ");     //admitted im/PHORT
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");           //admitted im
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT "); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im /PHORT "); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");        //admitted immortal.
         checkResults(translator.translate(new Stroke("*")), 9, "immortal ", "");   //admitted immortal
@@ -204,7 +204,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I ");
         checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am ");
         checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "am big ");
-        checkResults(translator.translate(new Stroke("S-P")), 0, "am big  ", "");
+        checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }
 
     private void checkResults(TranslationResult result, int bs, String text, String preview) {

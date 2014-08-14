@@ -43,7 +43,8 @@
 
     <PreferenceCategory android:title="@string/key_options">
         <SwitchPreference android:key="@string/key_show_perf_notifications"
-            defaultValue="false"/>
+            android:title="@string/display_perf_notifications"
+            android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/hardware">

@@ -17,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class FullTranslatorTest extends AndroidTestCase {
 
+    private static final String TAG = FullTranslator.class.getSimpleName();
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -72,6 +74,7 @@ public class FullTranslatorTest extends AndroidTestCase {
 
 
     public void testTranslate() throws Exception {
+        Log.d(TAG, "testTranslate()");
         final FullTranslator translator = new FullTranslator(getContext());
         final Dictionary dictionary = new Dictionary(getContext());
         final CountDownLatch latch = new CountDownLatch(1);
@@ -87,6 +90,7 @@ public class FullTranslatorTest extends AndroidTestCase {
         // null
         checkResults(translator.translate(null), 0, "", "");
         // not found (with & without queue)
+        Log.d(TAG, "not found (with and without queue)");
         checkResults(translator.translate(new Stroke("-B")), 0, "-B ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "", "admit ");
@@ -100,15 +104,13 @@ public class FullTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKRESZ")), 0, "", "address ");
         checkResults(translator.translate(new Stroke("SAOE")), 0, "addressee ", "");
         // endings (with & without queue
-        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD ");
-        checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
-        checkResults(translator.translate(new Stroke("-G")), 1, "ing ", "");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
         checkResults(translator.translate(new Stroke("HREU")), 0, "adds ", "ly ");
-        checkResults(translator.translate(new Stroke("ADZ")), 1, "ly ", "adds ");
+        checkResults(translator.translate(new Stroke("ADZ")), 5, "addsly ", "adds ");  //word list
         checkResults(translator.translate(new Stroke("PHEUT")), 0, "", "admit ");
         checkResults(translator.translate(new Stroke("-D")), 0, "admitted ", "");
         // undo (with & without queue)
+        Log.d(TAG, "undo (with and without queue");
         checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");      //admitted adds
         checkResults(translator.translate(new Stroke("*")), 9, "admitted ", "");    //admitted
         checkResults(translator.translate(new Stroke("AEFLD")), 0, "realized ", "");//admitted realized
@@ -118,16 +120,17 @@ public class FullTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 5, "", "adds ");        //admitted adds
         checkResults(translator.translate(new Stroke("*")), 9, "admitted ", "");   //admitted
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");        //admitted im
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT "); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im /PHORT "); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
-        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im/PHORT ");     //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im /PHORT ");     //admitted im/PHORT
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");           //admitted im
-        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im/PHORT "); //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im /PHORT "); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
         checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");        //admitted immortal.
         checkResults(translator.translate(new Stroke("*")), 9, "immortal ", "");   //admitted immortal
 
         // test period and subsequent capital with undo
+        Log.d(TAG, "test period and subsequent capital with undo");
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God "); //God
         checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ". ");  //God.
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ". ", "Thank "); //God.  Thank
@@ -138,18 +141,20 @@ public class FullTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 1, "", ". ");        //God.
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");       //God
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "God ", "thank ");//God thank
-        checkResults(translator.translate(new Stroke("-FL")), 0, "thankful ", "");//God thankful
-        checkResults(translator.translate(new Stroke("-PBS")), 1, "ness ", "");//God thankfulness
-        checkResults(translator.translate(new Stroke("*")), 8, "ful ", ""); //God thankful
+        checkResults(translator.translate(new Stroke("-FL")), 6, "thankful ", "");//God thankful
+        checkResults(translator.translate(new Stroke("-PBS")), 9, "thankfulness ", "");//God thankfulness
+        checkResults(translator.translate(new Stroke("*")), 17, "God thankful ", ""); //God thankful
         checkResults(translator.translate(new Stroke("*")), 9, "", "thank ");     //God thank
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");      //God
         // test fingerspelling and undo
+        Log.d(TAG, "test fingerspelling and undo");
         checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");    //a
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");       //ab
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");       //abc
         checkResults(translator.translate(new Stroke("*")), 3, "b ", "");         //ab
         checkResults(translator.translate(new Stroke("*")), 3, "a ", "");         //a
         // caps should persist through enter, but not other words.
+        Log.d(TAG, "caps should persist through enter, but not other words.");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "", "thank ");
         checkResults(translator.translate(new Stroke("U")), 0, "thank ", "you ");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "you ", "thank ");
@@ -160,29 +165,33 @@ public class FullTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("R-R")), 0, "\n", "");
         checkResults(translator.translate(new Stroke("U")), 0, "", "You ");
         checkResults(translator.translate(new Stroke("-PL")), 0, "You ", ". ");
-        checkResults(translator.translate(new Stroke("R-R")), 1, ". \n", "");
+        checkResults(translator.translate(new Stroke("R-R")), 1, ".\n", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "", "Thank ");
-        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "Thank \n\n", "");
+        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "Thank\n\n", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "", "Thank ");
-        checkResults(translator.translate(new Stroke("R-R")), 0, "Thank \n", "");
+        checkResults(translator.translate(new Stroke("R-R")), 0, "Thank\n", "");
         checkResults(translator.translate(new Stroke("U")), 0, "", "you ");
         checkResults(translator.translate(new Stroke("KPA")), 0, "you  ", "");
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "", "Thank ");
-        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "Thank \n\n", "");
+        checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "Thank\n\n", "");
         checkResults(translator.translate(new Stroke("U")), 0, "", "You ");
-        checkResults(translator.translate(new Stroke("R-R")), 0, "You \n", "");
+        checkResults(translator.translate(new Stroke("R-R")), 0, "You\n", "");
 
         //Suffix Folding
+        //Log.d(TAG, "Suffix Folding");
 //        checkResults(translator.translate(new Stroke("UD")), 0, "youed ", "");
 //        checkResults(translator.translate(new Stroke("UG")), 0, "youing ", "");
 //        checkResults(translator.translate(new Stroke("US")), 0, "yous ", "");
-//        //Word List
-//        checkResults(translator.translate(new Stroke("ART")), 0, "", "art ");
-//        checkResults(translator.translate(new Stroke("EUFT")), 0, "", "artist ");
-//        checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
-//        checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
-//        checkResults(translator.translate(new Stroke("U")), 9, "artistically ", "you ");
-//        checkResults(translator.translate(new Stroke("R-R")), 0, "you \n", "");
+        //Word List
+        checkResults(translator.translate(new Stroke("AD")), 0, "", "AD ");
+        checkResults(translator.translate(new Stroke("ULT")), 0, "adult ", "");
+        checkResults(translator.translate(new Stroke("-G")), 6, "adulting ", "");
+        checkResults(translator.translate(new Stroke("ART")), 0, "", "art ");
+        checkResults(translator.translate(new Stroke("EUFT")), 0, "", "artist ");
+        checkResults(translator.translate(new Stroke("EUBG")), 0, "artistic ", "");
+        checkResults(translator.translate(new Stroke("HREU")), 0, "", "ly ");
+        checkResults(translator.translate(new Stroke("U")), 9, "artistically ", "you ");
+        checkResults(translator.translate(new Stroke("R-R")), 0, "you\n", "");
 
         //Numbers
         checkResults(translator.translate(new Stroke("#S")), 0, "1 ", "");
@@ -291,7 +300,7 @@ public class FullTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EU")), 0, "", "I ");
         checkResults(translator.translate(new Stroke("APL")), 0, "I ", "am ");
         checkResults(translator.translate(new Stroke("PWEUG")), 0, "", "am big ");
-        checkResults(translator.translate(new Stroke("S-P")), 0, "am big  ", "");
+        checkResults(translator.translate(new Stroke("S-P")), 0, "am big ", "");
     }
 
     private void checkResults(TranslationResult result, int bs, String text, String preview) {

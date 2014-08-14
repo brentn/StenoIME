@@ -10,7 +10,8 @@ import java.util.List;
  */
 public class Formatter {
 
-    public static  enum CASE {Capital, Lowercase}
+    public static enum CASE {Capital, Lowercase}
+    public static enum ACTION {Update_State, Ignore_state}
     public static final String punctuation = ":;,";
 
     private int mBackspaces;
@@ -24,12 +25,12 @@ public class Formatter {
     }
 
     public String format (String input) {
-        return format (input, false);  //format string and update state by default
+        return format (input, ACTION.Update_State);  //format string and update state by default
     }
 
-    public String format (String input, boolean reset_state) {
-        mSuffix = false;
+    public String format (String input, ACTION action) {
         State prior_state = getState();
+        mSuffix = false;
         mBackspaces =0;
         if (input==null || input.length()==0) return "";
         if (isNumeric(input.replace("/",""))) {
@@ -44,29 +45,29 @@ public class Formatter {
             for (String atom : breakApart(input)) {
                 mSuffix = isSuffix(atom);
                 if (atom.equals("{#Return}")) {
-                    sb.append(backspaces(mPriorSpaces)+"\n"); space=""; atom="";
+                    sb.append(backspaces(mPriorSpaces)+"\n"); space=""; atom="";mPriorSpaces=0;
                 }
                 if (atom.equals("{#BackSpace}")) {
                     sb.append("\b"); space=""; atom="";
                 }
                 if (atom.equals("{#Tab}")) {
-                    sb.append(backspaces(mPriorSpaces)+"\t"); space=""; atom="";
+                    sb.append(backspaces(mPriorSpaces)+"\t"); space=""; atom="";mPriorSpaces=0;
                 }
                 if (atom.equals("{,}")) {
-                    sb.append(backspaces(mPriorSpaces)+","); atom="";
+                    sb.append(backspaces(mPriorSpaces)+","); atom="";mPriorSpaces=0;
                 }
                 if (atom.equals("{.}")) {
-                    sb.append(backspaces(mPriorSpaces)+"."); new_capitalization=CASE.Capital; atom="";
+                    sb.append(backspaces(mPriorSpaces)+"."); new_capitalization=CASE.Capital; atom="";mPriorSpaces=0;
                 }
                 if (atom.equals("{?}")) {
-                    sb.append(backspaces(mPriorSpaces)+"?"); new_capitalization=CASE.Capital; atom="";
+                    sb.append(backspaces(mPriorSpaces)+"?"); new_capitalization=CASE.Capital; atom="";mPriorSpaces=0;
                 }
                 if (atom.equals("{!}")) {
-                    sb.append(backspaces(mPriorSpaces)+"!"); new_capitalization=CASE.Capital; atom="";
+                    sb.append(backspaces(mPriorSpaces)+"!"); new_capitalization=CASE.Capital; atom="";mPriorSpaces=0;
                 }
                 if (atom.contains("{^")) {
                     if (sb.length()==0 || sb.charAt(sb.length()-1) == ' ') {
-                        sb.append(backspaces(mPriorSpaces));
+                        sb.append(backspaces(mPriorSpaces));mPriorSpaces=0;
                     }
                     atom = atom.replace("{^", "");
                 }
@@ -85,31 +86,37 @@ public class Formatter {
                 }
                 atom = atom.replace("{","").replace("}","");
                 // remove space before punctuation
-                if (atom.length() == 1 && punctuation.contains(atom))
+                if (atom.length() == 1 && punctuation.contains(atom)) {
                     sb.append(backspaces(mPriorSpaces));
+                    mPriorSpaces = 0;
+                }
                 sb.append(atom);
             }
             // process flags
-            boolean text_not_empty = !sb.toString().replace("\n","").isEmpty();
-            if (mGlue && new_glue)
+            boolean text_has_letters = sb.toString().matches(".*[a-zA-Z]+.*");
+            if (mGlue && new_glue) {
                 sb.reverse().append(backspaces(mPriorSpaces)).reverse();
-            if (text_not_empty) {
+                mPriorSpaces = 0;
+            }
+            if (text_has_letters) {
                 if (mCapitalization ==CASE.Capital)
                     sb.replace(0,1,sb.substring(0,1).toUpperCase());
                 if (mCapitalization ==CASE.Lowercase)
                     sb.replace(0,1,sb.substring(0,1).toLowerCase());
             }
             mGlue = new_glue;
-            if (text_not_empty || new_capitalization!=null) {
+            if (text_has_letters || new_capitalization!=null) {
                 mCapitalization = new_capitalization;
             }
 
             output = sb.toString();
-            if (reset_state) {
-                restoreState(prior_state);
-            }
         }
         mPriorSpaces=space.length();
+        if (action==ACTION.Ignore_state) {
+            restoreState(prior_state);
+        }
+        if (output.length()>0 && output.charAt(output.length()-1)==' ' && space==" ") //if output already ends in a space, don't add another
+            space="";
         return remove_backspaces(output)+space;
     }
 
@@ -121,6 +128,7 @@ public class Formatter {
         mCapitalization =null;
         mGlue =false;
         mSuffix =false;
+        mPriorSpaces=0;
     }
 
     public void restoreState(State state) {

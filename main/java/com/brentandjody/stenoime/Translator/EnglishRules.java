@@ -2,8 +2,6 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 
-import com.brentandjody.stenoime.StenoApp;
-
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -14,7 +12,7 @@ import java.util.regex.Pattern;
  * Created by brentn on 16/01/14.
  * Handle English suffix orthography with optional word list
  */
-public class Suffixes {
+public class EnglishRules {
 
     private static final Rule RULE1 = new Rule(Pattern.compile("^(.*[aeiou]c) \\^ ly$", Pattern.CASE_INSENSITIVE), "\\1ally");
     private static final Rule RULE2 = new Rule(Pattern.compile("^(.*(?:s|sh|x|z|zh)) \\^ s$", Pattern.CASE_INSENSITIVE), "\\1es");
@@ -31,21 +29,14 @@ public class Suffixes {
 
     private WordList word_list=null;
 
-    public Suffixes(Context context) {
-        if ((context instanceof StenoApp) && (((StenoApp)context).useWordList())) {
-            word_list = new WordList(context);
-        }
-    }
-
-    public Suffixes(Context context, boolean useWordList) {  //for testing (need to specify wordlist manually
-        if (useWordList) {
-            word_list = new WordList(context);
-        }
+    public EnglishRules(Context context) {
+        word_list = new WordList(context);
     }
 
     public String bestMatch(String word, String suffix) {
         word = word.trim();
         suffix = suffix.trim();
+        String result = word+suffix+" "; //default is a simple join
         Comparator<Word> wordScoreComparator = new WordScoreComparator();
         Queue<Word> candidates = new PriorityQueue<Word>(3, wordScoreComparator);
         //try 'ible' instead of able
@@ -60,12 +51,17 @@ public class Suffixes {
         }
         //try rules
         candidates.addAll(in_word_list(make_candidates_from_rules(word, suffix)));
-        if (!candidates.isEmpty()) return candidates.remove().getText()+" ";
-        //try candidates without lookup
-        candidates = make_candidates_from_rules(word, suffix);
-        if (!candidates.isEmpty()) return candidates.remove().getText()+" ";
+        if (!candidates.isEmpty()) {
+            result = candidates.peek().getText() + " ";
+        } else {
+            //try candidates without lookup
+            candidates = make_candidates_from_rules(word, suffix);
+            if (!candidates.isEmpty()) {
+                result = candidates.peek().getText() + " ";
+            }
+        }
         //if all else fails, just join
-        return (word+suffix)+" ";
+        return result;
     }
 
     private boolean in_word_list(String word) {

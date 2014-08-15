@@ -38,7 +38,6 @@ import com.brentandjody.stenoime.Input.TXBoltMachine;
 import com.brentandjody.stenoime.Input.TouchLayer;
 import com.brentandjody.stenoime.Translator.Dictionary;
 import com.brentandjody.stenoime.Translator.FullTranslator;
-import com.brentandjody.stenoime.Translator.OldTranslator;
 import com.brentandjody.stenoime.Translator.RawStrokeTranslator;
 import com.brentandjody.stenoime.Translator.SimpleTranslator;
 import com.brentandjody.stenoime.Translator.Stroke;
@@ -583,11 +582,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendChar(char c) {
-        if (mTranslator instanceof OldTranslator) {
-            sendText(((OldTranslator) mTranslator).insertIntoHistory(String.valueOf(c)));
-        } else {
-            sendText(new TranslationResult(0, String.valueOf(c), "", ""));
-        }
+        TranslationResult special_char = new TranslationResult(1, String.valueOf(c));
+        sendText(mTranslator.insertIntoHistory(special_char));
     }
 
     private void sendText(TranslationResult tr) {
@@ -604,9 +600,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             }
         }
         // deal with backspaces
-        if (tr.getBackspaces()==-2) {  // this is a special signal to trim any trailing spaces
-            trimSpaces(connection);
-        } else if (tr.getBackspaces()==-1) {  // this is a special signal to remove the prior word
+        if (tr.hasCodeToDeletePriorWord()) {
             smartDelete(connection);
         } else if (tr.getBackspaces() > 0) {
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
@@ -617,10 +611,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         //draw the preview
         if (inline_preview) {
             String p = tr.getPreview();
-            if (mTranslator instanceof OldTranslator) {
-                int bs = ((OldTranslator) mTranslator).preview_backspaces();
-                redo_space=(bs > 0);
-            }
+            redo_space = (tr.getPreviewBackspaces()>0);
             if (redo_space)
                 connection.deleteSurroundingText(1, 0);
             connection.commitText(p, 1);

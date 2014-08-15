@@ -3,7 +3,10 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 
+import com.brentandjody.stenoime.StenoApp;
+
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Stack;
@@ -14,17 +17,23 @@ import java.util.Stack;
  */
 public class SimpleTranslator extends Translator {
 
-    protected final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "", "", 0, null);
+    protected final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "DUMMY", "", 0, null);
 
-    private boolean locked=false;
+    protected boolean locked=false;
+    protected boolean use_optimizer=false;
+    protected Context mContext;
     protected Formatter mFormatter;
+    protected Optimizer mOptimizer=null;
     protected Formatter.State mPriorState;
     protected Dictionary mDictionary=null;
     protected Stack<HistoryItem> mHistory = new Stack<HistoryItem>();
     protected Deque<String> mStrokeQueue = new ArrayDeque<String>();
 
     public SimpleTranslator(Context context) {
+        mContext = context;
         mFormatter = new Formatter();
+        if (context instanceof StenoApp)
+            use_optimizer = ((StenoApp) context).isOptimizerEnabled();
     }
 
     public void lock() {
@@ -36,15 +45,51 @@ public class SimpleTranslator extends Translator {
     }
 
     public void start() {
+        if (use_optimizer) {
+            if (mOptimizer==null) {
+                mOptimizer = new Optimizer(mContext);
+                mOptimizer.initialize();
+            } else {
+                mOptimizer.resume();
+            }
+        } else {
+            mOptimizer = null;
+        }
+        reset();
     }
 
     public void resume() {
+        if (use_optimizer && mOptimizer!=null) {
+            mOptimizer.resume();
+        }
+        reset();
     }
 
     public void pause() {
+        if (mOptimizer!=null) {
+            mOptimizer.pause();
+        }
     }
 
     public void stop() {
+        if (mOptimizer!=null) {
+            mOptimizer.stop();
+            mOptimizer = null;
+        }
+    }
+
+    public void reset() {
+        mHistory.removeAllElements();
+        flush();
+    }
+
+    public TranslationResult flush() {
+        TranslationResult result = BLANK_RESULT;
+        if (mDictionary.isLoaded()) {
+            result = commitQueue(forceLookup(strokesInQueue()));
+        }
+        mFormatter.resetState();
+        return result;
     }
 
     public boolean usesDictionary() {
@@ -53,6 +98,12 @@ public class SimpleTranslator extends Translator {
 
     public void setDictionary(Dictionary dictionary) {
         mDictionary = dictionary;
+    }
+
+    public void onDictionaryLoaded() {
+        if (use_optimizer && mOptimizer!=null) {
+            mOptimizer.initialize();
+        }
     }
 
     @Override
@@ -66,6 +117,14 @@ public class SimpleTranslator extends Translator {
         } else {
             result = lookup(rtfcre);
         }
+        return result;
+    }
+
+    @Override
+    public TranslationResult insertIntoHistory(TranslationResult tr) {
+        TranslationResult result =  flush();
+        result = append(result, tr);
+        mHistory.add(new HistoryItem(tr.getText().length(), "", tr.getText(), tr.getBackspaces(), mFormatter.getState()));
         return result;
     }
 
@@ -83,12 +142,12 @@ public class SimpleTranslator extends Translator {
         }
         if (mStrokeQueue.isEmpty()) {
             if (!mHistory.isEmpty()) {
-                int backspaces = unCommitTwoStrokes();
+                TranslationResult unCommit = unCommitTwoStrokes();
                 mStrokeQueue.removeLast(); //undo the last stroke
-                result = append(result, new TranslationResult(backspaces, "", "", ""));
+                result = append(result, unCommit);
                 result = append(result, replayQueue());
             } else {
-                result = new TranslationResult(-1, "", "", "");// special code that deletes prior word
+                result = TranslationResult.deletePriorWord();
             }
         }
         return addPreview(result);
@@ -98,7 +157,7 @@ public class SimpleTranslator extends Translator {
         TranslationResult result = BLANK_RESULT;
         mStrokeQueue.add(rtfcre);
         if (mDictionary==null || !mDictionary.isLoaded()) {
-            result = new TranslationResult(0, "", "Dictionary not loaded...", "");
+            result = new TranslationResult(0, "", 0, "Dictionary not loaded...", "");
         } else {
             boolean done = false;
             while (!mStrokeQueue.isEmpty() && !done) {
@@ -121,7 +180,7 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
-    private String forceLookup(String rtfcre) {
+    protected String forceLookup(String rtfcre) {
         // return as much translated English as possible for a given stroke
         String result = mDictionary.forceLookup(rtfcre);
         if (result == null) { //split it up
@@ -138,7 +197,7 @@ public class SimpleTranslator extends Translator {
                 if (word.isEmpty()) {
                     word = mDictionary.forceLookup(partial_stroke);
                     if (word == null) {
-                        word="/"+rtfcre;
+                        word=rtfcre;
                         partial_stroke=rtfcre;
                     }
                 }
@@ -150,10 +209,11 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
-    private int unCommitTwoStrokes() {
+    private TranslationResult unCommitTwoStrokes() {
         // take two strokes out of history, and put them back on the queue
-        // return the number of backspaces to remove them
+        // return the number of backspaces to remove them, and any redo-spaces from the first
         int backspaces = 0;
+        String text = "";
         if (!mHistory.isEmpty()) {
             HistoryItem item1 = mHistory.pop();
             backspaces = item1.length() - item1.backspaces();
@@ -163,23 +223,30 @@ public class SimpleTranslator extends Translator {
 
             if (!mHistory.isEmpty()) {
                 HistoryItem item2 = mHistory.pop();
-                backspaces += item2.length() - item2.backspaces();
+                backspaces += item2.length();
+                text = spaces(item2.backspaces());
                 if (item2.getState() != null) {
                     mFormatter.restoreState(item2.getState());
                 }
                 Collections.addAll(mStrokeQueue, item2.rtfcre().split("/"));
+            } else {
+                text = spaces(item1.backspaces());
             }
             Collections.addAll(mStrokeQueue, item1.rtfcre().split("/"));
         }
-        return backspaces;
+        return new TranslationResult(backspaces, text);
     }
 
     private TranslationResult commitQueue(String translation) {
         String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
-        mHistory.push(new HistoryItem(text.length(), strokesInQueue(), text, mFormatter.backspaces(), mPriorState));
+        String stroke = strokesInQueue();
+        int bs = mFormatter.backspaces();
+        mHistory.push(new HistoryItem(text.length(), stroke, text, bs, mPriorState));
+        if (mOptimizer!=null)
+            mOptimizer.analyze(stroke, bs, text);
         mStrokeQueue.clear();
         mPriorState = mFormatter.getState();
-        return new TranslationResult(mFormatter.backspaces(), text, "", "");
+        return new TranslationResult(mFormatter.backspaces(), text);
     }
 
     private TranslationResult splitQueue() {
@@ -203,7 +270,7 @@ public class SimpleTranslator extends Translator {
             }
 //            result = addPreview(result);
         } else { // entire queue is not found
-            result = commitQueue(strokes_in_full_queue);
+            result = commitQueue(forceLookup(strokes_in_full_queue));  //do this lookup to allow suffix folding
         }
         return result;
     }
@@ -221,7 +288,7 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
-    private TranslationResult append(TranslationResult a, TranslationResult b) {
+    protected TranslationResult append(TranslationResult a, TranslationResult b) {
         if (a==null && b==null) return BLANK_RESULT;
         if (a==null) return b;
         if (b==null) return a;
@@ -239,7 +306,7 @@ public class SimpleTranslator extends Translator {
             }
         }
         text = text + b.getText();
-        return new TranslationResult(backspaces, text, "", "");
+        return new TranslationResult(backspaces, text);
     }
 
     private boolean found(String lookupResult) {
@@ -261,16 +328,30 @@ public class SimpleTranslator extends Translator {
         return sb.substring(0, sb.lastIndexOf("/"));
     }
 
-    protected String getPreview() {
+    private TranslationResult getPreview() {
         // force lookup of strokesInQueue(),
         // and if not found, return raw strokes
-        if (mStrokeQueue.isEmpty()) return "";
-        return mFormatter.format(forceLookup(strokesInQueue()), Formatter.ACTION.Ignore_state); //format, but don't update state
+        if (mStrokeQueue.isEmpty()) return BLANK_RESULT;
+        String translation = forceLookup(strokesInQueue()).trim();
+        // format, but don't update formatter state
+        Formatter.State state = mFormatter.getState();
+        String text = mFormatter.format(translation);
+        int backspaces = mFormatter.backspaces();
+        mFormatter.restoreState(state);
+        return new TranslationResult(0, "", backspaces, text, "");
     }
 
-    private TranslationResult addPreview(TranslationResult tr) {
-        return new TranslationResult(tr.getBackspaces(), tr.getText(), getPreview(), tr.getExtra());
+    protected TranslationResult addPreview(TranslationResult tr) {
+        TranslationResult preview = getPreview();
+        return new TranslationResult(tr.getBackspaces(), tr.getText(), preview.getPreviewBackspaces(), preview.getPreview(), tr.getExtra());
     }
+
+    protected String spaces(int length) {
+        char[] result = new char[length];
+        Arrays.fill(result, ' ');
+        return new String(result);
+    }
+
 
     protected class HistoryItem {
         private int mLength;

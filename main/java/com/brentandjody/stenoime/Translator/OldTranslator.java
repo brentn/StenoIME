@@ -127,11 +127,11 @@ public class OldTranslator extends Translator {
         }
         strokeQ.clear();
         mFormatter.resetState();
-        return new TranslationResult(0, text, "", "");
+        return new TranslationResult(0, text);
     }
 
     public TranslationResult translate(Stroke stroke) {
-        if (stroke==null || stroke.rtfcre().isEmpty()) return new TranslationResult(0, "", "", "");
+        if (stroke==null || stroke.rtfcre().isEmpty()) return new TranslationResult(0, "");
         int bs = 0;
         String outtext = "";
         String preview = "";
@@ -144,12 +144,12 @@ public class OldTranslator extends Translator {
             preview = tr.getPreview();
             extra = tr.getExtra();
         }
-        return new TranslationResult(bs, outtext, preview, extra);
+        return new TranslationResult(bs, outtext, preview_backspaces, preview, extra);
     }
 
     private TranslationResult translate_simple_stroke(String stroke) {
-        if (stroke==null) return new TranslationResult(0, "", "", "");
-        if (mDictionary.size()<10) return new TranslationResult(0, "", "Dictionary Not Loaded", "");
+        if (stroke==null) return new TranslationResult(0, "");
+        if (mDictionary.size()<10) return new TranslationResult(0, "", 0, "Dictionary Not Loaded", "");
         Formatter.State state;
         int backspaces = 0;
         String text = "";
@@ -231,7 +231,7 @@ public class OldTranslator extends Translator {
                             backspaces = mFormatter.backspaces();
                             if (mFormatter.wasSuffix()) {
                                 history.push(new HistoryItem(0, "", "", 0, null)); //dummy item
-                                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, "", ""), strokesInQueue());
+                                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text), strokesInQueue());
                                 text = fixed.getText();
                                 backspaces = fixed.getBackspaces();
                             } else {
@@ -268,22 +268,22 @@ public class OldTranslator extends Translator {
             }
             preview_text = lookupQueue();
             if (mFormatter.wasSuffix()) {
-                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, preview_text, ""), stroke);
+                TranslationResult fixed = applySuffixOrthography(new TranslationResult(backspaces, text, preview_backspaces, preview_text, ""), stroke);
                 text = fixed.getText();
                 backspaces = fixed.getBackspaces();
             }
         }
         //Log.d(TAG, "text:" + text + " preview:" + preview_text);
-        return new TranslationResult(backspaces, text, preview_text, "");
+        return new TranslationResult(backspaces, text, preview_backspaces, preview_text, "");
     }
 
     public TranslationResult insertIntoHistory(String text) {
         TranslationResult result;
         if (strokeQ.size()>0) {
             TranslationResult queueContents= flush();
-            result = new TranslationResult(queueContents.getBackspaces(), queueContents.getText()+text, "", "");
+            result = new TranslationResult(queueContents.getBackspaces(), queueContents.getText()+text);
         } else {
-            result = new TranslationResult(0, text, "", "");
+            result = new TranslationResult(0, text);
         }
         addToHistory(text.length(), "", text, 0, mFormatter.getState());
         return result;
@@ -337,7 +337,7 @@ public class OldTranslator extends Translator {
         mFormatter.restoreState(item.getState());
         String result = suffixMachine.bestMatch(word, suffix);
         history.push(new HistoryItem(result.length(), item.stroke() + "/" + stroke, result, item.backspaces(), item.getState()));
-        return new TranslationResult(item.length(), result , "","");
+        return new TranslationResult(item.length(), result);
     }
 
     private String trySuffixFolding(String stroke) {

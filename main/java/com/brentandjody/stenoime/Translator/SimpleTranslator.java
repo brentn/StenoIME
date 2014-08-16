@@ -2,6 +2,7 @@ package com.brentandjody.stenoime.Translator;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import com.brentandjody.stenoime.StenoApp;
 
@@ -16,6 +17,8 @@ import java.util.Stack;
  * Basic dictionary lookup, nothing fancy
  */
 public class SimpleTranslator extends Translator {
+
+    public static final String TAG = SimpleTranslator.class.getSimpleName();
 
     protected boolean locked=false;
     protected boolean use_optimizer=false;
@@ -90,6 +93,14 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
+    public void onLowMemory() {
+        Log.d(TAG, "Low on memory, releasing optimizer");
+        if (mOptimizer!=null) {
+            mOptimizer.stop();
+            mOptimizer=null;
+        }
+    }
+
     public boolean usesDictionary() {
         return true;
     }
@@ -144,7 +155,7 @@ public class SimpleTranslator extends Translator {
             TranslationResult item = unCommitHistoryItem();
             result = append(result, item);
             // If this particular item deletes a word without replacing it, then keep undoing
-            while (item.getText().length() > 1 && !mHistory.isEmpty()) {
+            while (item.getText().length() > 0 && !mHistory.isEmpty()) {
                 item = unCommitHistoryItem();
                 result = append(result,item);
             }
@@ -231,34 +242,6 @@ public class SimpleTranslator extends Translator {
         return result;
     }
 
-//    private TranslationResult unCommitTwoStrokes() {
-//        // take two strokes out of history, and put them back on the queue
-//        // return the number of backspaces to remove them, and any redo-spaces from the first
-//        int backspaces = 0;
-//        String text = "";
-//        if (!mHistory.isEmpty()) {
-//            HistoryItem item1 = mHistory.pop();
-//            backspaces = item1.length() - item1.backspaces();
-//            if (item1.getState() != null) {
-//                mFormatter.restoreState(item1.getState());
-//            }
-//
-//            if (!mHistory.isEmpty()) {
-//                HistoryItem item2 = mHistory.pop();
-//                backspaces += item2.length();
-//                text = spaces(item2.backspaces());
-//                if (item2.getState() != null) {
-//                    mFormatter.restoreState(item2.getState());
-//                }
-//                Collections.addAll(mStrokeQueue, item2.rtfcre().split("/"));
-//            } else {
-//                text = spaces(item1.backspaces());
-//            }
-//            Collections.addAll(mStrokeQueue, item1.rtfcre().split("/"));
-//        }
-//        return new TranslationResult(backspaces, text);
-//    }
-
     protected TranslationResult commitQueue(String translation) {
         String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
         String stroke = strokesInQueue();
@@ -276,7 +259,6 @@ public class SimpleTranslator extends Translator {
         // and leave the remaining strokes on the queue
         TranslationResult result = BLANK_RESULT;
         Stack<String> temp = new Stack<String>();
-        String strokes_in_full_queue = strokesInQueue();
         String lookupResult = mDictionary.lookup(strokesInQueue());
         while (!found(lookupResult) && !mStrokeQueue.isEmpty()) {
             temp.push(mStrokeQueue.removeLast());

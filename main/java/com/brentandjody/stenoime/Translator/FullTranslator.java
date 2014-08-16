@@ -18,7 +18,7 @@ public class FullTranslator extends SimpleTranslator {
 
     @Override
     protected TranslationResult commitQueue(String translation) {
-        String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
+        String text = mFormatter.format(translation);
         String stroke = strokesInQueue();
         int bs = mFormatter.backspaces();
         mHistory.push(new HistoryItem(text.length(), stroke, text, bs, mPriorState));
@@ -73,7 +73,7 @@ public class FullTranslator extends SimpleTranslator {
         String word = item.text();             //this was the root word
         int backspaces = word.length();
         mFormatter.restoreState(item.getState());
-        String result = EnglishRules.bestMatch(word, suffix);
+        String result = mFormatter.format(EnglishRules.bestMatch(word, suffix));
         // replace the suffix stroke in history
         mHistory.push(new HistoryItem(result.length(), suffixItem.rtfcre(), result, backspaces, suffixItem.getState()));
         return new TranslationResult(backspaces, result );

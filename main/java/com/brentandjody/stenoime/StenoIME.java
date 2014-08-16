@@ -16,6 +16,7 @@ import android.hardware.usb.UsbManager;
 import android.inputmethodservice.InputMethodService;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -69,6 +70,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private SharedPreferences prefs;
     private boolean inline_preview;
     private boolean keyboard_locked=false;
+    private boolean capitalize_first_letter;
     private boolean configuration_changed;
     private Translator mTranslator;
     private long last_notification_time=new Date().getTime();
@@ -153,6 +155,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             setCandidatesViewShown(false);
             removeVirtualKeyboard();
         } else {
+            int typeclass = attribute.inputType & InputType.TYPE_MASK_CLASS;
+            int variation = attribute.inputType & InputType.TYPE_MASK_VARIATION;
+            capitalize_first_letter = false;
+            if (typeclass == InputType.TYPE_CLASS_TEXT) {
+                if ((variation != InputType.TYPE_TEXT_VARIATION_PASSWORD) && (variation != InputType.TYPE_TEXT_VARIATION_URI)) {
+                    capitalize_first_letter = true;
+                }
+            }
             initializeMachine();
             initializeTranslator();
             initializePreview();
@@ -201,6 +211,14 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         App.unloadDictionary();
         mKeyboard=null;
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mTranslator!=null) {
+            mTranslator.onLowMemory();
+        }
     }
 
     @Override
@@ -606,11 +624,12 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             connection.deleteSurroundingText(tr.getBackspaces(), 0);
             stats.addLetters(-tr.getBackspaces());
         }
-        connection.commitText(tr.getText(), 1);
+        String text = capitalize_if_necessary(connection, tr.getText());
+        connection.commitText(text, 1);
         stats.addLetters(tr.getText().length());
         //draw the preview
         if (inline_preview) {
-            String p = tr.getPreview();
+            String p = capitalize_if_necessary(connection, tr.getPreview());
             redo_space = (tr.getPreviewBackspaces()>0);
             if (redo_space)
                 connection.deleteSurroundingText(1, 0);
@@ -618,6 +637,31 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
             preview_length = p.length();
         }
         connection.endBatchEdit();
+    }
+
+    private String capitalize_if_necessary(InputConnection c, String s) {
+        if (c!=null && capitalize_first_letter && s.length()>0 && isEmpty(c)) {
+            StringBuilder sb = new StringBuilder(s);
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+            return sb.toString();
+        }
+        return s;
+    }
+
+    private boolean isEmpty(InputConnection ic) {
+        if (ic != null) {
+            CharSequence text = ic.getTextBeforeCursor(1, 0);
+            if (text != null && text.length() < 1) {
+                text = ic.getTextAfterCursor(1, 0);
+                if (text != null && text.length() < 1) {
+                    text = ic.getSelectedText(0);
+                    if (text == null || text.length() < 1) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void smartDelete(InputConnection connection) {

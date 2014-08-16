@@ -18,6 +18,7 @@ public abstract class Translator {
     public void stop() {}
     public void pause() {}
     public void resume() {}
+    public void onLowMemory() {}
     public void setDictionary(Dictionary dictionary) {}
     public void onDictionaryLoaded() {}
     public TranslationResult insertIntoHistory(TranslationResult tr) {return tr;}

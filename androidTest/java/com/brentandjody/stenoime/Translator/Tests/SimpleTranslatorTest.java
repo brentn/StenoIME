@@ -147,28 +147,29 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("SKWRAURBGS")), 0, "Thank\n\n", "");
         checkResults(translator.translate(new Stroke("U")), 0, "", "You ");
         checkResults(translator.translate(new Stroke("R-R")), 0, "You\n", "");
+
         // test period and subsequent capital with undo
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God "); //God
         checkResults(translator.translate(new Stroke("-PL")), 0, "God ", ". ");  //God.
         checkResults(translator.translate(new Stroke("THAPBG")), 1, ". ", "Thank "); //God.  Thank
         checkResults(translator.translate(new Stroke("U")), 0, "Thank ", "you ");       //God. Thank you
         checkResults(translator.translate(new Stroke("*")), 6, "", "Thank ");    //God. Thank
-        checkResults(translator.translate(new Stroke("*")), 2, " ", ". ");         // God.
+        checkResults(translator.translate(new Stroke("*")), 5, "God ", ". ");         // God.
         checkResults(translator.translate(new Stroke("ADZ")), 1, ". ", "Adds "); //God.  Adds
-        checkResults(translator.translate(new Stroke("*")), 2, " ", ". ");        //God.
+        checkResults(translator.translate(new Stroke("*")), 5, "God ", ". ");        //God.
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");       //God
         checkResults(translator.translate(new Stroke("THAPBG")), 0, "God ", "thank ");//God thank
         checkResults(translator.translate(new Stroke("-FL")), 0, "thankful ", "");//God thankful
         checkResults(translator.translate(new Stroke("-PBS")), 1, "ness ", "");//God thankfulness   (word list)
-        checkResults(translator.translate(new Stroke("*")), 8, "ful ", ""); //God thankful          (word list)
+        checkResults(translator.translate(new Stroke("*")), 13, "thankful ", ""); //God thankful          (word list)
         checkResults(translator.translate(new Stroke("*")), 9, "", "thank ");     //God thank
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");      //God
         // test fingerspelling and undo
         checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");    //a
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");       //ab
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");       //abc
-        checkResults(translator.translate(new Stroke("*")), 3, "b ", "");         //ab
-        checkResults(translator.translate(new Stroke("*")), 3, "a ", "");         //a
+        checkResults(translator.translate(new Stroke("*")), 4, "ab ", "");         //ab
+        checkResults(translator.translate(new Stroke("*")), 4, "a ", "");         //a
         checkResults(translator.translate(new Stroke("R-R")), 1, "\n", "");
         //Numbers
         checkResults(translator.translate(new Stroke("#S")), 0, "1 ", "");
@@ -195,7 +196,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "", "God ");
         checkResults(translator.translate(new Stroke("AES")), 0, "God ", "'s ");
         checkResults(translator.translate(new Stroke("TRAO*UT")), 1, "'s ", "truth ");
-        checkResults(translator.translate(new Stroke("*")), 3, " ", "'s ");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "'s ");
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");
         // funky word boundaries
         checkResults(translator.translate(new Stroke("-T")), 0, "God ", "the ");
@@ -233,7 +234,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TKPWO*D")), 0, "do ", "God ");
         checkResults(translator.translate(new Stroke("AES")), 0, "God ", "'s ");
         checkResults(translator.translate(new Stroke("TRAO*UT")), 1, "'s ", "truth ");
-        checkResults(translator.translate(new Stroke("*")), 3, " ", "'s ");
+        checkResults(translator.translate(new Stroke("*")), 6, "God ", "'s ");
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");
 
         checkResults(translator.translate(new Stroke("#H")), 0, "God 4 ", "");
@@ -244,6 +245,17 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("TPHOT")), 0, "", "not ");
         checkResults(translator.translate(new Stroke("A")), 0, "", "not a");
         checkResults(translator.translate(new Stroke("HROEPB")), 0, "not alone ", "");
+
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");
+        checkResults(translator.translate(new Stroke("SROUPBD")), 1, ". ", "Surround ");
+        checkResults(translator.translate(new Stroke("-G")), 0, "Surrounding ", "");
+        checkResults(translator.translate(new Stroke("OUR")), 0, "", "our ");
+        checkResults(translator.translate(new Stroke("KPA")), 0, "our ", " ");
+        checkResults(translator.translate(new Stroke("EBGS")), 0, " ", "Ex-");
+        checkResults(translator.translate(new Stroke("ALT")), 0, "Exalt ", "");
+        checkResults(translator.translate(new Stroke("-D")), 1, "ed ", "");
+        checkResults(translator.translate(new Stroke("WUB")), 0, "one ", "");
+
 
         outFile.delete();
     }

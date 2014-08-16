@@ -17,15 +17,20 @@ public class FullTranslator extends SimpleTranslator {
     }
 
     @Override
-    public TranslationResult translate(Stroke stroke) {
-        if (locked || stroke==null || stroke.rtfcre().isEmpty()) return BLANK_RESULT;
-        TranslationResult result = super.translate(stroke);
-        if (stroke!=null && !stroke.rtfcre().equals("*")) {
-            if (mFormatter.wasSuffix()) {
-                result = append(result, applyEnglishRules(result, stroke.rtfcre()));
-            }
+    protected TranslationResult commitQueue(String translation) {
+        String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
+        String stroke = strokesInQueue();
+        int bs = mFormatter.backspaces();
+        mHistory.push(new HistoryItem(text.length(), stroke, text, bs, mPriorState));
+        if (mOptimizer!=null)
+            mOptimizer.analyze(stroke, bs, text);
+        mStrokeQueue.clear();
+        mPriorState = mFormatter.getState();
+        TranslationResult result = new TranslationResult(mFormatter.backspaces(), text);
+        if (mFormatter.wasSuffix()) {
+            result = applyEnglishRules(result);
         }
-        return addPreview(result);
+        return result;
     }
 
     @Override
@@ -53,25 +58,25 @@ public class FullTranslator extends SimpleTranslator {
                 result += word+" ";
                 rtfcre = rtfcre.replaceAll("^" + partial_stroke.replace("*","\\*") + "(/)?", ""); //remove partial_stroke from start of rtfcre
             }
-            result = result.replaceAll("^/",""); //remove leading slash
         }
         return result;
     }
 
-    private TranslationResult applyEnglishRules(TranslationResult input, String stroke) {
+    private TranslationResult applyEnglishRules(TranslationResult input) {
+        //although the items are already in history
+        //the latest stroke hasn't been committed to the screen yet.
         if (mHistory.isEmpty()) return input;
-        HistoryItem suffixItem = mHistory.pop(); //this was the current suffix
+        HistoryItem suffixItem = mHistory.pop(); //this was the current suffix.  Remove it, because we will be modifying it
         String suffix = suffixItem.text();
-        int backspaces = suffix.length()-suffixItem.backspaces();
         if (mHistory.isEmpty()) return input;
-        HistoryItem item = mHistory.pop();
+        HistoryItem item = mHistory.peek();    //leave this item in history
         String word = item.text();             //this was the root word
-        backspaces += word.length();
-        String spaces = spaces(item.backspaces());
+        int backspaces = word.length();
         mFormatter.restoreState(item.getState());
         String result = EnglishRules.bestMatch(word, suffix);
-        mHistory.push(new HistoryItem(result.length(), item.rtfcre() + "/" + stroke, result, item.backspaces(), item.getState()));
-        return new TranslationResult(backspaces, spaces + result );
+        // replace the suffix stroke in history
+        mHistory.push(new HistoryItem(result.length(), suffixItem.rtfcre(), result, backspaces, suffixItem.getState()));
+        return new TranslationResult(backspaces, result );
     }
 
     private String applySuffixFolding(String stroke) {
@@ -85,21 +90,21 @@ public class FullTranslator extends SimpleTranslator {
             if (lookup != null) {
                 switch (last_char) {
                     case 'G':
-                        return lookup + "ing";
+                        return lookup + "{^ing}";
                     case 'D':
-                        return lookup + "ed";
+                        return lookup + "{^ed}";
                     case 'S':
-                        return lookup + "s";
+                        return lookup + "{^s}";
                 }
             }
         }
-        //otherwise
-        String prefix = mDictionary.longestPrefix(stroke);
-        if (prefix.isEmpty()) {
+//        //otherwise
+//        String prefix = mDictionary.longestPrefix(stroke);
+//        if (prefix.isEmpty()) {
             return stroke;
-        } else {
-            return prefix;
-        }
+//        } else {
+//            return prefix;
+//        }
     }
 
 

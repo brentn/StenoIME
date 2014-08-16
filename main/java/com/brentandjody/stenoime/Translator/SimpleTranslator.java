@@ -17,8 +17,6 @@ import java.util.Stack;
  */
 public class SimpleTranslator extends Translator {
 
-    protected final HistoryItem DUMMY_HISTORY_ITEM = new HistoryItem(0, "DUMMY", "", 0, null);
-
     protected boolean locked=false;
     protected boolean use_optimizer=false;
     protected Context mContext;
@@ -85,7 +83,7 @@ public class SimpleTranslator extends Translator {
 
     public TranslationResult flush() {
         TranslationResult result = BLANK_RESULT;
-        if (mDictionary.isLoaded()) {
+        if (mDictionary!=null && mDictionary.isLoaded()) {
             result = commitQueue(forceLookup(strokesInQueue()));
         }
         mFormatter.resetState();
@@ -124,32 +122,34 @@ public class SimpleTranslator extends Translator {
     public TranslationResult insertIntoHistory(TranslationResult tr) {
         TranslationResult result =  flush();
         result = append(result, tr);
-        mHistory.add(new HistoryItem(tr.getText().length(), "", tr.getText(), tr.getBackspaces(), mFormatter.getState()));
+        mHistory.push(new HistoryItem(tr.getText().length(), "", tr.getText(), tr.getBackspaces(), mFormatter.getState()));
         return result;
     }
 
     //*******Private methods*****
 
     private TranslationResult undo() {
-        // if queue is not empty, just delete an item from the queue
-        // otherwise remove an item from history
         TranslationResult result = BLANK_RESULT;
-        if (!mStrokeQueue.isEmpty()) {
-            mStrokeQueue.removeLast();
-            if (mStrokeQueue.isEmpty()) {
-                mHistory.push(DUMMY_HISTORY_ITEM); //this will be removed in the next step
-            }
-        }
+        // ensure there is something in the queue
         if (mStrokeQueue.isEmpty()) {
-            if (!mHistory.isEmpty()) {
-                TranslationResult unCommit = unCommitTwoStrokes();
-                mStrokeQueue.removeLast(); //undo the last stroke
-                result = append(result, unCommit);
-                result = append(result, replayQueue());
-            } else {
-                result = TranslationResult.deletePriorWord();
+            if (mHistory.isEmpty()) {
+                return TranslationResult.deletePriorWord();
+            }
+            result = unCommitHistoryItem();
+        }
+        //undo the last item
+        mStrokeQueue.removeLast();
+        // ensure there is still an item in the queue to undo (if there is history)
+        if (mStrokeQueue.isEmpty() && !mHistory.isEmpty()) {
+            TranslationResult item = unCommitHistoryItem();
+            result = append(result, item);
+            // If this particular item deletes a word without replacing it, then keep undoing
+            while (item.getText().length() > 1 && !mHistory.isEmpty()) {
+                item = unCommitHistoryItem();
+                result = append(result,item);
             }
         }
+        result = append(result, replayQueue());
         return addPreview(result);
     }
 
@@ -204,40 +204,62 @@ public class SimpleTranslator extends Translator {
                 result += word+" ";
                 rtfcre = rtfcre.replaceAll("^" + partial_stroke.replace("*","\\*") + "(/)?", ""); //remove partial_stroke from start of rtfcre
             }
-            result = result.replaceAll("^/",""); //remove leading slash
         }
         return result;
     }
 
-    private TranslationResult unCommitTwoStrokes() {
-        // take two strokes out of history, and put them back on the queue
-        // return the number of backspaces to remove them, and any redo-spaces from the first
-        int backspaces = 0;
-        String text = "";
+    private TranslationResult unCommitHistoryItem() {
+        // take a stroke out of history, and put it back on the queue
+        // return the number of backspaces to delete this text, and any redo spaces (in text)
+        TranslationResult result = BLANK_RESULT;
         if (!mHistory.isEmpty()) {
-            HistoryItem item1 = mHistory.pop();
-            backspaces = item1.length() - item1.backspaces();
-            if (item1.getState() != null) {
-                mFormatter.restoreState(item1.getState());
+            HistoryItem item = mHistory.pop();
+            result = new TranslationResult(item.length(), spaces(item.backspaces()));
+            if (item.getState() != null) {
+                mFormatter.restoreState(item.getState());
             }
-
-            if (!mHistory.isEmpty()) {
-                HistoryItem item2 = mHistory.pop();
-                backspaces += item2.length();
-                text = spaces(item2.backspaces());
-                if (item2.getState() != null) {
-                    mFormatter.restoreState(item2.getState());
-                }
-                Collections.addAll(mStrokeQueue, item2.rtfcre().split("/"));
-            } else {
-                text = spaces(item1.backspaces());
+            // add undone strokes to the front of the queue
+            Stack<String> temp = new Stack<String>();
+            while (!mStrokeQueue.isEmpty()) {
+                temp.push(mStrokeQueue.removeLast());
             }
-            Collections.addAll(mStrokeQueue, item1.rtfcre().split("/"));
+            Collections.addAll(mStrokeQueue, item.rtfcre().split("/"));
+            while (!temp.isEmpty()) {
+                mStrokeQueue.add(temp.pop());
+            }
         }
-        return new TranslationResult(backspaces, text);
+        return result;
     }
 
-    private TranslationResult commitQueue(String translation) {
+//    private TranslationResult unCommitTwoStrokes() {
+//        // take two strokes out of history, and put them back on the queue
+//        // return the number of backspaces to remove them, and any redo-spaces from the first
+//        int backspaces = 0;
+//        String text = "";
+//        if (!mHistory.isEmpty()) {
+//            HistoryItem item1 = mHistory.pop();
+//            backspaces = item1.length() - item1.backspaces();
+//            if (item1.getState() != null) {
+//                mFormatter.restoreState(item1.getState());
+//            }
+//
+//            if (!mHistory.isEmpty()) {
+//                HistoryItem item2 = mHistory.pop();
+//                backspaces += item2.length();
+//                text = spaces(item2.backspaces());
+//                if (item2.getState() != null) {
+//                    mFormatter.restoreState(item2.getState());
+//                }
+//                Collections.addAll(mStrokeQueue, item2.rtfcre().split("/"));
+//            } else {
+//                text = spaces(item1.backspaces());
+//            }
+//            Collections.addAll(mStrokeQueue, item1.rtfcre().split("/"));
+//        }
+//        return new TranslationResult(backspaces, text);
+//    }
+
+    protected TranslationResult commitQueue(String translation) {
         String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
         String stroke = strokesInQueue();
         int bs = mFormatter.backspaces();
@@ -258,7 +280,7 @@ public class SimpleTranslator extends Translator {
         String lookupResult = mDictionary.lookup(strokesInQueue());
         while (!found(lookupResult) && !mStrokeQueue.isEmpty()) {
             temp.push(mStrokeQueue.removeLast());
-            lookupResult = mDictionary.lookup(strokesInQueue());
+            lookupResult = mDictionary.forceLookup(strokesInQueue()); //need force-lookup here, and not just lookup because some ambiguous lookups don't have lookups themselves
         }
         // at this point either a lookup was found, or mStrokeQueue is empty (or both)
         if (found(lookupResult)) {
@@ -268,9 +290,13 @@ public class SimpleTranslator extends Translator {
             while (!temp.isEmpty()) {
                 mStrokeQueue.add(temp.pop());
             }
-//            result = addPreview(result);
-        } else { // entire queue is not found
-            result = commitQueue(forceLookup(strokes_in_full_queue));  //do this lookup to allow suffix folding
+        } else { // not found (queue is empty)
+            // commit a raw stroke, and put the rest back on the queue
+            lookupResult = forceLookup(temp.pop()); //this is a raw stroke, but we need to look it up for suffix folding
+            result = commitQueue(lookupResult);
+            while (!temp.isEmpty()) {
+                mStrokeQueue.add(temp.pop());
+            }
         }
         return result;
     }
@@ -319,7 +345,7 @@ public class SimpleTranslator extends Translator {
         return (lookupResult != null && !lookupResult.isEmpty());
     }
 
-    private String strokesInQueue() {
+    protected String strokesInQueue() {
         if (mStrokeQueue.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         for (String s : mStrokeQueue) {

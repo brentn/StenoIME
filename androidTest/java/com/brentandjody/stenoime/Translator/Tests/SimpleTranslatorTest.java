@@ -119,7 +119,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("EUPL")), 0, "", "im");        //admitted im
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im PHORT"); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
-        checkResults(translator.translate(new Stroke("*")), 18, "admitted ", "im PHORT");     //admitted im/PHORT
+        checkResults(translator.translate(new Stroke("*")), 9, "", "im PHORT");     //admitted im/PHORT
         checkResults(translator.translate(new Stroke("*")), 0, "", "im");           //admitted im
         checkResults(translator.translate(new Stroke("PHORT")), 0, "", "im PHORT"); //admitted im/PHORT
         checkResults(translator.translate(new Stroke("AL")), 0, "immortal ", "");   //admitted immortal
@@ -205,7 +205,7 @@ public class SimpleTranslatorTest extends AndroidTestCase {
 
     }
 
-    public void estRealDictionary() throws Exception {
+    public void testRealDictionary() throws Exception {
         InputStream in = getContext().getAssets().open("dict.json");
         File outFile = new File("/sdcard", "dict.json");
         OutputStream out = new FileOutputStream(outFile);

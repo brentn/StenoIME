@@ -69,6 +69,28 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         assertEquals("adds ", translator.translate(new Stroke("ADZ")).getPreview());
     }
 
+    public void testInsertIntoHistory() throws Exception {
+        final SimpleTranslator translator = new SimpleTranslator(getContext());
+        final Dictionary dictionary = new Dictionary(getContext());
+        final CountDownLatch latch = new CountDownLatch(1);
+        dictionary.load(new String[]{"/sdcard/test.json"}, null, 10);
+        dictionary.setOnDictionaryLoadedListener(new Dictionary.OnDictionaryLoadedListener() {
+            @Override
+            public void onDictionaryLoaded() {
+                latch.countDown();
+            }
+        });
+        latch.await();
+        translator.setDictionary(dictionary);
+        checkResults(translator.translate(new Stroke("ADZ")), 0, "", "adds ");
+        checkResults(translator.insertIntoHistory(new TranslationResult(0, "(")), 0, "adds (", "");
+        checkResults(translator.translate(new Stroke("THAPBG")), 0, "", "thank ");
+        checkResults(translator.insertIntoHistory(new TranslationResult(1, ")")), 0, "thank)", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "", "thank ");
+        checkResults(translator.translate(new Stroke("*")), 1, "(", "");
+        checkResults(translator.translate(new Stroke("*")), 6, "", "adds ");
+        checkResults(translator.translate(new Stroke("*")), 0, "", "");
+    }
 
     public void testTranslate() throws Exception {
         final SimpleTranslator translator = new SimpleTranslator(getContext());

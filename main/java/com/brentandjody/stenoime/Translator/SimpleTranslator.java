@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 /**
  * Created by brent on 01/12/13.
@@ -19,6 +20,7 @@ import java.util.Stack;
 public class SimpleTranslator extends Translator {
 
     public static final String TAG = SimpleTranslator.class.getSimpleName();
+    protected static final String LITERAL_KEYWORD = "{LITERAL}";
 
     protected boolean locked=false;
     protected boolean use_optimizer=false;
@@ -87,7 +89,9 @@ public class SimpleTranslator extends Translator {
     public TranslationResult flush() {
         TranslationResult result = BLANK_RESULT;
         if (mDictionary!=null && mDictionary.isLoaded()) {
-            result = commitQueue(forceLookup(strokesInQueue()));
+            if (!strokesInQueue().isEmpty()) {
+                result = commitQueue(forceLookup(strokesInQueue()));
+            }
         }
         mFormatter.resetState();
         return result;
@@ -133,7 +137,8 @@ public class SimpleTranslator extends Translator {
     public TranslationResult insertIntoHistory(TranslationResult tr) {
         TranslationResult result =  flush();
         result = append(result, tr);
-        mHistory.push(new HistoryItem(tr.getText().length(), "", tr.getText(), tr.getBackspaces(), mFormatter.getState()));
+        mHistory.push(new HistoryItem(tr.getText().length(), LITERAL_KEYWORD+"{"+tr.getText()+"^}", tr.getText(), tr.getBackspaces(), mFormatter.getState()));
+        mPriorState = mFormatter.getState();
         return result;
     }
 
@@ -193,6 +198,9 @@ public class SimpleTranslator extends Translator {
 
     protected String forceLookup(String rtfcre) {
         // return as much translated English as possible for a given stroke
+        if (rtfcre.contains(LITERAL_KEYWORD)) {
+            return rtfcre.replace(LITERAL_KEYWORD, "");
+        }
         String result = mDictionary.forceLookup(rtfcre);
         if (result == null) { //split it up
             result="";
@@ -213,7 +221,7 @@ public class SimpleTranslator extends Translator {
                     }
                 }
                 result += word+" ";
-                rtfcre = rtfcre.replaceAll("^" + partial_stroke.replace("*","\\*") + "(/)?", ""); //remove partial_stroke from start of rtfcre
+                rtfcre = rtfcre.replaceAll("^" + Pattern.quote(partial_stroke) + "(/)?", ""); //remove partial_stroke from start of rtfcre
             }
         }
         return result;

@@ -3,6 +3,8 @@ package com.brentandjody.stenoime.Translator;
 
 import android.content.Context;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by brent on 01/12/13.
  * Implement as much of Plover dictionary format as possible
@@ -36,6 +38,9 @@ public class FullTranslator extends SimpleTranslator {
     @Override
     protected String forceLookup(String rtfcre) {
         // return as much translated English as possible for a given stroke
+        if (rtfcre.contains(LITERAL_KEYWORD)) {
+            return rtfcre.replace(LITERAL_KEYWORD, "");
+        }
         String result = mDictionary.forceLookup(rtfcre);
         if (result == null) { //split it up
             result="";
@@ -56,7 +61,7 @@ public class FullTranslator extends SimpleTranslator {
                     }
                 }
                 result += word+" ";
-                rtfcre = rtfcre.replaceAll("^" + partial_stroke.replace("*","\\*") + "(/)?", ""); //remove partial_stroke from start of rtfcre
+                rtfcre = rtfcre.replaceAll("^" + Pattern.quote(partial_stroke) + "(/)?", ""); //remove partial_stroke from start of rtfcre
             }
         }
         return result;

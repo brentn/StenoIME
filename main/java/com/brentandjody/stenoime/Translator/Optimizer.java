@@ -119,6 +119,9 @@ public class Optimizer {
         Log.d(TAG, "stop()");
         loading=false;
         running=false;
+        if (mLookupTable != null) {
+            mLookupTable.close();
+        }
         mLookupTable=null;
         mAnalyzer=null;
         input.clear();
@@ -134,6 +137,9 @@ public class Optimizer {
 
     public void reloadLookupTable(Dictionary dictionary) {
         // this method is for testing
+        if (mLookupTable != null) {
+            mLookupTable.close();
+        }
         new BackgroundLoader().execute(dictionary);
     }
 
@@ -183,16 +189,16 @@ public class Optimizer {
         return result;
     }
 
-    private String findBetterStroke(String stroke, String translation) {
-        if (translation==null || translation.trim().length()==0) return null;
-        //return any clearly better stroke, or null
-        String bestStroke = get(translation.trim());
-        if (bestStroke == null) return null;
-        if (countStrokes(bestStroke) < countStrokes(stroke)) {
-            return bestStroke;
-        }
-        return null;
-    }
+//    private String findBetterStroke(String stroke, String translation) {
+//        if (translation==null || translation.trim().length()==0) return null;
+//        //return any clearly better stroke, or null
+//        String bestStroke = get(translation.trim());
+//        if (bestStroke == null) return null;
+//        if (countStrokes(bestStroke) < countStrokes(stroke)) {
+//            return bestStroke;
+//        }
+//        return null;
+//    }
 
     private void notifyBetterStroke(Candidate candidate) {
         //Send notification, and add to list if any clearly better stroke is available
@@ -354,10 +360,15 @@ public class Optimizer {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            mLookupTable = new LookupTableHelper(mContext).getReadableDatabase();
-            if (loading) {
-                loading = false;
-                start();
+            try {
+                mLookupTable = new LookupTableHelper(mContext).getReadableDatabase();
+                if (loading) {
+                    loading = false;
+                    start();
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Error opening database: "+e.getMessage());
+                Optimizer.this.stop();
             }
         }
     }
@@ -376,9 +387,6 @@ public class Optimizer {
         public String getStroke() {return stroke;}
         public String getTranslation() {return translation;}
         public int getCounter() {return counter;}
-
-        public void increment(int initial_value) {
-            counter =initial_value+1;}
 
         public void append(Candidate c) {
             //appends another stroke/translation pair to this one

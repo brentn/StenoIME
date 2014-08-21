@@ -799,7 +799,8 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private void lockKeyboard() {
         Log.d(TAG, "lockKeyboard()");
         keyboard_locked=true;
-        showPreviewBar(true);
+        //show preview bar if required, or for dictionary progress bar
+        showPreviewBar(!inline_preview || (mTranslator!=null && mTranslator.usesDictionary() && !App.isDictionaryLoaded()));
         if ((mKeyboard != null) && (App.getMachineType() == StenoMachine.TYPE.VIRTUAL)) {
             View overlay = mKeyboard.findViewById(R.id.overlay);
             if (overlay != null) overlay.setVisibility(View.VISIBLE);

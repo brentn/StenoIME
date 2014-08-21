@@ -118,12 +118,12 @@ public class SimpleTranslator extends Translator {
     @Override
     public TranslationResult translate(Stroke stroke) {
         if (locked || stroke==null || stroke.rtfcre().isEmpty()) return BLANK_RESULT;
-        mPriorState = mFormatter.getState();
         String rtfcre = stroke.rtfcre();
         TranslationResult result = BLANK_RESULT;
         if (rtfcre.equals("*")) {
             result = undo();
         } else {
+            mPriorState = mFormatter.getState();
             result = lookup(rtfcre);
         }
         return result;
@@ -228,7 +228,10 @@ public class SimpleTranslator extends Translator {
             result = new TranslationResult(item.length(), spaces(item.backspaces()));
             if (item.getState() != null) {
                 mFormatter.restoreState(item.getState());
+            } else {
+                mFormatter.resetState();
             }
+            mPriorState=mFormatter.getState();
             // add undone strokes to the front of the queue
             Stack<String> temp = new Stack<String>();
             while (!mStrokeQueue.isEmpty()) {
@@ -243,15 +246,20 @@ public class SimpleTranslator extends Translator {
     }
 
     protected TranslationResult commitQueue(String translation) {
-        String text = mFormatter.format(translation, Formatter.ACTION.Update_State);
-        String stroke = strokesInQueue();
+        TranslationResult result = commit(strokesInQueue(), translation);
+        mStrokeQueue.clear();
+        return result;
+    }
+
+    private TranslationResult commit(String stroke, String translation) {
+        String text = mFormatter.format(translation);
         int bs = mFormatter.backspaces();
         mHistory.push(new HistoryItem(text.length(), stroke, text, bs, mPriorState));
         if (mOptimizer!=null)
             mOptimizer.analyze(stroke, bs, text);
-        mStrokeQueue.clear();
         mPriorState = mFormatter.getState();
-        return new TranslationResult(mFormatter.backspaces(), text);
+        return new TranslationResult(bs, text);
+
     }
 
     private TranslationResult splitQueue() {
@@ -284,6 +292,7 @@ public class SimpleTranslator extends Translator {
     }
 
     private TranslationResult replayQueue() {
+        // only call from undo, to avoid endless loop
         TranslationResult result = BLANK_RESULT;
         Stack<String> temp = new Stack<String>();
         while (!mStrokeQueue.isEmpty()) {

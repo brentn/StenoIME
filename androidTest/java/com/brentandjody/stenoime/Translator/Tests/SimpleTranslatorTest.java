@@ -164,12 +164,20 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("*")), 13, "thankful ", ""); //God thankful          (word list)
         checkResults(translator.translate(new Stroke("*")), 9, "", "thank ");     //God thank
         checkResults(translator.translate(new Stroke("*")), 4, "", "God ");      //God
+
+        checkResults(translator.translate(new Stroke("OUR")), 0, "God ", "our ");
+        checkResults(translator.translate(new Stroke("PAEUL")), 0, "our pail ", "");
+        checkResults(translator.translate(new Stroke("-PL")), 0, "", ". ");
+        checkResults(translator.translate(new Stroke("T")), 1, ". ", "It ");
+        checkResults(translator.translate(new Stroke("*")), 6, "pail ", ". ");
+        checkResults(translator.translate(new Stroke("*")), 5, "pail ", "");
+
         // test fingerspelling and undo
-        checkResults(translator.translate(new Stroke("A*")), 0, "God a ", "");    //a
+        checkResults(translator.translate(new Stroke("A*")), 0, "a ", "");    //a
         checkResults(translator.translate(new Stroke("PW*")), 1, "b ", "");       //ab
         checkResults(translator.translate(new Stroke("KR*")), 1, "c ", "");       //abc
         checkResults(translator.translate(new Stroke("*")), 4, "ab ", "");         //ab
-        checkResults(translator.translate(new Stroke("*")), 4, "a ", "");         //a
+        checkResults(translator.translate(new Stroke("*")), 3, "a ", "");         //a
         checkResults(translator.translate(new Stroke("R-R")), 1, "\n", "");
         //Numbers
         checkResults(translator.translate(new Stroke("#S")), 0, "1 ", "");

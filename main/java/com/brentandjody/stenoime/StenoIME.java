@@ -600,7 +600,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     }
 
     private void sendChar(char c) {
-        TranslationResult special_char = new TranslationResult(1, String.valueOf(c));
+        TranslationResult special_char = new TranslationResult(0, String.valueOf(c));
         sendText(mTranslator.insertIntoHistory(special_char));
     }
 

@@ -6,10 +6,8 @@
         android:title="@string/text_tutorial_button"/>
 
     <PreferenceCategory android:title="Virtual Keyboard">
-        <SwitchPreference android:key="@string/pref_zoom_enabled"
+        <CheckBoxPreference android:key="@string/pref_zoom_enabled"
             android:title="@string/keyboard_magnifier"
-            android:summaryOn="@string/zoom_on_summary"
-            android:summaryOff="@string/zoom_off_summary"
             android:defaultValue="false"/>
     </PreferenceCategory>
 
@@ -19,7 +17,7 @@
             android:entries="@array/translator_names"
             android:entryValues="@array/translator_values"
             android:defaultValue="1"/>
-        <SwitchPreference android:key="@string/pref_optimizer_enabled"
+        <CheckBoxPreference android:key="@string/pref_optimizer_enabled"
             android:title="@string/optimizer"
             android:summaryOn="@string/optimizer_on_summary"
             android:summaryOff="@string/optimizer_off_summary"
@@ -29,7 +27,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/formatter">
-        <SwitchPreference android:key="pref_inline_preview"
+        <CheckBoxPreference android:key="pref_inline_preview"
             android:title="@string/inline_preview"
             android:summaryOn="@string/preview_on_summary"
             android:summaryOff="@string/preview_off_summary"
@@ -42,13 +40,13 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/key_options">
-        <SwitchPreference android:key="@string/key_show_perf_notifications"
+        <CheckBoxPreference android:key="@string/key_show_perf_notifications"
             android:title="@string/display_perf_notifications"
             android:defaultValue="false"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/hardware">
-        <SwitchPreference android:key="@string/pref_kbd_enabled"
+        <CheckBoxPreference android:key="@string/pref_kbd_enabled"
             android:title="@string/enable_nkro_keyboard"
             android:defaultValue="false"/>
     </PreferenceCategory>

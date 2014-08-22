@@ -103,6 +103,7 @@ public class StenoApp extends Application {
         NKRO_KEYBOARD_PURCHASED = purchased;
     }
     public void setOptimizerEnabled(boolean setting) {optimizer_enabled = setting; }
+    public void setShowPerfNotifications(boolean setting) {show_perf_notifications = setting; }
 
     // Getters
     public StenoMachine getInputDevice() {return mInputDevice; }

@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.SwitchPreference;
 import android.util.Log;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -33,7 +33,7 @@ public class SettingsActivity extends PreferenceActivity {
 
 
     private StenoApp App;
-    private SwitchPreference keyboardSwitch;
+    private CheckBoxPreference keyboardSwitch;
     private IabHelper iabHelper;
     private IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListner;
 
@@ -104,7 +104,19 @@ public class SettingsActivity extends PreferenceActivity {
         });
 
         // set translator options
-        SwitchPreference zoom = (SwitchPreference) findPreference("pref_zoom_enabled");
+        CheckBoxPreference zoom = (CheckBoxPreference) findPreference(getString(R.string.pref_zoom_enabled));
+
+        CheckBoxPreference performance = (CheckBoxPreference) findPreference(getString(R.string.key_show_perf_notifications));
+        performance.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                boolean setting = ((CheckBoxPreference) preference).isChecked();
+                ((CheckBoxPreference) preference).setChecked(setting);
+                App.setShowPerfNotifications(setting);
+                Log.d(TAG, "Setting performance perefernce;"+setting);
+                return true;
+            }
+        });
 
         ListPreference translator = (ListPreference) findPreference(getString(R.string.pref_translator));
         translator.setSummary(translator.getEntry());
@@ -112,8 +124,9 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 ListPreference translator = (ListPreference) preference;
-                translator.setSummary(translator.getEntry());
-                Translator.TYPE tType = Translator.TYPE.values()[Integer.parseInt(newValue.toString())];
+                int value = Integer.parseInt(newValue.toString());
+                translator.setSummary(translator.getEntries()[value]);
+                Translator.TYPE tType = Translator.TYPE.values()[value];
                 App.setTranslatorType(tType);
                 Log.d(TAG, "Setting translator type:"+tType);
                 findPreference(getResources().getString(R.string.pref_optimizer_enabled)).setEnabled(!newValue.equals("0"));
@@ -121,12 +134,12 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 //        PreferenceCategory translator_category = (PreferenceCategory) findPreference(getString("pref_cat_translator"));
-        SwitchPreference optimizer = (SwitchPreference) findPreference(getResources().getString(R.string.pref_optimizer_enabled));
+        CheckBoxPreference optimizer = (CheckBoxPreference) findPreference(getResources().getString(R.string.pref_optimizer_enabled));
         optimizer.setEnabled(!(translator.getValue().equals("0")));
         optimizer.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                boolean setting = ((SwitchPreference) preference).isChecked();
+                boolean setting = ((CheckBoxPreference) preference).isChecked();
                 App.setOptimizerEnabled(setting);
                 return true;
             }
@@ -143,7 +156,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         // hardware switches
-        keyboardSwitch = (SwitchPreference) findPreference(getString(R.string.pref_kbd_enabled));
+        keyboardSwitch = (CheckBoxPreference) findPreference(getString(R.string.pref_kbd_enabled));
         assert keyboardSwitch != null;
         keyboardSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -151,7 +164,7 @@ public class SettingsActivity extends PreferenceActivity {
                 if (App.isNkroKeyboardPurchased()) {
                     return true;
                 } else {
-                    ((SwitchPreference) preference).setChecked(false);
+                    ((CheckBoxPreference) preference).setChecked(false);
                     initiatePurchase( StenoApp.SKU_NKRO_KEYBOARD);
                     return false;
                 }
@@ -198,5 +211,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         };
     }
+    
+    
 
 }

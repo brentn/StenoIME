@@ -74,7 +74,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     private boolean configuration_changed;
     private Translator mTranslator;
     private long last_notification_time=new Date().getTime();
-    //TXBOLT:private PendingIntent mPermissionIntent;
+    private PendingIntent mPermissionIntent;
 
     //layout vars
     private LinearLayout mKeyboard;
@@ -99,7 +99,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         configuration_changed=false;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false); //load default values
         resetStats();
-        //TXBOLT:mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
     @Override
     public void onDestroy() {
         super.onDestroy();
-//TXBOLT:        unregisterReceiver(mUsbReceiver);
+        unregisterReceiver(mUsbReceiver);
         if (mTranslator!=null) {
             mTranslator.stop();
         }
@@ -857,12 +857,13 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
                 registerMachine(new NKeyRolloverMachine());
                 resetStats();
                 break;
-//TXBOLT:            case TXBOLT:
-//                Toast.makeText(this,"TX-Bolt Machine Detected",Toast.LENGTH_SHORT).show();
-//                if (mKeyboard!=null) removeVirtualKeyboard();
-//                ((UsbManager)getSystemService(Context.USB_SERVICE))
-//                        .requestPermission(App.getUsbDevice(), mPermissionIntent);
-//                break;
+            case TXBOLT:
+                Toast.makeText(this,"USB-Serial cable Detected",Toast.LENGTH_SHORT).show();
+                if (mKeyboard!=null) removeVirtualKeyboard();
+                if (candidates_view==null) onCreateCandidatesView();
+                ((UsbManager)getSystemService(Context.USB_SERVICE))
+                        .requestPermission(App.getUsbDevice(), mPermissionIntent);
+                break;
         }
     }
 

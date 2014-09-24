@@ -1,0 +1,19 @@
+# Intellij project files
+*.iws
+.idea
+.gradle
+
+local.properties
+
+gen/
+bin/
+build/
+
+
+
+.DS_Store
+
+.classpath
+.project
+project.properties
+

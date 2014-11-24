@@ -206,10 +206,11 @@ public class Dictionary {
                         FileReader reader = new FileReader(file);
                         BufferedReader lines = new BufferedReader(reader);
                         while ((line = lines.readLine()) != null) {
+                            line=line.replace("\\\"","[doublequote]");
                             fields = line.split("\"");
                             if ((fields.length >= 3) && (fields[3].length() > 0)) {
                                 stroke = fields[1];
-                                translation = fields[3];
+                                translation = fields[3].replace("[doublequote]", "\"");
                                 dictionary.put(stroke, translation);
                                 loaded++;
                                 if (loaded%update_interval==0) {

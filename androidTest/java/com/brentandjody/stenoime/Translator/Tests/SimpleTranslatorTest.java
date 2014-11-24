@@ -233,7 +233,9 @@ public class SimpleTranslatorTest extends AndroidTestCase {
         checkResults(translator.translate(new Stroke("RE")), 0, "", "the re");
         checkResults(translator.translate(new Stroke("HRAEUGS")), 0, "the ", "relation ");
         checkResults(translator.translate(new Stroke("SHEUP")), 0, "relationship ", "");
-
+        // problem characters
+        checkResults(translator.translate(new Stroke("KW-GS")), 0, "\"", "");
+        checkResults(translator.translate(new Stroke("PR-PBS")), 0, ") ", "");
     }
 
     public void testRealDictionary() throws Exception {

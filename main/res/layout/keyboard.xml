@@ -30,7 +30,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/keyboard"
-            android:background="#222">
+            android:background="@android:color/background_light">
 
             <LinearLayout
                 android:orientation="horizontal"

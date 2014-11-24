@@ -245,7 +245,7 @@ public class TouchLayer extends RelativeLayout {
         }
         PAINT = new Paint();
         if (getResources() != null)
-            PAINT.setColor(getResources().getColor(android.R.color.background_light));
+            PAINT.setColor(getResources().getColor((R.color.STROKE_COLOUR)));
         else
             PAINT.setColor(Color.parseColor("#33B5E5"));
         PAINT.setStyle(Paint.Style.STROKE);

@@ -320,23 +320,19 @@ public class Optimizer {
                     if (stroke != null) {
                         translation = dictionaries[0].forceLookup(stroke); //2s to lookup
                         if (translation != null) {
-                            insert.clearBindings();
-                            insert.bindString(1, stroke);
-                            insert.bindString(2, translation);
-                            try {
+                            existing_stroke = Optimizer.this.get(db, translation);
+                            if (existing_stroke == null) {
+                                insert.clearBindings();
+                                insert.bindString(1, stroke);
+                                insert.bindString(2, translation);
                                 insert.execute();                           //23s to insert
-                            } catch (SQLiteConstraintException e) {
-                                existing_stroke = Optimizer.this.get(db, translation);
-                                if (existing_stroke != null) {
-                                    shorter_stroke = shorterOf(existing_stroke, stroke);
-                                    if (stroke.equals(shorter_stroke)) {
-                                        update.clearBindings();
-                                        update.bindString(1, stroke);
-                                        update.bindString(2, translation);
-                                        update.execute();                   //29s to update
-                                    }
-                                } else {
-                                    Log.d(TAG, "oops! existing stroke was null for " + translation);
+                            } else {
+                                shorter_stroke = shorterOf(existing_stroke, stroke);
+                                if (stroke.equals(shorter_stroke)) {
+                                    update.clearBindings();
+                                    update.bindString(1, stroke);
+                                    update.bindString(2, translation);
+                                    update.execute();                   //29s to update
                                 }
                             }
                         } else {

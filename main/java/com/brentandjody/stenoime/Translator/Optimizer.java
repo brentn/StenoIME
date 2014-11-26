@@ -218,28 +218,28 @@ public class Optimizer {
     private void addOptimization(Candidate new_optimization) {
         SQLiteDatabase db = new OptimizerTableHelper(mContext).getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(OptimizationEntry.COLUMN_STROKE, new_optimization.getStroke());
+        String stroke = new_optimization.getStroke();
+        values.put(OptimizationEntry.COLUMN_STROKE, stroke);
         values.put(OptimizationEntry.COLUMN_TRANSLATION, new_optimization.getTranslation());
         values.put(OptimizationEntry.COLUMN_OCCURRENCES, 1);
-        try {
-            db.insertWithOnConflict(OptimizationEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_ABORT);
-            Log.d(TAG, "New optimization added: "+new_optimization.getStroke());
-        } catch (Exception e) {
+        Cursor cursor = db.rawQuery("SELECT " + OptimizationEntry.COLUMN_OCCURRENCES
+                + " FROM " + OptimizationEntry.TABLE_NAME
+                + " WHERE " + OptimizationEntry.COLUMN_STROKE + " = '" + stroke + "';", null);
+        if (cursor.getCount() == 0) {
+            db.insert(OptimizationEntry.TABLE_NAME, null, values);
+            Log.d(TAG, "New optimization added: " + new_optimization.getStroke());
+        } else {
             int occurrences = 1;
-            Cursor cursor = db.rawQuery("SELECT " + OptimizationEntry.COLUMN_OCCURRENCES
-                    + " FROM " + OptimizationEntry.TABLE_NAME
-                    + " WHERE " + OptimizationEntry.COLUMN_STROKE + " = '" + new_optimization.getStroke() + "';", null);
             if (cursor.moveToFirst()) {
                 occurrences+=cursor.getInt(0);
             }
-            cursor.close();
             values.put(OptimizationEntry.COLUMN_OCCURRENCES, occurrences);
             db.update(OptimizationEntry.TABLE_NAME, values, OptimizationEntry.COLUMN_STROKE + "=?",
                     new String[] {new_optimization.getStroke()});
             Log.d(TAG, "Updating optimization: "+new_optimization.getStroke()+" with "+occurrences);
-        } finally {
-            db.close();
         }
+        cursor.close();
+        db.close();
     }
 
     private void sendNotification(Candidate optimization) {

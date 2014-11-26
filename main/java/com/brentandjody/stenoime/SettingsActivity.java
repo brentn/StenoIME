@@ -3,14 +3,19 @@ package com.brentandjody.stenoime;
 import android.content.Intent;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Adapter;
+import android.widget.ListView;
 
 import com.brentandjody.stenoime.Translator.Translator;
 import com.brentandjody.stenoime.data.DBContract;
@@ -31,10 +36,10 @@ public class SettingsActivity extends PreferenceActivity {
     private static final int PURCHASE_REQUEST_CODE = 20201;
     private static final String PAYLOAD = "jOOnnqldcn20p843nKK;nNl";
 
-
     private StenoApp App;
     private CheckBoxPreference keyboardSwitch;
     private IabHelper iabHelper;
+
     private IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListner;
 
     @Override
@@ -80,7 +85,7 @@ public class SettingsActivity extends PreferenceActivity {
     private void initializeControls() {
         // tutorial button
         Preference btn_tutorial = findPreference(getString(R.string.key_tutorial_button));
-        btn_tutorial.setIcon(R.drawable.ic_info);
+        btn_tutorial.setIcon(R.drawable.ic_tutorial);
         btn_tutorial.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {

@@ -65,6 +65,7 @@
         <activity
             android:name=".TutorialActivity"
             android:label="@string/title_activity_tutorial"
+            android:theme="@style/TutorialTheme"
             android:parentActivityName=".SettingsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Material.Light">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="SettingsTheme" parent="android:Theme.Material.Light.Dialog.NoActionBar">
+
+    </style>
+    <style name="TutorialTheme" parent="android:Theme.Material.Light.NoActionBar">
+
+    </style>
+    <style name="Widget.Material.ProgressBar.Horizontal" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@android:drawable/progress_horizontal</item>
+        <item name="android:maxHeight">16dip</item>
+        <item name="android:minHeight">16dip</item>
+    </style>
+</resources>

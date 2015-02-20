@@ -15,7 +15,9 @@
         android:clickable="false"
         android:longClickable="false"
         android:focusable="false"
-        android:id="@+id/keyboard_container">
+        android:id="@+id/keyboard_container"
+        android:translationZ="12dp"
+        android:layout_gravity="bottom">
 
         <com.brentandjody.stenoime.Input.TouchLayer
             android:orientation="vertical"
@@ -35,7 +37,7 @@
                     android:orientation="vertical"
                     android:layout_width="0dp"
                     android:layout_height="fill_parent"
-                    android:layout_weight="1"
+                    android:layout_weight="1.2"
                     android:id="@+id/left_bank">
 
                     <TextView
@@ -45,13 +47,15 @@
                         android:id="@+id/S"
                         android:gravity="center_vertical|center_horizontal"
                         android:background="@drawable/top_key"
-                        android:layout_marginRight="2dp"
-                        android:layout_marginBottom="-5dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginBottom="-8dp"
                         android:hint="S-"
                         android:textColor="@color/KEY_TEXT"
+                        android:stateListAnimator="@anim/key_press"
                         android:clickable="false"
                         android:longClickable="false"
-                        android:layout_marginTop="-5dp" />
+                        android:layout_marginTop="-8dp"
+                        android:translationZ="20dp" />
 
                 </LinearLayout>
 
@@ -60,7 +64,9 @@
                     android:layout_width="0dp"
                     android:layout_height="fill_parent"
                     android:id="@+id/main_keys"
-                    android:layout_weight="11">
+                    android:layout_weight="11"
+                    android:layout_marginLeft="-10dp"
+                    android:layout_marginRight="-10dp">
 
                     <LinearLayout
                         android:orientation="horizontal"
@@ -77,13 +83,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="T-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -93,13 +102,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="P-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -110,13 +122,16 @@
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
                             android:phoneNumber="true"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="H-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <LinearLayout
                             android:orientation="vertical"
@@ -140,28 +155,47 @@
                                     android:gravity="center_vertical|center_horizontal"
                                     android:layout_weight="1"
                                     android:background="@drawable/top_key"
-                                    android:layout_marginRight="2dp"
-                                    android:layout_marginLeft="2dp"
-                                    android:layout_marginTop="-5dp"
+                                    android:layout_marginRight="0dp"
+                                    android:layout_marginLeft="1dp"
+                                    android:layout_marginTop="-8dp"
                                     android:hint="#"
                                     android:textColor="@color/KEY_TEXT"
+                                    android:stateListAnimator="@anim/key_press"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="16dp"
+                                    android:layout_marginBottom="20dp" />
 
                                 <FrameLayout
                                     android:layout_width="0dp"
                                     android:layout_height="fill_parent"
-                                    android:layout_weight="1" >
+                                    android:layout_weight="2"
+                                    android:transitionGroup="false">
 
-                                    <Button
-                                        style="?android:attr/buttonStyleSmall"
+                                    <ImageButton
+                                        android:id="@+id/settings_button"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:background="@drawable/top_key"
-                                        android:textColor="@color/KEY_TEXT"
-                                        android:text="..."
-                                        android:id="@+id/settings_button"
-                                        android:layout_gravity="center_horizontal|top" />
+                                        android:layout_gravity="center_horizontal|top"
+                                        android:background="@drawable/ripple"
+                                        android:src="@drawable/ic_action_add_light"
+                                        android:textColor="#FFF"
+                                        android:stateListAnimator="@anim/button_press"
+                                        android:baselineAlignBottom="true"
+                                        android:layout_marginBottom="23dp"
+                                        android:layout_marginTop="-23dp" />
+
+                                    <!--<Button-->
+                                        <!--style="@android:style/TextAppearance.Material.Button"-->
+                                        <!--android:layout_width="wrap_content"-->
+                                        <!--android:layout_height="wrap_content"-->
+                                        <!--android:textColor="@android:color/white"-->
+                                        <!--android:text="..."-->
+                                        <!--android:id="@+id/settings_button"-->
+                                        <!--android:layout_gravity="center_horizontal|top"-->
+                                        <!--android:width="56dp"-->
+                                        <!--android:height="56dp"-->
+                                        <!--android:layout_marginTop="-20dp"/>-->
                                 </FrameLayout>
 
                                 <TextView
@@ -172,13 +206,16 @@
                                     android:gravity="center_vertical|center_horizontal"
                                     android:layout_weight="1"
                                     android:background="@drawable/top_key"
-                                    android:layout_marginRight="2dp"
-                                    android:layout_marginLeft="2dp"
-                                    android:layout_marginTop="-5dp"
+                                    android:layout_marginRight="0dp"
+                                    android:layout_marginLeft="1dp"
+                                    android:layout_marginTop="-8dp"
                                     android:hint="*"
                                     android:textColor="@color/KEY_TEXT"
+                                    android:stateListAnimator="@anim/key_press"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="16dp"
+                                    android:layout_marginBottom="20dp" />
 
                             </LinearLayout>
 
@@ -192,13 +229,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="-F"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -208,13 +248,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="-P"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -224,13 +267,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="-L"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -241,19 +287,22 @@
                             android:layout_weight="1"
                             android:background="@drawable/top_key"
                             android:phoneNumber="true"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginTop="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginTop="-8dp"
                             android:hint="-T"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginBottom="20dp" />
 
                     </LinearLayout>
 
                     <Space
                         android:layout_width="fill_parent"
-                        android:layout_height="68dp"
+                        android:layout_height="28dp"
                         android:id="@+id/gutter"
                         android:focusable="true"/>
 
@@ -272,13 +321,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="K-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -288,13 +340,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="W-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -304,13 +359,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="R-"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <LinearLayout
                             android:orientation="vertical"
@@ -340,12 +398,13 @@
                                     android:layout_weight="1"
                                     android:background="@drawable/vowel_key"
                                     android:layout_marginLeft="3dp"
-                                    android:layout_marginRight="3dp"
                                     android:layout_marginBottom="-5dp"
                                     android:hint="A-"
                                     android:textColor="@color/KEY_TEXT"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="10dp"
+                                    android:layout_marginTop="20dp" />
 
                                 <TextView
                                     android:layout_width="0dp"
@@ -355,13 +414,14 @@
                                     android:gravity="center_vertical|center_horizontal"
                                     android:layout_weight="1"
                                     android:background="@drawable/vowel_key"
-                                    android:layout_marginLeft="3dp"
                                     android:layout_marginRight="3dp"
                                     android:layout_marginBottom="-5dp"
                                     android:hint="O-"
                                     android:textColor="@color/KEY_TEXT"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="10dp"
+                                    android:layout_marginTop="20dp" />
 
                                 <TextView
                                     android:layout_width="0dp"
@@ -372,12 +432,13 @@
                                     android:layout_weight="1"
                                     android:background="@drawable/vowel_key"
                                     android:layout_marginLeft="3dp"
-                                    android:layout_marginRight="3dp"
                                     android:layout_marginBottom="-5dp"
                                     android:hint="-E"
                                     android:textColor="@color/KEY_TEXT"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="10dp"
+                                    android:layout_marginTop="20dp" />
 
                                 <TextView
                                     android:layout_width="0dp"
@@ -387,13 +448,14 @@
                                     android:gravity="center_vertical|center_horizontal"
                                     android:layout_weight="1"
                                     android:background="@drawable/vowel_key"
-                                    android:layout_marginLeft="3dp"
                                     android:layout_marginRight="3dp"
                                     android:layout_marginBottom="-5dp"
                                     android:hint="-U"
                                     android:textColor="@color/KEY_TEXT"
                                     android:clickable="false"
-                                    android:longClickable="false" />
+                                    android:longClickable="false"
+                                    android:translationZ="10dp"
+                                    android:layout_marginTop="20dp" />
 
                             </LinearLayout>
                         </LinearLayout>
@@ -406,13 +468,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="-R"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -422,13 +487,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="-B"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -438,13 +506,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="-G"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -454,13 +525,16 @@
                             android:gravity="center_vertical|center_horizontal"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_key"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp"
-                            android:layout_marginBottom="-5dp"
+                            android:layout_marginLeft="1dp"
+                            android:layout_marginRight="0dp"
+                            android:layout_marginBottom="-8dp"
                             android:hint="-S"
                             android:textColor="@color/KEY_TEXT"
+                            android:stateListAnimator="@anim/key_press"
                             android:clickable="false"
-                            android:longClickable="false" />
+                            android:longClickable="false"
+                            android:translationZ="20dp"
+                            android:layout_marginTop="20dp" />
 
                     </LinearLayout>
                 </LinearLayout>
@@ -470,7 +544,7 @@
                     android:layout_width="0dp"
                     android:layout_height="fill_parent"
                     android:id="@+id/right_bank"
-                    android:layout_weight="1">
+                    android:layout_weight="1.2">
 
                     <TextView
                         android:layout_width="fill_parent"
@@ -481,13 +555,15 @@
                         android:layout_weight="1"
                         android:background="@drawable/top_key"
                         android:phoneNumber="true"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginTop="-5dp"
+                        android:layout_marginLeft="11dp"
+                        android:layout_marginTop="-8dp"
                         android:hint="-D"
                         android:textColor="@color/KEY_TEXT"
+                        android:stateListAnimator="@anim/key_press"
                         android:clickable="false"
                         android:longClickable="false"
-                        android:layout_marginBottom="2dp" />
+                        android:layout_marginBottom="10dp"
+                        android:translationZ="20dp" />
 
                     <TextView
                         android:layout_width="fill_parent"
@@ -498,13 +574,15 @@
                         android:layout_weight="1"
                         android:background="@drawable/bottom_key"
                         android:phoneNumber="true"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginBottom="-5dp"
+                        android:layout_marginLeft="11dp"
+                        android:layout_marginBottom="-8dp"
                         android:hint="-Z"
                         android:textColor="@color/KEY_TEXT"
+                        android:stateListAnimator="@anim/key_press"
                         android:clickable="false"
                         android:longClickable="false"
-                        android:layout_marginTop="2dp" />
+                        android:layout_marginTop="10dp"
+                        android:translationZ="20dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -516,7 +594,7 @@
             android:background="#222"
             android:clickable="true"
             android:id="@+id/overlay"
-            android:alpha=".9"
+            android:alpha=".7"
             android:visibility="visible">
 
         </FrameLayout>

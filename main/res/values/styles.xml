@@ -5,8 +5,13 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="SettingsTheme" parent="android:Theme.Holo.Dialog.NoActionBar">
+    <style name="SettingsTheme" parent="android:Theme.Holo.Light.Dialog.NoActionBar">
 
     </style>
+    <style name="TutorialTheme" parent="android:Theme.Holo.Light.NoActionBar">
+
+    </style>
+
+
 
 </resources>

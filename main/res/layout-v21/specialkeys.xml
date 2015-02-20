@@ -21,7 +21,8 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="true"
-        android:padding="7dp">
+        android:padding="7dp"
+        android:translationZ="2dp">
 
         <TableRow
             android:layout_width="fill_parent"
@@ -45,10 +46,10 @@
                         android:id="@+id/key_exclamation"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:padding="7dp"
                         android:minWidth="30dp"
-                        android:layout_marginLeft="2px" />
+                        android:translationZ="14dp"
+                        android:layout_margin="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -58,10 +59,11 @@
                         android:id="@+id/key_at"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp"
+                        android:layout_margin="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -71,10 +73,11 @@
                         android:id="@+id/key_hash"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:padding="7dp"
                         android:minWidth="30dp"
-                        android:layout_marginLeft="2px" />
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp"
+                        android:layout_margin="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -87,7 +90,9 @@
                         android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp"
+                        android:layout_margin="2dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -97,10 +102,11 @@
                         android:id="@+id/key_percent"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -110,10 +116,11 @@
                         android:id="@+id/key_carat"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -123,10 +130,11 @@
                         android:id="@+id/key_ampersand"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
                 </TableRow>
 
                 <TableRow
@@ -141,10 +149,11 @@
                         android:id="@+id/key_asterisk"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -154,10 +163,11 @@
                         android:id="@+id/key_openbracket"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -167,10 +177,11 @@
                         android:id="@+id/key_closebracket"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -180,10 +191,11 @@
                         android:id="@+id/key_singlequote"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -193,10 +205,11 @@
                         android:id="@+id/key_doublequote"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -206,10 +219,11 @@
                         android:id="@+id/key_slash"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -219,10 +233,11 @@
                         android:id="@+id/key_question"
                         android:background="@drawable/top_key"
                         android:textColor="@color/KEY_TEXT"
-                        android:layout_marginRight="2px"
                         android:minWidth="30dp"
                         android:padding="7dp"
-                        android:layout_marginLeft="2px" />
+                        android:layout_margin="2dp"
+                        android:stateListAnimator="@anim/key_press"
+                        android:translationZ="14dp" />
                 </TableRow>
             </TableLayout>
 
@@ -240,7 +255,9 @@
                 android:id="@+id/submit_button"
                 android:background="@drawable/top_key"
                 android:textColor="@color/KEY_TEXT"
-                android:layout_gravity="center_vertical" />
+                android:layout_gravity="center_vertical"
+                android:stateListAnimator="@anim/button_press"
+                android:translationZ="14dp" />
 
         </TableRow>
 
@@ -248,7 +265,8 @@
 
     <TableLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="fill_parent"
+        android:translationZ="2dp">
 
         <TableRow
             android:layout_width="fill_parent"
@@ -265,7 +283,9 @@
                 android:textColor="@color/KEY_TEXT"
                 android:paddingRight="5dp"
                 android:paddingLeft="5dp"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:stateListAnimator="@anim/button_press"
+                android:translationZ="10dp" />
         </TableRow>
 
         <TableRow
@@ -282,7 +302,10 @@
                 android:background="@drawable/top_key"
                 android:textColor="@color/KEY_TEXT"
                 android:paddingRight="5dp"
-                android:paddingLeft="5dp" />
+                android:paddingLeft="5dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@anim/button_press"
+                android:translationZ="14dp" />
 
             <Space
                 android:layout_width="0px"
@@ -300,8 +323,9 @@
                 android:background="@drawable/vowel_key"
                 android:paddingRight="5dp"
                 android:paddingLeft="5dp"
-                android:layout_marginRight="2px"
-                android:layout_marginLeft="2px" />
+                android:layout_margin="2dp"
+                android:stateListAnimator="@anim/button_press"
+                android:translationZ="7dp" />
 
             <Space
                 android:layout_width="0px"
@@ -318,7 +342,10 @@
                 android:background="@drawable/top_key"
                 android:textColor="@color/KEY_TEXT"
                 android:paddingRight="5dp"
-                android:paddingLeft="5dp" />
+                android:paddingLeft="5dp"
+                android:layout_margin="2dp"
+                android:stateListAnimator="@anim/button_press"
+                android:translationZ="14dp" />
 
         </TableRow>
     </TableLayout>

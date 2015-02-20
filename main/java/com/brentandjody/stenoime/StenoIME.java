@@ -828,11 +828,6 @@ public class StenoIME extends InputMethodService implements TouchLayer.OnStrokeL
         }
         setCandidatesViewShown(show);
         if (mKeyboard==null) return;
-        View shadow = mKeyboard.findViewById(R.id.shadow);
-        if (shadow!=null) {
-            if (show) shadow.setVisibility(View.GONE);
-            else shadow.setVisibility(View.VISIBLE);
-        }
     }
 
 

@@ -22,6 +22,7 @@ public class FormatterTest extends AndroidTestCase {
         assertEquals("spin ", formatter.format("{^spin}"));
         assertEquals(0, formatter.backspaces());
         assertEquals("cycle", formatter.format("{cycle^}"));
+        assertEquals("\"", formatter.format("{\"^}"));
         // flags
         assertFalse(formatter.hasFlags());
         assertEquals("", formatter.format("{-|}"));

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ACCENT_COLOR">#E91E63</color>
+    <color name="STROKE_COLOUR">#E91E63</color>
+    <color name="KEY_COLOR">#ECEFF1</color>
+    <color name="KEY_OUTLINE">#1DE9B6</color>
+    <color name="KEY_PRESSED">#E91E63</color>
+    <color name="VOWEL_COLOR">#C6FF00</color>
+    <color name="KEY_TEXT">#000000</color>
+    <color name="PREVIEW_BACKGROUND">#EEEEEE</color>
+    <color name="PREVIEW_TEXT">#222222</color>
+</resources>

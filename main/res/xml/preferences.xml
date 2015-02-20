@@ -5,11 +5,11 @@
     <Preference android:key="@string/key_tutorial_button"
         android:title="@string/text_tutorial_button"/>
 
-    <PreferenceCategory android:title="Virtual Keyboard">
-        <CheckBoxPreference android:key="@string/pref_zoom_enabled"
-            android:title="@string/keyboard_magnifier"
-            android:defaultValue="false"/>
-    </PreferenceCategory>
+    <!--<PreferenceCategory android:title="Virtual Keyboard">-->
+        <!--<CheckBoxPreference android:key="@string/pref_zoom_enabled"-->
+            <!--android:title="@string/keyboard_magnifier"-->
+            <!--android:defaultValue="false"/>-->
+    <!--</PreferenceCategory>-->
 
     <PreferenceCategory android:key="@string/pref_cat_translator" android:title="@string/translator">
         <ListPreference android:key="@string/pref_translator"

@@ -216,6 +216,7 @@ public class DictionaryTest extends AndroidTestCase {
         assertEquals("adjudication", dictionary.forceLookup("AD/SKWRAOUD/KAEUGS"));
         assertEquals("", dictionary.lookup("AD/SKWRAOUD/KAEUT"));
         assertEquals("adjudicate", dictionary.forceLookup("AD/SKWRAOUD/KAEUT"));
+        assertEquals("{\"^}", dictionary.forceLookup("KW-GS"));
     }
 
 //    public void testLongestValidStroke() throws Exception {

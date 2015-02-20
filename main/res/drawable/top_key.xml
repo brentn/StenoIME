@@ -4,6 +4,8 @@
     <!--<item android:state_pressed="true"-->
     <!--android:drawable="@drawable/topkey_selected" /> &lt;!&ndash; pressed &ndash;&gt;-->
     <item android:state_selected="true"
-        android:drawable="@drawable/top_key_selected" /> <!-- selected -->
-    <item android:drawable="@drawable/top_key_normal" /> <!-- default -->
+        android:drawable="@drawable/key_selected" > <!-- selected -->
+    </item>
+    <item android:drawable="@drawable/key_normal" > <!-- default -->
+    </item>
 </selector>

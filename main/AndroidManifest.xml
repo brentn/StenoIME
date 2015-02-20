@@ -38,7 +38,8 @@
         <!-- user settings. -->
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/settings_title" >
+            android:label="@string/settings_title"
+            android:theme="@style/SettingsTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -55,7 +56,7 @@
         <activity
             android:name=".SuggestionsActivity"
             android:label="@string/title_activity_suggestions"
-            android:theme="@android:style/Theme.Holo.Dialog.NoActionBar" >
+            android:theme="@style/SettingsTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
@@ -65,13 +66,14 @@
         <activity
             android:name=".SetupActivity"
             android:label="@string/title_activity_setup"
-            android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar" >
+            android:theme="@style/SettingsTheme" >
         </activity>
 
         <!--Tutorial-->
         <activity
             android:name=".TutorialActivity"
             android:label="@string/title_activity_tutorial"
+            android:theme="@style/TutorialTheme"
             android:parentActivityName=".SettingsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
